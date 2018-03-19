@@ -1,3 +1,6 @@
 /.vs
 /LitEngine/obj
 /LitEngine/bin/Debug
+/LitEngine/bin/Release
+/LitEngine/obj/Debug
+/LitEngine/obj/Release

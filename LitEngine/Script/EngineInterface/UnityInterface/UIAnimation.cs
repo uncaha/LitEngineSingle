@@ -67,7 +67,6 @@ namespace LitEngine
                 if (!CanPlay) return false;
                 if (IsPlaying) return true;
                 mAnimator.enabled = false;
-                mAnimator.Stop();
                 mAnimator.Rebind();
                 mAnimator.Play(State, 0);
                 SetEnable(true);
@@ -77,7 +76,7 @@ namespace LitEngine
             virtual public void Stop()
             {
                 if (!CanPlay) return;
-                mAnimator.Stop();
+                mAnimator.enabled = false;
                 SetEnable(false);
             }
 

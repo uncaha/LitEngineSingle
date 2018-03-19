@@ -39,9 +39,8 @@ namespace LitEngine
                 Animator tanitor = GetComponent<Animator>();
                 if (tanitor != null)
                 {
-                    tanitor.Stop();
-                    tanitor.Rebind();
                     tanitor.enabled = false;
+                    tanitor.Rebind();
 
                 }
 
