@@ -16,7 +16,7 @@ namespace LitEngine
             {
                 if (sInstance == null)
                 {
-                    GameObject tobj = new GameObject("GameUpdateManager");
+                    GameObject tobj = new GameObject("LoaderManager");
                     GameObject.DontDestroyOnLoad(tobj);
                     sInstance = tobj.AddComponent<LoaderManager>();
                     sInstance.Init();

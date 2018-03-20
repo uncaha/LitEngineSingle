@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 namespace LitEngine
 {
     using Loader;
+    using IO;
     public class GameCore
     {
         public const string DataPath = "/Data/";//App总数据目录
@@ -122,7 +123,7 @@ namespace LitEngine
         {
             SetPath();
         }
-        static public void InitGameCore(UseScriptType _scripttype)
+        static public void InitGameCore(UseScriptType _scripttype,string _filename)
         {
             if(Core.mIsInited)
             {
@@ -131,7 +132,37 @@ namespace LitEngine
             }
 
             Core.SManager = new ScriptManager(_scripttype);
+            Core.InitScriptFile(_filename);
             Core.mIsInited = true;
+        }
+
+        private void InitScriptFile(string _filename)
+        {
+            byte[] dllbytes = null;
+            byte[] pdbbytes = null;
+            string tdllPath = PersistentScriptDataPath + _filename;
+            if (System.IO.File.Exists(tdllPath + ".dll"))
+            {
+                dllbytes = System.IO.File.ReadAllBytes(tdllPath + ".dll");
+                pdbbytes = System.IO.File.ReadAllBytes(tdllPath + ".pdb");
+            }
+
+            if (dllbytes == null || pdbbytes == null)
+            {
+                DLog.LogErrorFormat("LoadScriptFormFile{dllbytes = {0},pdbbytes = {1}}", dllbytes, pdbbytes);
+                return;
+            }
+
+            AESReader tdllreader = new AESReader(dllbytes);
+            AESReader tpdbreader = new AESReader(pdbbytes);
+
+            dllbytes = tdllreader.ReadAllBytes();
+            pdbbytes = tpdbreader.ReadAllBytes();
+
+            tdllreader.Dispose();
+            tpdbreader.Dispose();
+
+            SManager.LoadProjectByBytes(dllbytes, pdbbytes);
         }
 
         #endregion

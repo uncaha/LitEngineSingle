@@ -12,7 +12,6 @@ namespace LitEngine
         private AppDomain mApp = null;
         public CodeTool_SYS() : base()
         {
-            DLog.LogWarning("反射模式对多结构的支持目前有问题.暂时不能使用.单app结构,不需要卸载gamecore的不存在问题.");
         }
 
         override protected void DisposeNoGcCode()
