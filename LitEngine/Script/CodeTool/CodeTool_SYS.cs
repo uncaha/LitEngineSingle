@@ -10,7 +10,7 @@ namespace LitEngine
         private SafeMap<string, IType> mMapType = new SafeMap<string, IType>();
         private System.Reflection.Assembly mAssembly;
         private AppDomain mApp = null;
-        public CodeTool_SYS(string _appname) : base(_appname)
+        public CodeTool_SYS() : base()
         {
             DLog.LogWarning("反射模式对多结构的支持目前有问题.暂时不能使用.单app结构,不需要卸载gamecore的不存在问题.");
         }
@@ -208,7 +208,7 @@ namespace LitEngine
             if (ttype == null) return null;
             Action tact = GetCSLEDelegate<Action>(_Function, ttype, _target);
             if (tact == null) return null;
-            return new UpdateObject(string.Format("{0}:{1}->{2}", AppName, _classname, _Function), tact);
+            return new UpdateObject(string.Format("{0}->{1}", _classname, _Function), tact);
         }
         override public K GetCSLEDelegate<K>(string _Function, IType _classtype, object _target)
         {

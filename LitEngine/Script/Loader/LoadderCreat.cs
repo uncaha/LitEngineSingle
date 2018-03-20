@@ -8,12 +8,10 @@ namespace LitEngine
 
         public class LoaderCreatBase
         {
-            protected LoaderManager mLManager = null;
             public string mkey;
             public System.Action<string> mCreatCall;
-            public LoaderCreatBase(LoaderManager _lmanager)
+            public LoaderCreatBase()
             {
-                mLManager = _lmanager;
             }
             virtual public void StartLoad()
             {
@@ -46,7 +44,7 @@ namespace LitEngine
                 }
             }
 
-            public LoaderCreatObjectBase(LoaderManager _lmanager):base(_lmanager)
+            public LoaderCreatObjectBase():base()
             {
             }
 
@@ -56,7 +54,7 @@ namespace LitEngine
         {
             private string mObjectKey;
             private System.Action<string, object> mDelgate;
-            public LoaderCreatObject(LoaderManager _lmanager,string objkey, string _assetsKey,string _resname, System.Action<string, object> _callback) : base(_lmanager)
+            public LoaderCreatObject(string objkey, string _assetsKey,string _resname, System.Action<string, object> _callback) : base()
             {
                 
                 mObjectKey = objkey;
@@ -70,7 +68,7 @@ namespace LitEngine
             {
                 if (mStarted) return;
                 mStarted = true;
-                mLManager.LoadAssetAsync(mObjectKey, mAssetsKey, LoadCallBack);
+                LoaderManager.LoadAssetAsync(mObjectKey, mAssetsKey, LoadCallBack);
 
             }
 
@@ -83,7 +81,7 @@ namespace LitEngine
 
             override public void RemoveAssets()
             {
-                mLManager.RemoveAsset(AssetsKey);
+                LoaderManager.RemoveAsset(AssetsKey);
             }
         }
 
@@ -102,7 +100,7 @@ namespace LitEngine
             private float mOldProgress = 0;
             private int mMaxCount = 0;
             private int mListCount = 0;
-            public LoaderCreat(LoaderManager _lmanager, string _key, System.Action<string> _callfinised, System.Action<string, float> _progress) : base(_lmanager)
+            public LoaderCreat(string _key, System.Action<string> _callfinised, System.Action<string, float> _progress) : base()
             {
                 mkey = _key;
                 mCallFinised = _callfinised;
@@ -118,7 +116,7 @@ namespace LitEngine
                     DLog.LogError("队列已经开始载入,不可中途插入");
                     return;
                 }
-                LoaderCreatObject tcobj = new LoaderCreatObject(mLManager, _key, _AssetsName, _resname, _callback);
+                LoaderCreatObject tcobj = new LoaderCreatObject( _key, _AssetsName, _resname, _callback);
                 tcobj.mkey = mIndex.ToString();
                 tcobj.mCreatCall = LoadCallBack;
                 mList.Add(tcobj.mkey, tcobj);
@@ -133,7 +131,7 @@ namespace LitEngine
                     DLog.LogError("队列已经开始载入,不可中途插入");
                     return null;
                 }
-                LoaderCreat tcobj = new LoaderCreat(mLManager,mIndex.ToString(), _callfinised, _progress);
+                LoaderCreat tcobj = new LoaderCreat(mIndex.ToString(), _callfinised, _progress);
                 tcobj.mkey = mIndex.ToString();
                 tcobj.mCreatCall = LoadCallBack;
                 mList.Add(tcobj.mkey, tcobj);

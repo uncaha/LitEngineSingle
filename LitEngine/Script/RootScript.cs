@@ -3,7 +3,7 @@ namespace LitEngine
 {
     using IO;
     using Loader;
-    public class RootScript : MonoBehaviour
+   /* public class RootScript : MonoBehaviour
     {
         public string APPNAME = "";
         public string ScriptFileName = "";
@@ -94,4 +94,5 @@ namespace LitEngine
                 DLog.LogErrorFormat("LoadScriptFormMemory(byte[] _dllbytes = }|,byte[] _pdbbytes){}");
         }
     }
+    */
 }

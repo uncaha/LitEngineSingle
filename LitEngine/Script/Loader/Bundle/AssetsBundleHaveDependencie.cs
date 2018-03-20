@@ -19,9 +19,9 @@ namespace LitEngine
                 mLoadCall = _loadcall;
             }
 
-            public override void Load(LoaderManager _loader)
+            public override void Load()
             {
-                string[] tdeps = _loader.GetDirectDependencies(mAssetName);
+                string[] tdeps = LoaderManager.GetDirectDependencies(mAssetName);
                 if (tdeps != null)
                 {
                     for (int i = 0; i < tdeps.Length; i++)
@@ -33,7 +33,7 @@ namespace LitEngine
                 }
 
                 mMainBundle = new AssetsBundleFromFile(mAssetName);
-                mMainBundle.Load(_loader);
+                mMainBundle.Load();
 
                 LoadEnd();
             }

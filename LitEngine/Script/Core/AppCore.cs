@@ -35,7 +35,7 @@ namespace LitEngine
     }
     #endregion
 
-    public class AppCore : CoreBase
+    /*public class AppCore : CoreBase
     {
         #region 静态函数及变量
         #region 变量
@@ -315,4 +315,5 @@ namespace LitEngine
         #endregion
 
     }
+    */
 }

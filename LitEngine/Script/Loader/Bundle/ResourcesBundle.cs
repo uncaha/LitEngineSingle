@@ -9,9 +9,9 @@ namespace LitEngine
 
             }
 
-            public override void Load(LoaderManager _loader)
+            public override void Load()
             {
-                mPathName = _loader.GetResourcesDataPath(mAssetName);
+                mPathName = LoaderManager.GetResourcesDataPath(mAssetName);
                 mAssetsBundle = Resources.Load(mPathName);
                 if (mAssetsBundle == null)
                     DLog.LogError("ResourcesBundle打开文件失败,请检查资源是否存在-" + mPathName);

@@ -5,7 +5,20 @@ namespace LitEngine
     using UpdateSpace;
     public class GameUpdateManager : MonoManagerBase
     {
-
+        private static GameUpdateManager sInstance = null;
+        public static GameUpdateManager Instance
+        {
+            get
+            {
+                if (sInstance == null)
+                {
+                    GameObject tobj = new GameObject("GameUpdateManager");
+                    GameObject.DontDestroyOnLoad(tobj);
+                    sInstance = tobj.AddComponent<GameUpdateManager>();
+                }
+                return sInstance;
+            }
+        }
         override protected void OnDestroy()
         {
             Clear();
@@ -26,21 +39,21 @@ namespace LitEngine
 
         }
         #region 注册
-        public void RegUpdate(UpdateBase _act)
+        static public void RegUpdate(UpdateBase _act)
         {
-            UpdateList.Add(_act);
+            Instance.UpdateList.Add(_act);
         }
-        public void RegLateUpdate(UpdateBase _act)
+        static public void RegLateUpdate(UpdateBase _act)
         {
-            LateUpdateList.Add(_act);
+            Instance.LateUpdateList.Add(_act);
         }
-        public void RegFixedUpdate(UpdateBase _act)
+        static public void RegFixedUpdate(UpdateBase _act)
         {
-            FixedUpdateList.Add(_act);
+            Instance.FixedUpdateList.Add(_act);
         }
-        public void RegGUIUpdate(UpdateBase _act)
+        static public void RegGUIUpdate(UpdateBase _act)
         {
-            OnGUIList.Add(_act);
+            Instance.OnGUIList.Add(_act);
         }
         #endregion
 
@@ -52,22 +65,22 @@ namespace LitEngine
             LateUpdateList.Clear();
             OnGUIList.Clear();
         }
-        public void UnRegUpdate(UpdateBase _act)
+        static public void UnRegUpdate(UpdateBase _act)
         {
-            UpdateList.Remove(_act);
+            Instance.UpdateList.Remove(_act);
 
         }
-        public void UnRegLateUpdate(UpdateBase _act)
+        static public void UnRegLateUpdate(UpdateBase _act)
         {
-            LateUpdateList.Remove(_act);
+            Instance.LateUpdateList.Remove(_act);
         }
-        public void UnRegFixedUpdate(UpdateBase _act)
+        static public void UnRegFixedUpdate(UpdateBase _act)
         {
-            FixedUpdateList.Remove(_act);
+            Instance.FixedUpdateList.Remove(_act);
         }
-        public void UnGUIUpdate(UpdateBase _act)
+        static public void UnGUIUpdate(UpdateBase _act)
         {
-            OnGUIList.Remove(_act);
+            Instance.OnGUIList.Remove(_act);
         }
         #endregion
 

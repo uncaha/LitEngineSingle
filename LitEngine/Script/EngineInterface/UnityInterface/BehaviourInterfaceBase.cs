@@ -9,18 +9,15 @@ namespace LitEngine
         public class BehaviourInterfaceBase : MonoBehaviour
         {
             #region 成员
-            protected const string cNeedSetAppName = "需要设置AppName";
             protected bool mIsDestory = false;
             protected bool mInitScript = false;
 
-            public string mAppName = cNeedSetAppName;
             protected CodeToolBase mCodeTool = null;
 
             public string mScriptClass = "";
             protected IType mScriptType;
             protected object mObject = null;
 
-            protected GameCore mCore = null;
 
             public object ScriptObject
             {
@@ -80,12 +77,6 @@ namespace LitEngine
 
                 CallScriptFunctionByName("OnDestroy");
 
-                if (mCore != null)
-                {
-                    mCore.RemveScriptInterface(this);
-                    mCore = null;
-                }
-
                 if (mOnGUIDelegate != null)
                 {
                     mOnGUIDelegate.Dispose();
@@ -114,50 +105,42 @@ namespace LitEngine
 
             virtual protected void InitParamList()
             {
-                GameUpdateManager tmanager =  AppCore.App[mAppName].GManager;
                 mUpdateDelegate = mCodeTool.GetUpdateObjectAction("Update", mScriptClass, ScriptObject);
                 if(mUpdateDelegate != null)
-                    mUpdateDelegate.Owner = tmanager.UpdateList;
+                    mUpdateDelegate.Owner = GameUpdateManager.Instance.UpdateList;
 
                 mFixedUpdateDelegate = mCodeTool.GetUpdateObjectAction("FixedUpdate", mScriptClass, ScriptObject);
                 if (mFixedUpdateDelegate != null)
-                    mFixedUpdateDelegate.Owner = tmanager.FixedUpdateList;
+                    mFixedUpdateDelegate.Owner = GameUpdateManager.Instance.FixedUpdateList;
 
                 mLateUpdateDelegate = mCodeTool.GetUpdateObjectAction("LateUpdate", mScriptClass, ScriptObject);
                 if (mLateUpdateDelegate != null)
-                    mLateUpdateDelegate.Owner = tmanager.LateUpdateList;
+                    mLateUpdateDelegate.Owner = GameUpdateManager.Instance.LateUpdateList;
 
                 mOnGUIDelegate = mCodeTool.GetUpdateObjectAction("OnGUI", mScriptClass, ScriptObject);
                 if (mOnGUIDelegate != null)
                 {
                     mOnGUIDelegate.MaxTime = 0;
-                    mOnGUIDelegate.Owner = tmanager.OnGUIList;
+                    mOnGUIDelegate.Owner = GameUpdateManager.Instance.OnGUIList;
                 }
                     
             }
-            virtual public void InitScript(string _class,string _AppName)
+            virtual public void InitScript(string _class)
             {
                 if (_class.Length == 0 || mInitScript) return;
-                if(_AppName.Equals(cNeedSetAppName))
-                {
-                    DLog.LOGColor(DLogType.Error,string.Format( "必须设置正确的AppName.Class = {0},GameObject = {1}", _class,gameObject.name), LogColor.YELLO);
-                    return;
-                }
                 try {
-                    mAppName = _AppName;
-                    mCore = AppCore.App[mAppName];
-                    mCodeTool = mCore.SManager.CodeTool;
+
+                    mCodeTool = GameCore.Core.SManager.CodeTool;
                     mScriptClass = _class;
                     mScriptType = mCodeTool.GetLType(mScriptClass);
                     mObject = mCodeTool.GetCSLEObjectParmasByType(mScriptType, this);
                     InitParamList();
-                    mCore.AddScriptInterface(this);
                     CallScriptFunctionByName("Awake");
                     mInitScript = true;
                 }
                 catch (Exception _erro)
                 {
-                    DLog.LogError( string.Format("脚本初始化出错:Class = {0},AppName = {1},GameObject = {2},InitScript ->{3}", mScriptClass, mAppName,gameObject.name, _erro.ToString()));
+                    DLog.LogError( string.Format("脚本初始化出错:Class = {0},GameObject = {1},InitScript ->{2}", mScriptClass,gameObject.name, _erro.ToString()));
                 }
                 
                 
@@ -207,7 +190,7 @@ namespace LitEngine
                 }
                 catch (Exception _erro)
                 {
-                    DLog.LogError( string.Format("[{0}:{1}->{2}] [GameObject:{3}] Error:{4}", mAppName,mScriptClass, _FunctionName, gameObject.name, _erro.ToString()));
+                    DLog.LogError( string.Format("[{0}->{1}] [GameObject:{2}] Error:{3}",mScriptClass, _FunctionName, gameObject.name, _erro.ToString()));
                 }
                 return null;
             }
@@ -222,7 +205,7 @@ namespace LitEngine
                 }
                 catch (Exception _error)
                 {
-                    DLog.LogError( string.Format("[{0}:{1}] Error:{2}", mAppName, mScriptClass, _error.ToString()));
+                    DLog.LogError( string.Format("[{0}] Error:{1}", mScriptClass, _error.ToString()));
                 }
             }
             protected void CallAction<T>(Action<T> _action,T _param)
@@ -234,7 +217,7 @@ namespace LitEngine
                 }
                 catch (Exception _error)
                 {
-                    DLog.LogError( string.Format("[{0}:{1}] Error:{2}", mAppName, mScriptClass, _error.ToString()));
+                    DLog.LogError( string.Format("[{0}] Error:{1}", mScriptClass, _error.ToString()));
                 }
             }
             #endregion
@@ -246,8 +229,7 @@ namespace LitEngine
             }
             virtual public void PlaySound(AudioClip _audio)
             {
-                if(mCore != null && mCore.AudioManager != null)
-                    mCore.AudioManager.PlaySound(_audio);
+                PlayAudioManager.PlaySound(_audio);
             }
             virtual public void PlayAnimation(string _state)
             {
@@ -257,7 +239,7 @@ namespace LitEngine
             #region Unity 
             virtual protected void Awake()
             {
-                InitScript(mScriptClass, mAppName);
+                InitScript(mScriptClass);
             }
             virtual protected void Start()
             {

@@ -20,9 +20,7 @@ namespace LitEngine
             get;
             private set;
         }
-        public string AppName{get;private set;}
         private UseScriptType mUseSystemAssm = UseScriptType.UseScriptType_LS;
-
         private CodeToolBase mCodeTool;
         public CodeToolBase CodeTool
         {
@@ -33,19 +31,17 @@ namespace LitEngine
                 return mCodeTool;
             }
         }
-        public ScriptManager(string _appname, UseScriptType _stype)
+        public ScriptManager(UseScriptType _stype)
         {
-            AppName = _appname;
             mUseSystemAssm = _stype;
             switch (mUseSystemAssm)
             {
                 case UseScriptType.UseScriptType_LS:
                     Env = new ILRuntime.Runtime.Enviorment.AppDomain();
-                    Env.AppName = AppName;
-                    mCodeTool = new CodeTool_LS(AppName,Env);
+                    mCodeTool = new CodeTool_LS(Env);
                     break;
                 case UseScriptType.UseScriptType_System:
-                    mCodeTool = new CodeTool_SYS(AppName);
+                    mCodeTool = new CodeTool_SYS();
                     break;
             }
         }

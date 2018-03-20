@@ -9,7 +9,7 @@ namespace LitEngine
         private SafeMap<string, Type> mAssembType = new SafeMap<string, Type>();
         private SafeMap<string, IType> mMapType = new SafeMap<string, IType>();
         private SafeMap<string, System.Reflection.Assembly> mMapAssembly = new SafeMap<string, System.Reflection.Assembly>();
-        public CodeTool_CS() : base("")
+        public CodeTool_CS() : base()
         {
         }
         override protected void DisposeNoGcCode()

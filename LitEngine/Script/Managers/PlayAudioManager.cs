@@ -3,32 +3,49 @@ namespace LitEngine
 {
     public class PlayAudioManager : MonoManagerBase
     {
-        private float mMusicValue = 1;
-        public float MusicValue {
+        private static PlayAudioManager sInstance = null;
+        private static PlayAudioManager Instance
+        {
+            get
+            {
+                if (sInstance == null)
+                {
+                    GameObject tobj = new GameObject("PlayAudioManager");
+                    GameObject.DontDestroyOnLoad(tobj);
+                    sInstance = tobj.AddComponent<PlayAudioManager>();
+                }
+                return sInstance;
+            }
+        }
+
+        static private float mMusicValue = 1;
+        static public float MusicValue {
             get { return mMusicValue; }
             set
             {
                 mMusicValue = Mathf.Clamp01(value);
-                mBackMusic.volume = mMusicValue;
+                Instance.mBackMusic.volume = mMusicValue;
             }
         }
-        private float mSoundValue = 1;
-        public float SoundValue
+        static private float mSoundValue = 1;
+        static public float SoundValue
         {
             get { return mSoundValue; }
             set
             {
                 mSoundValue = Mathf.Clamp01(value);
-                for (int i = 0; i < mMaxSoundCount; i++)
+                for (int i = 0; i < Instance.mMaxSoundCount; i++)
                 {
-                    mAudioSounds[i].volume = mSoundValue;
+                    Instance.mAudioSounds[i].volume = mSoundValue;
                 }
             }
         }
 
+        private int mMaxSoundCount = 3;
+
         private AudioSource mBackMusic;
         private AudioSource[] mAudioSounds;
-        private int mMaxSoundCount = 3;
+        
         private int mIndex = 0;
 
         private void Awake()
@@ -45,52 +62,46 @@ namespace LitEngine
             base.OnDestroy();
         }
 
-        public void PlaySound(AudioClip _clip)
+        static public void PlaySound(AudioClip _clip)
         {
-            if (mIndex == mMaxSoundCount) mIndex = 0;
-            mAudioSounds[mIndex].Stop();
-            mAudioSounds[mIndex].clip = _clip;
-            mAudioSounds[mIndex].loop = false;
-            mAudioSounds[mIndex].Play();
-            mIndex++;
+            if (Instance.mIndex == Instance.mMaxSoundCount) Instance.mIndex = 0;
+            Instance.mAudioSounds[Instance.mIndex].Stop();
+            Instance.mAudioSounds[Instance.mIndex].clip = _clip;
+            Instance.mAudioSounds[Instance.mIndex].loop = false;
+            Instance.mAudioSounds[Instance.mIndex].Play();
+            Instance.mIndex++;
         }
 
-        public void PlayMusic(AudioClip _clip)
+        static public void PlayMusic(AudioClip _clip)
         {
-            mBackMusic.Stop();
-            mBackMusic.clip = _clip;
-            mBackMusic.loop = true;
-            mBackMusic.Play();
+            Instance.mBackMusic.Stop();
+            Instance.mBackMusic.clip = _clip;
+            Instance.mBackMusic.loop = true;
+            Instance.mBackMusic.Play();
         }
 
-        public void StopMusic()
+        static public void StopMusic()
         {
-            mBackMusic.Stop();
+            Instance.mBackMusic.Stop();
         }
 
-        public void StopSound()
+        static public void StopSound()
         {
-            for (int i = 0; i < mMaxSoundCount; i++)
+            for (int i = 0; i < Instance.mMaxSoundCount; i++)
             {
-                mAudioSounds[i].Stop();
+                Instance.mAudioSounds[i].Stop();
             }
         }
 
-        public void Clear()
+        static public void Clear()
         {
-            mBackMusic.Stop();
-            mBackMusic.clip = null;
-            for (int i = 0; i < mMaxSoundCount; i++)
+            Instance.mBackMusic.Stop();
+            Instance.mBackMusic.clip = null;
+            for (int i = 0; i < Instance.mMaxSoundCount; i++)
             {
-                mAudioSounds[i].Stop();
-                mAudioSounds[i].clip = null;
+                Instance.mAudioSounds[i].Stop();
+                Instance.mAudioSounds[i].clip = null;
             }
         }
-
-        #region static
-      
-        #endregion
-
-
     }
 }

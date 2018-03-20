@@ -7,28 +7,15 @@ namespace LitEngine
         using UpdateSpace;
         public class DownLoadTask : TaskBase
         {
-            public static bool DownLoadFileAsync(UpdateObjectVector _owner, string _appname, string _sourceurl, string _destination, bool _IsClear, Action<string, string> _finished, Action<long, long, float> _progress)
-            {
-                if (sDownLoadMap.ContainsKey(_sourceurl))
-                {
-                    DLog.LogError("有相同URL文件正在下载当中.URL = " + _sourceurl);
-                    return false;
-                }
-                DownLoadTask ttaskdown = new DownLoadTask(_owner, _appname, _sourceurl, _destination, _IsClear, _finished, _progress);
-                bool isstart = ttaskdown.StartDownloadAsync();
-                if (!isstart)
-                    ttaskdown.Dispose();
-                return isstart;
-            }
 
-            public static bool DownLoadFileAsync(UpdateObjectVector _owner, string _sourceurl, string _destination, bool _IsClear, Action<string, string> _finished, Action<long, long, float> _progress)
+            public static bool DownLoadFileAsync(string _sourceurl, string _destination, bool _IsClear, Action<string, string> _finished, Action<long, long, float> _progress)
             {
                 if (sDownLoadMap.ContainsKey(_sourceurl))
                 {
                     DLog.LogError("有相同URL文件正在下载当中.URL = " + _sourceurl);
                     return false;
                 }
-                DownLoadTask ttaskdown = new DownLoadTask(_owner, _sourceurl, _sourceurl, _destination, _IsClear, _finished, _progress);
+                DownLoadTask ttaskdown = new DownLoadTask(_sourceurl, _sourceurl, _destination, _IsClear, _finished, _progress);
                 bool isstart = ttaskdown.StartDownloadAsync();
                 if (!isstart)
                     ttaskdown.Dispose();
@@ -53,7 +40,7 @@ namespace LitEngine
             {
 
             }
-            public DownLoadTask(UpdateObjectVector _owner,string _key,string _sourceurl, string _destination, bool _IsClear, Action<string,string> _finished, Action<long, long, float> _progress)
+            public DownLoadTask(string _key,string _sourceurl, string _destination, bool _IsClear, Action<string,string> _finished, Action<long, long, float> _progress)
             {
                 try
                 {
@@ -63,9 +50,7 @@ namespace LitEngine
 
                     mFinished = _finished;
                     mProgress = _progress;
-
                     mUpdateObject = new UpdateNeedDisObject(AppName, Update, Dispose);
-                    mUpdateObject.Owner = _owner;
 
                     sDownLoadMap.Add(mURL, this);
                 }
@@ -101,7 +86,8 @@ namespace LitEngine
                 if (mIsStart) return true;
                 mIsStart = true;
                 mObject.StartDownLoadAsync();
-                mUpdateObject.RegToOwner();
+
+                PublicUpdateManager.AddUpdate(mUpdateObject);
                 return true;
             }
 

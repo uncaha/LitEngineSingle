@@ -16,7 +16,7 @@ namespace LitEngine
         public static System.Action<ILRuntime.Runtime.Enviorment.AppDomain> TypeBindingDelegate = null;
 
         protected ILRuntime.Runtime.Enviorment.AppDomain mApp;
-        public CodeTool_LS(string _appname , ILRuntime.Runtime.Enviorment.AppDomain _app):base(_appname)
+        public CodeTool_LS(ILRuntime.Runtime.Enviorment.AppDomain _app):base()
         {
             mApp = _app;
             RegDelegate();
@@ -349,7 +349,7 @@ namespace LitEngine
             IMethod tmethod = ttype.GetMethod(_Function);
 
             if (tmethod != null)
-                return new UpdateILObject(string.Format("{0}:{1}->{2}", AppName, _classname, _Function), mApp, tmethod, _target);
+                return new UpdateILObject(string.Format("{0}->{1}", _classname, _Function), mApp, tmethod, _target);
             return null;
 
         }

@@ -17,7 +17,6 @@ namespace LitEngine
 
         public class HttpData :System.IDisposable
         {
-            public string AppName { get; private set; }
             public string Error { get; private set; }
             public bool IsDone { get; private set; }
             public long ContentLength { get; private set; }
@@ -36,14 +35,13 @@ namespace LitEngine
             private Thread mSendThread = null;
 
             System.Action<string,string, byte[]> mDelgate;
-            public HttpData(string _appname,string _key, string _url, System.Action<string,string, byte[]> _delgate)
+            public HttpData(string _key, string _url, System.Action<string,string, byte[]> _delgate)
             {
-                AppName = _appname;
                 mKey = _key;
                 mUrl = _url;
                 mDelgate = _delgate;
 
-                UpdateObj = new UpdateNeedDisObject(_appname, Update, Dispose);
+                UpdateObj = new UpdateNeedDisObject("HttpNet", Update, Dispose);
 
                 Request = (HttpWebRequest)HttpWebRequest.Create(mUrl);
                 Request.Timeout = 10000;
@@ -94,7 +92,7 @@ namespace LitEngine
                 if (mSending) return;
                 mSending = true;
                 mThreadRuning = true;
-                UpdateObj.RegToOwner();
+                PublicUpdateManager.AddUpdate(UpdateObj);
 
                 mSendThread = new Thread(SendRequest);
                 mSendThread.IsBackground = true;
@@ -196,61 +194,30 @@ namespace LitEngine
                 
             }
 
-        }
-
-        public class HttpNet : MonoBehaviour
-        {
-            static private HttpNet sInstance = null;
-            private UpdateObjectVector UpdateList = new UpdateObjectVector(UpdateType.Update);
-            static private void CreatInstance()
+            #region 发送方法
+            static public void Send(string _url, string _key, System.Action<string, string, byte[]> _delegate)
             {
-                if (sInstance == null)
-                {
-                    UnityEngine.GameObject tobj = new UnityEngine.GameObject("HttpNet");
-                    UnityEngine.GameObject.DontDestroyOnLoad(tobj);
-                    sInstance = tobj.AddComponent<HttpNet>();
-                    tobj.SetActive(false);
-                }
-            }
-            static public void ClearByKey(string _appkey)
-            {
-                if (sInstance != null)
-                    sInstance.UpdateList.ClearByKey(_appkey);
-            }
-
-            static public void Send(string _appname, string _url, string _key, System.Action<string,string, byte[]> _delegate)
-            {
-                if (sInstance == null) CreatInstance();
-                SendData(new HttpData(_appname, _key, _url, _delegate));
+                SendData(new HttpData(_key, _url, _delegate));
             }
             static public void SendData(HttpData _data)
             {
-                if (sInstance == null) CreatInstance();
-                _data.UpdateObj.Owner = sInstance.UpdateList;
                 _data.SendAsync();
-                sInstance.SetActive(true);
             }
 
-            protected void OnDestroy()
+            static public void HttpSendHaveHeader(string _url, string _key, Dictionary<string, string> _headers, System.Action<string, string, byte[]> _delegate)
             {
-                sInstance = null;
-                UpdateList.Clear();
-            }
+                HttpData tdata = new HttpData(_key, _url, _delegate);
 
-            protected void SetActive(bool _active)
-            {
-                if (gameObject.activeSelf != _active)
-                    gameObject.SetActive(_active);
-            }
+                if (tdata.Request.Headers == null) tdata.Request.Headers = new System.Net.WebHeaderCollection();
+                foreach (KeyValuePair<string, string> tkey in _headers)
+                {
+                    tdata.Request.Headers.Add(tkey.Key, tkey.Value);
+                }
 
-           
-
-            void Update()
-            {
-                UpdateList.Update();
-                if (UpdateList.Count == 0)
-                    gameObject.SetActive(false);
+                SendData(tdata);
             }
+            #endregion
+
         }
     }
 }

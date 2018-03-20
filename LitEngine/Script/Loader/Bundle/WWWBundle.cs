@@ -15,13 +15,13 @@ namespace LitEngine
             {
             }
 
-            public override void Load(LoaderManager _loader)
+            public override void Load()
             {
                 mPathName = mAssetName;
                 if (!mPathName.Contains("file://"))
                     mPathName = "file://" + mPathName;
                 mCreat = new WWW(mPathName);
-                base.Load(_loader);
+                base.Load();
             }
             public override void LoadEnd()
             {

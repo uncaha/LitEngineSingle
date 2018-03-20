@@ -114,12 +114,12 @@ namespace LitEngine
                  
             }
 
-            public override void Load(LoaderManager _loader)
+            public override void Load()
             {
-                mPathName = _loader.GetFullPath(mAssetName);
+                mPathName = LoaderManager.GetFullPath(mAssetName);
                 mCreat = AssetBundle.LoadFromFileAsync(mPathName);
                 mStep = StepState.BundleLoad;
-                base.Load(_loader);
+                base.Load();
             }
 
             public override void Destory()

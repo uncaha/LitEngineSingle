@@ -12,11 +12,11 @@ namespace LitEngine
 
             }
 
-            public override void Load(LoaderManager _loader)
+            public override void Load()
             {
-                mPathName = _loader.GetResourcesDataPath(mAssetName);
+                mPathName = LoaderManager.GetResourcesDataPath(mAssetName);
                 mReq = Resources.LoadAsync(mPathName);
-                base.Load(_loader);
+                base.Load();
             }
             override public bool IsDone()
             {

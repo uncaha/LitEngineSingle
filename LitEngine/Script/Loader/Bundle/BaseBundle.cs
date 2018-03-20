@@ -101,7 +101,7 @@ namespace LitEngine
                 if (!mStartLoad) return false;
                 return true;
             }
-            public virtual void Load(LoaderManager _loader)
+            public virtual void Load()
             {
                 mStartLoad = true;
             }

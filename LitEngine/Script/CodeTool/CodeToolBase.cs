@@ -5,11 +5,8 @@ namespace LitEngine
     using UpdateSpace;
     public abstract class CodeToolBase :IDisposable
     {
-        public string AppName { get; private set; }
-
-        public CodeToolBase(string _appname)
+        public CodeToolBase()
         {
-            AppName = _appname;
         }
 
         bool mDisposed = false;

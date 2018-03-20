@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 namespace LitEngine
 {
     using UpdateSpace;
@@ -8,56 +9,28 @@ namespace LitEngine
     using Loader;
     public class PublicUpdateManager : MonoManagerBase
     {
+        private UpdateObjectVector mUpdateList = new UpdateObjectVector(UpdateType.Update);
         private static PublicUpdateManager sInstance = null;
-        private UpdateObjectVector UpdateList = new UpdateObjectVector(UpdateType.Update);
-        private List<BaseBundle> mWaitLoadBundle = new List<BaseBundle>();
-        static private void CreatInstance()
+        private static PublicUpdateManager Instance
         {
-            if (sInstance == null)
+            get
             {
-                UnityEngine.GameObject tobj = new UnityEngine.GameObject("PublicUpdateManager");
-                UnityEngine.GameObject.DontDestroyOnLoad(tobj);
-                sInstance = tobj.AddComponent<PublicUpdateManager>();
-                AppCore.AddPublicMono("PublicUpdateManager", sInstance);
-                tobj.SetActive(false);
+                if (sInstance == null)
+                {
+                    GameObject tobj = new GameObject("PublicUpdateManager");
+                    GameObject.DontDestroyOnLoad(tobj);
+                    sInstance = tobj.AddComponent<PublicUpdateManager>();
+                }
+                return sInstance;
             }
         }
 
-        static public void AddWaitLoadBundle(BaseBundle _bundle)
+        public static UpdateObjectVector UpdateList
         {
-            if (_bundle == null) return;
-            if (sInstance == null) CreatInstance();
-            if(sInstance.mWaitLoadBundle.Contains(_bundle))
+            get
             {
-                sInstance.mWaitLoadBundle.Add(_bundle);
-                sInstance.SetActive(true);
+                return Instance.mUpdateList;
             }
-        }
-
-        static public void ClearByKey(string _appkey)
-        {
-            if(sInstance != null)
-                sInstance.UpdateList.ClearByKey(_appkey);
-        }
-
-        static public void DownLoadFileAsync(string _AppName, string _sourceurl, string _destination, bool _IsClear, Action<string, string> _finished, Action<long, long, float> _progress)
-        {
-            if (sInstance == null) CreatInstance();
-            string tdeleappname = GameCore.GetDelegateAppName(_finished);
-            if (!string.IsNullOrEmpty(tdeleappname))
-                _AppName = tdeleappname;
-            if (DownLoadTask.DownLoadFileAsync(sInstance.UpdateList, _AppName, _sourceurl, _destination, _IsClear, _finished, _progress))
-                sInstance.SetActive(true);
-        }
-
-        static public void UnZipFileAsync(string _appname, string _source, string _destination, Action<string> _finished, Action<float> _progress)
-        {
-            if (sInstance == null) CreatInstance();
-            string tdeleappname = GameCore.GetDelegateAppName(_finished);
-            if (!string.IsNullOrEmpty(tdeleappname))
-                _appname = tdeleappname;
-            if (UnZipTask.UnZipFileAsync(sInstance.UpdateList, _appname, _source, _destination, _finished, _progress))
-                sInstance.SetActive(true);
         }
 
         override protected void OnDestroy()
@@ -72,31 +45,33 @@ namespace LitEngine
 
         }
 
-        protected void SetActive(bool _active)
+        static public void SetActive(bool _active)
         {
-            if (gameObject.activeSelf != _active)
-                gameObject.SetActive(_active);
+            if (Instance.gameObject.activeSelf != _active)
+                Instance.gameObject.SetActive(_active);
         }
 
-        void UpdateWaitLoad()
+        static public void AddUpdate(UpdateBase _updateobj)
         {
-            if (mWaitLoadBundle.Count == 0) return;
-            for(int i = mWaitLoadBundle.Count -1;i>=0;i--)
-            {
-                BaseBundle tbundle = mWaitLoadBundle[i];
-                if(tbundle.IsDone())
-                {
-                    mWaitLoadBundle.RemoveAt(i);
-                    tbundle.Destory();
-                }
-            }
+            UpdateList.Add(_updateobj);
+            SetActive(true);
         }
+
+        static public void RemoveUpdate(UpdateBase _updateobj)
+        {
+            UpdateList.Remove(_updateobj);
+        }
+
+        static public void ClearUpdate(UpdateBase _updateobj)
+        {
+            UpdateList.ClearObj(_updateobj);
+        }
+
 
         void Update()
         {
             UpdateList.Update();
-            UpdateWaitLoad();
-            if (UpdateList.Count == 0 && mWaitLoadBundle.Count == 0)
+            if (UpdateList.Count == 0)
                 gameObject.SetActive(false);
         }
     }

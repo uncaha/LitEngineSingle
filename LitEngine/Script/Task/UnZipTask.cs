@@ -9,33 +9,20 @@ namespace LitEngine
         using UpdateSpace;
         public class UnZipTask : TaskBase
         {
-            public static bool UnZipFileAsync(UpdateObjectVector _owner, string _source, string _destination, Action<string> _finished, Action<float> _progress)
+            public static bool UnZipFileAsync( string _source, string _destination, Action<string> _finished, Action<float> _progress)
             {
                 if (sUnZipMap.ContainsKey(_source))
                 {
                     DLog.LogError("有相同文件正在解压当中.source = " + _source);
                     return false;
                 }
-                UnZipTask ttaskunzip = new UnZipTask(_owner, _source, _source, _destination, _finished, _progress);
+                UnZipTask ttaskunzip = new UnZipTask(_source, _destination, _finished, _progress);
                 bool tstart = ttaskunzip.StartUnZipAsync();
                 if (!tstart)
                     ttaskunzip.Dispose();
                 return tstart;
             }
 
-            public static bool UnZipFileAsync(UpdateObjectVector _owner,string _appname, string _source, string _destination, Action<string> _finished, Action<float> _progress)
-            {
-                if (sUnZipMap.ContainsKey(_source))
-                {
-                    DLog.LogError("有相同文件正在解压当中.source = " + _source);
-                    return false;
-                }
-                UnZipTask ttaskunzip = new UnZipTask(_owner, _appname, _source, _destination, _finished, _progress);
-                bool tstart = ttaskunzip.StartUnZipAsync();
-                if (!tstart)
-                    ttaskunzip.Dispose();
-                return tstart;
-            }
             private static SafeMap<string, UnZipTask> sUnZipMap = new SafeMap<string, UnZipTask>();
             #region 属性
             private Action<float> mProgress;
@@ -46,23 +33,20 @@ namespace LitEngine
             private bool mIsDone = false;
             private bool mIsStart = false;
 
-            public string AppName { get; protected set; }
             #endregion
             #region 构造析构
             private UnZipTask()
             {
 
             }
-            public UnZipTask(UpdateObjectVector _owner,string _appname, string _source, string _destination, Action<string> _finished, Action<float> _progress)
+            public UnZipTask(string _source, string _destination, Action<string> _finished, Action<float> _progress)
             {
                 try {
-                    AppName = _appname;
                     mKey = _source;
                     mUnZipObject = new UnZipObject(_source, _destination);
                     mFinished = _finished;
                     mProgress = _progress;
-                    mUpdateObject = new UpdateNeedDisObject(AppName, Update, Dispose);
-                    mUpdateObject.Owner = _owner;
+                    mUpdateObject = new UpdateNeedDisObject(mKey, Update, Dispose);
                 }
                 catch (Exception _error)
                 {
@@ -98,7 +82,7 @@ namespace LitEngine
                 mIsStart = true;
                 sUnZipMap.Add(mKey, this);
                 mUnZipObject.StartUnZipAsync();
-                mUpdateObject.RegToOwner();
+                PublicUpdateManager.AddUpdate(mUpdateObject);
                 return true;
             }
 

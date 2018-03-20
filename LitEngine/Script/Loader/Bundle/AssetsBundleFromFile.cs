@@ -10,9 +10,9 @@ namespace LitEngine
             {
 
             }
-            public override void Load(LoaderManager _loader)
+            public override void Load()
             {
-                mPathName = _loader.GetFullPath(mAssetName);
+                mPathName = LoaderManager.GetFullPath(mAssetName);
 
                 mAssetsBundle = AssetBundle.LoadFromFile(mPathName);
                 if (mAssetsBundle != null)
