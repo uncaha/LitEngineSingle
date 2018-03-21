@@ -186,52 +186,7 @@ namespace LitEngine
             ResourcesScriptDataPath = CombinePath(ResourcesDataPath, ScriptDataPath);
         }
 
-        #region Scene
-        private static bool IsSceneLoading = false;
-        public void LoadScene(string _scenename)
-        {
-            if (IsSceneLoading)
-            {
-                DLog.LogError("The Scene is Loading.");
-                return;
-            }
-            LoaderManager.LoadAsset(_scenename);
-            _scenename = _scenename.Replace(".unity", "");
-            UnityEngine.SceneManagement.SceneManager.LoadScene(_scenename);
-        }
-        System.Action mLoadSceneCall = null;
-        public void LoadSceneAsync(string _scenename,System.Action _FinishdCall)
-        {
-            if (IsSceneLoading)
-            {
-                DLog.LogError("The Scene is Loading.");
-                return;
-            }
-            IsSceneLoading = true;
-            mLoadSceneCall = _FinishdCall;
-            LoaderManager.LoadAssetAsync(_scenename, _scenename, LoadedStartScene);
-        }
 
-        private string mNowLoadingScene = null;
-        private void LoadedStartScene(string _key, object _object)
-        {
-            mNowLoadingScene = _key.Replace(".unity", "");
-            SceneManager.sceneLoaded += LoadSceneCall;
-            AsyncOperation topert = SceneManager.LoadSceneAsync(mNowLoadingScene);
-
-        }
-        private void LoadSceneCall(Scene _scene, LoadSceneMode _mode)
-        {
-            if (!_scene.name.Equals(mNowLoadingScene)) return;
-            if (mLoadSceneCall == null)
-                mLoadSceneCall();
-            mLoadSceneCall = null;
-            SceneManager.sceneLoaded -= LoadSceneCall;
-            mNowLoadingScene = null;
-            IsSceneLoading = false;
-        }
-
-        #endregion
 
         #endregion
     }

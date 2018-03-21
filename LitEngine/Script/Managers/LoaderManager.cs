@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using UnityEngine.SceneManagement;
 namespace LitEngine
 {
     using UpdateSpace;
@@ -178,6 +179,57 @@ namespace LitEngine
 
         #region 资源载入
         #region static fun
+
+        #region Scene
+        private static bool IsSceneLoading = false;
+        static private System.Action mLoadSceneCall = null;
+        static private string mNowLoadingScene = null;
+
+        static public void LoadScene(string _scenename)
+        {
+            if (IsSceneLoading)
+            {
+                DLog.LogError("The Scene is Loading.");
+                return;
+            }
+            LoaderManager.LoadAsset(_scenename.EndsWith(".unity") ? _scenename : _scenename + ".unity");
+            SceneManager.LoadScene(_scenename.EndsWith(".unity") ? _scenename.Replace(".unity", "") : _scenename, LoadSceneMode.Single);
+        }
+        
+        static public void LoadSceneAsync(string _scenename, System.Action _FinishdCall)
+        {
+            if (IsSceneLoading)
+            {
+                DLog.LogError("The Scene is Loading.");
+                return;
+            }
+            IsSceneLoading = true;
+            mLoadSceneCall = _FinishdCall;
+            _scenename = _scenename.EndsWith(".unity") ? _scenename : _scenename + ".unity";
+            LoaderManager.LoadAssetAsync(_scenename, _scenename, LoadedStartScene);
+        }
+
+        
+        static private void LoadedStartScene(string _key, object _object)
+        {
+            mNowLoadingScene = _key.Replace(".unity", "");
+            SceneManager.sceneLoaded += LoadSceneCall;
+            AsyncOperation topert = SceneManager.LoadSceneAsync(mNowLoadingScene);
+
+        }
+        static private void LoadSceneCall(Scene _scene, LoadSceneMode _mode)
+        {
+            if (!_scene.name.Equals(mNowLoadingScene)) return;
+            if (mLoadSceneCall != null)
+                mLoadSceneCall();
+            mLoadSceneCall = null;
+            SceneManager.sceneLoaded -= LoadSceneCall;
+            mNowLoadingScene = null;
+            IsSceneLoading = false;
+        }
+
+        #endregion
+
         #region 同步
         static public Object sLoadResources(string _AssetsName)
         {
