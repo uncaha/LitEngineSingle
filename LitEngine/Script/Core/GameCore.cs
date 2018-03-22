@@ -138,6 +138,7 @@ namespace LitEngine
 
         private void InitScriptFile(string _filename)
         {
+            if (string.IsNullOrEmpty(_filename)) return;
             byte[] dllbytes = null;
             byte[] pdbbytes = null;
             string tdllPath = PersistentScriptDataPath + _filename;
@@ -185,9 +186,15 @@ namespace LitEngine
             StreamingAssetsScriptDataPath = CombinePath(StreamingAssetsDataPath, ScriptDataPath);
             ResourcesScriptDataPath = CombinePath(ResourcesDataPath, ScriptDataPath);
         }
+        static public object GetScriptObject(string _classname, params object[] _parmas)
+        {
+            return Core.SManager.CodeTool.GetCSLEObjectParmas(_classname);
+        }
 
-
-
+        static public object CallMethodByName(string _name, object _this, params object[] _params)
+        {
+            return Core.SManager.CodeTool.CallMethodByName(_name, _this, _params);
+        }
         #endregion
     }
 }

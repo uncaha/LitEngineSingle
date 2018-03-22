@@ -36,7 +36,7 @@ namespace LitEngine
         override protected void OnDestroy()
         {
             sInstance = null;
-            UpdateList.Clear();
+            mUpdateList.Clear();
             base.OnDestroy();
         }
 
@@ -70,8 +70,8 @@ namespace LitEngine
 
         void Update()
         {
-            UpdateList.Update();
-            if (UpdateList.Count == 0)
+            mUpdateList.Update();
+            if (mUpdateList.Count == 0)
                 gameObject.SetActive(false);
         }
     }
