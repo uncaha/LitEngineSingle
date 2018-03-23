@@ -47,21 +47,21 @@ namespace LitEngine
             }
         }
 
-        static public string PersistentDataPath { get; private set; }
-        static public string StreamingAssetsDataPath { get; private set; }
-        static public string ResourcesDataPath { get; private set; }
+        static public string PersistentDataPath { get { return Core.mPersistentDataPath; } }
+        static public string StreamingAssetsDataPath { get { return Core.mStreamingAssetsDataPath; } }
+        static public string ResourcesDataPath { get { return Core.mResourcesDataPath; } }
 
-        static public string PersistentResDataPath { get; private set; }
-        static public string StreamingAssetsResDataPath { get; private set; }
-        static public string ResourcesResDataPath { get; private set; }
+        static public string PersistentResDataPath { get { return Core.mPersistentResDataPath; } }
+        static public string StreamingAssetsResDataPath { get { return Core.mStreamingAssetsResDataPath; } }
+        static public string ResourcesResDataPath { get { return Core.mResourcesResDataPath; } }
 
-        static public string PersistentConfigDataPath { get; private set; }
-        static public string StreamingAssetsConfigDataPath { get; private set; }
-        static public string ResourcesConfigDataPath { get; private set; }
+        static public string PersistentConfigDataPath { get { return Core.mPersistentConfigDataPath; } }
+        static public string StreamingAssetsConfigDataPath { get { return Core.mStreamingAssetsConfigDataPath; } }
+        static public string ResourcesConfigDataPath { get { return Core.mResourcesConfigDataPath; } }
 
-        static public string PersistentScriptDataPath { get; private set; }
-        static public string StreamingAssetsScriptDataPath { get; private set; }
-        static public string ResourcesScriptDataPath { get; private set; }
+        static public string PersistentScriptDataPath { get { return Core.mPersistentScriptDataPath; } }
+        static public string StreamingAssetsScriptDataPath { get { return Core.mStreamingAssetsScriptDataPath; } }
+        static public string ResourcesScriptDataPath { get { return Core.mResourcesScriptDataPath; } }
 
         static public string CombinePath(params object[] _params)
         {
@@ -109,6 +109,22 @@ namespace LitEngine
         #endregion
         #region 类变量
         protected bool mIsInited = false;
+
+        public string mPersistentDataPath;
+        public string mStreamingAssetsDataPath;
+        public string mResourcesDataPath;
+
+        public string mPersistentResDataPath;
+        public string mStreamingAssetsResDataPath;
+        public string mResourcesResDataPath;
+
+        public string mPersistentConfigDataPath;
+        public string mStreamingAssetsConfigDataPath;
+        public string mResourcesConfigDataPath;
+
+        public string mPersistentScriptDataPath;
+        public string mStreamingAssetsScriptDataPath;
+        public string mResourcesScriptDataPath;
         public ScriptManager SManager
         {
             get;
@@ -170,21 +186,21 @@ namespace LitEngine
         #region 方法
         private void SetPath()
         {
-            ResourcesDataPath = DataPath;
-            PersistentDataPath = CombinePath(AppPersistentAssetsPath, DataPath);
-            StreamingAssetsDataPath = CombinePath(AppStreamingAssetsPath, DataPath);
+            mResourcesDataPath = DataPath;
+            mPersistentDataPath = CombinePath(AppPersistentAssetsPath, DataPath);
+            mStreamingAssetsDataPath = CombinePath(AppStreamingAssetsPath, DataPath);
 
-            PersistentResDataPath = CombinePath(PersistentDataPath, ResDataPath);
-            StreamingAssetsResDataPath = CombinePath(StreamingAssetsDataPath, ResDataPath);
-            ResourcesResDataPath = CombinePath(ResourcesDataPath, ResDataPath);
+            mPersistentResDataPath = CombinePath(mPersistentDataPath, ResDataPath);
+            mStreamingAssetsResDataPath = CombinePath(mStreamingAssetsDataPath, ResDataPath);
+            mResourcesResDataPath = CombinePath(mResourcesDataPath, ResDataPath);
 
-            PersistentConfigDataPath = CombinePath(PersistentDataPath, ConfigDataPath);
-            StreamingAssetsConfigDataPath = CombinePath(StreamingAssetsDataPath, ConfigDataPath);
-            ResourcesConfigDataPath = CombinePath(ResourcesDataPath, ConfigDataPath);
+            mPersistentConfigDataPath = CombinePath(mPersistentDataPath, ConfigDataPath);
+            mStreamingAssetsConfigDataPath = CombinePath(mStreamingAssetsDataPath, ConfigDataPath);
+            mResourcesConfigDataPath = CombinePath(mResourcesDataPath, ConfigDataPath);
 
-            PersistentScriptDataPath = CombinePath(PersistentDataPath, ScriptDataPath);
-            StreamingAssetsScriptDataPath = CombinePath(StreamingAssetsDataPath, ScriptDataPath);
-            ResourcesScriptDataPath = CombinePath(ResourcesDataPath, ScriptDataPath);
+            mPersistentScriptDataPath = CombinePath(mPersistentDataPath, ScriptDataPath);
+            mStreamingAssetsScriptDataPath = CombinePath(mStreamingAssetsDataPath, ScriptDataPath);
+            mResourcesScriptDataPath = CombinePath(mResourcesDataPath, ScriptDataPath);
         }
         static public object GetScriptObject(string _classname, params object[] _parmas)
         {

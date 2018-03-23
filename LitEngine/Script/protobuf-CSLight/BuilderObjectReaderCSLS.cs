@@ -100,6 +100,16 @@ namespace LitEngine
                             DLog.LogError("获取数组基础类型失败(" + _fieldtype + "|" + ttypestring + "|" + tatyp + ")");
                         return new BuilderObjectCELSArray(_codetool, _index, _fieldindex, _parent, _fieldtype, _parenttype, tatyp);
                     }
+                    else if (_fieldtype.TypeForCLR.IsArray)
+                    {
+                        if (ttypestring.Contains("Single[]"))
+                            return new BuilderObjectDefaultArray<float>(_codetool, _index, _fieldindex, _parent, _fieldtype, _parenttype);
+                        else if ((ttypestring.Contains("Int32[]")))
+                            return new BuilderObjectDefaultArray<int>(_codetool, _index, _fieldindex, _parent, _fieldtype, _parenttype);
+                        else
+                            throw new NullReferenceException("Array类型未能支持，请使用list<>(" + _fieldtype + "|" + ttypestring + ")");
+                           
+                    }
                     else
                     {
                         return new BuilderObjectDefault(_codetool, _index, _fieldindex, _parent, _fieldtype, _parenttype);
@@ -212,6 +222,47 @@ namespace LitEngine
 
                 object tmet = mCodeTool.GetLMethod(mFunType, "Add",1);
                 mCodeTool.CallMethod(tmet, mSelfObject, tchild.Value);
+                
+                mIndex++;
+            }
+        }
+
+        public class BuilderObjectDefaultArray<T> : BuilderObjectBase
+        {
+            private int mIndex = 0;
+            private IType mChildType;
+            private T[] mSelfArray;
+            public BuilderObjectDefaultArray(CodeToolBase _codetool, int _fieldnumber, int _fieldindex, object _parent, IType _type, IType _parenttype) : base(_codetool, _fieldnumber, _fieldindex, _parent, _type, _parenttype)
+            {
+                mChildType = new SystemType(typeof(T));
+                mSelfObject = mCodeTool.GetMemberByIndex(mParentType, mFieldIndex, _parent);
+               
+                if (mSelfObject == null)
+                {
+                    mSelfObject = Activator.CreateInstance(mFunType.TypeForCLR, true);
+                    mCodeTool.SetMember(mParentType, mFieldIndex, mSelfObject, mParentObject);
+                }
+                if (mSelfObject == null)
+                    throw new InvalidOperationException("数组类变量为空,初始化对象失败,可尝试在定义时直接初始化: " + mFieldIndex);
+                mSelfArray = (T[])mSelfObject;
+            }
+
+            override public void ReadMember(ProtobufferReaderCSLS _reader)
+            {
+                BuilderObjectBase tchild = null;
+
+                if (mCodeTool.IsLSType(mChildType.TypeForCLR))
+                {
+                    tchild = new BuilderObjectCELSClass(mCodeTool, mIndex, 0, null, mChildType, null);
+                }
+                else
+                {
+                    tchild = new BuilderObjectDefault(mCodeTool, mIndex, 0, null, mChildType, null);
+                }
+                AddMember(tchild);
+                tchild.ReadMember(_reader);
+
+                mSelfArray[mIndex] = (T)tchild.Value;
                 mIndex++;
             }
         }

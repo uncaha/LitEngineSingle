@@ -77,6 +77,13 @@ namespace LitEngine
                     Type ttype = _fieldobj.GetType();
                     if (ttype.ToString().Contains("List"))
                         tobj = new BuilderObjectWriterArrayCSLS(_codetool,_fieldobj);
+                    else if(ttype.IsArray)
+                    {
+                        if (ttype.ToString().Contains("Single[]") || ttype.ToString().Contains("Int32[]"))
+                            tobj = new BuilderObjectWriterArrayDefault(_codetool, _fieldobj);
+                        else
+                            throw new NullReferenceException("write Array类型未能支持，请使用list<>(" + _fieldobj + "|" + ttype + ")");
+                    }
                     else
                         tobj = new BuilderObjectWriterDefaultCSLS(_codetool,_fieldobj);
                 }
@@ -149,6 +156,32 @@ namespace LitEngine
                 foreach (object obj in mList)
                 {
                     BuildChild(mCodeTool,obj, _writer);
+                    _writer.FieldNumberBack();
+                }
+                _writer.FieldNumberForward();
+            }
+        }
+        #endregion
+
+        #region DefaultArray
+        public class BuilderObjectWriterArrayDefault : BuilderObjectWriterBaseCSLS
+        {
+            protected ArrayList mList;
+            public BuilderObjectWriterArrayDefault(CodeToolBase _codetool, object _object) : base(_codetool, _object)
+            {
+                if (mObject != null)
+                    mList = new ArrayList((ICollection)mObject);
+            }
+            override public void WriteMember(ProtoBufferWriterCSLS _writer)
+            {
+                if (mList == null || mList.Count == 0)
+                {
+                    _writer.FieldNumberForward();
+                    return;
+                }
+                foreach (object obj in mList)
+                {
+                    BuildChild(mCodeTool, obj, _writer);
                     _writer.FieldNumberBack();
                 }
                 _writer.FieldNumberForward();
