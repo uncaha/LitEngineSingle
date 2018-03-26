@@ -416,6 +416,26 @@ namespace LitEngine
         }
         #endregion
         #endregion
+
+        #region 文本读取
+        static public byte[] LoadTextAsset(string _filename)
+        {
+            string tfullname = GameCore.PersistentScriptDataPath + _filename;
+            byte[] ret = null;
+            if (System.IO.File.Exists(tfullname))
+            {
+                ret = System.IO.File.ReadAllBytes(tfullname);
+            }
+            else
+            {
+                tfullname = GameCore.ResourcesScriptDataPath + _filename;
+                TextAsset tassetdll = (TextAsset)Resources.Load(BaseBundle.DeleteSuffixName(tfullname));
+                ret = tassetdll.bytes;
+            }
+
+            return ret;
+        }
+        #endregion
     }
 }
 

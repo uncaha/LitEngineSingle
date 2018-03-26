@@ -214,29 +214,12 @@ namespace LitEngine
         }
         #endregion
         #region 方法
-        override public object GetLMethod(IType _type, string _funname, int _pamcount)
+        override public MethodBase GetLMethod(IType _type, string _funname, int _pamcount)
         {
-            object ret = null;
+
+            IMethod ret = null;
             ret = _type.GetMethod(_funname, _pamcount);
-            return ret;
-        }
-
-        override public object CallMethodNoTry(object method, object _this, params object[] _params)
-        {
-            return mApp.Invoke((IMethod)method, _this, _params);
-        }
-
-        override public object CallMethod(object method, object _this, params object[] _params)
-        {
-            try
-            {
-                return CallMethodNoTry(method, _this, _params);
-            }
-            catch (Exception _erro)
-            {
-                DLog.LogError(_erro);
-            }
-            return null;
+            return ret != null ? new Method_LS(mApp,ret):null;
         }
 
         override public object CallMethodByName(string _name, object _this, params object[] _params)
@@ -246,7 +229,7 @@ namespace LitEngine
             int tpramcount = _params != null ? _params.Length : 0;
             ILTypeInstance tilobj = _this as ILTypeInstance;
             IType ttype = tilobj.Type;
-            object tmethod = GetLMethod(ttype, _name, tpramcount);
+            MethodBase tmethod = GetLMethod(ttype, _name, tpramcount);
             return CallMethod(tmethod, _this, _params);
         }
         #endregion
@@ -357,15 +340,15 @@ namespace LitEngine
         {
             _isNeedReg = false;
             if (_classtype == null || _target == null) return null;
-            ILMethod methodctor = GetLMethod(_classtype, _Function, _pramcount) as ILMethod;
+            Method_LS methodctor = GetLMethod(_classtype, _Function, _pramcount) as Method_LS;
             if (methodctor == null) return null;
             if (!typeof(ILTypeInstance).IsInstanceOfType(_target)) return null;
             ILTypeInstance tclrobj = _target as ILTypeInstance;
-            _isNeedReg = !mApp.DelegateManager.IsRegToMethodDelegate(methodctor);
+            _isNeedReg = !mApp.DelegateManager.IsRegToMethodDelegate((ILMethod)methodctor.mMethod);
             if (_isNeedReg) return null;
-            IDelegateAdapter ret = tclrobj.GetDelegateAdapter(methodctor);
+            IDelegateAdapter ret = tclrobj.GetDelegateAdapter((ILMethod)methodctor.mMethod);
             if(ret == null)
-                ret = mApp.DelegateManager.FindDelegateAdapter(tclrobj, methodctor);
+                ret = mApp.DelegateManager.FindDelegateAdapter(tclrobj, (ILMethod)methodctor.mMethod);
             return ret;
         }
 
@@ -443,6 +426,21 @@ namespace LitEngine
             return (K)ret;
         }
         #endregion
+    }
+
+    public class Method_LS : MethodBase
+    {
+        private ILRuntime.Runtime.Enviorment.AppDomain mApp;
+        public IMethod mMethod;
+        public Method_LS(ILRuntime.Runtime.Enviorment.AppDomain _app,IMethod _method)
+        {
+            mApp = _app;
+            mMethod = _method;
+        }
+        override public object Invoke(object obj, object[] parameters)
+        {
+            return mApp.Invoke(mMethod, obj, parameters);
+        }
     }
 }
 

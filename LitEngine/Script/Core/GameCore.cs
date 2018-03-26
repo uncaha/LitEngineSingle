@@ -155,14 +155,10 @@ namespace LitEngine
         private void InitScriptFile(string _filename)
         {
             if (string.IsNullOrEmpty(_filename)) return;
-            byte[] dllbytes = null;
-            byte[] pdbbytes = null;
             string tdllPath = PersistentScriptDataPath + _filename;
-            if (System.IO.File.Exists(tdllPath + ".dll"))
-            {
-                dllbytes = System.IO.File.ReadAllBytes(tdllPath + ".dll");
-                pdbbytes = System.IO.File.ReadAllBytes(tdllPath + ".pdb");
-            }
+
+            byte[] dllbytes = LoaderManager.LoadTextAsset(_filename + ".dll");
+            byte[] pdbbytes = LoaderManager.LoadTextAsset(_filename + ".pdb");
 
             if (dllbytes == null || pdbbytes == null)
             {
@@ -186,7 +182,7 @@ namespace LitEngine
         #region 方法
         private void SetPath()
         {
-            mResourcesDataPath = DataPath;
+            mResourcesDataPath = DataPath.Replace("/","");
             mPersistentDataPath = CombinePath(AppPersistentAssetsPath, DataPath);
             mStreamingAssetsDataPath = CombinePath(AppStreamingAssetsPath, DataPath);
 

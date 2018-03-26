@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using ILRuntime.CLR.TypeSystem;
 using System;
+using System.Collections.Generic;
 namespace LitEngine
 {
     using UpdateSpace;
@@ -18,6 +19,7 @@ namespace LitEngine
             protected IType mScriptType;
             protected object mObject = null;
 
+            private Dictionary<string, MethodBase> mMethodCache = new Dictionary<string, MethodBase>();
 
             public object ScriptObject
             {
@@ -184,7 +186,16 @@ namespace LitEngine
                 try {
                     if (mObject == null || mScriptType == null || mCodeTool == null) return null;
                     int tpramcount = _prams != null ? _prams.Length : 0;
-                    object tmethod = mCodeTool.GetLMethod(mScriptType, _FunctionName, tpramcount);
+                    string tkey = _FunctionName + tpramcount;
+                    MethodBase tmethod = null;
+                    if (!mMethodCache.ContainsKey(tkey))
+                    {
+                        tmethod = mCodeTool.GetLMethod(mScriptType, _FunctionName, tpramcount);
+                        mMethodCache.Add(tkey, tmethod);
+                    }
+
+                    tmethod = mMethodCache[tkey];
+
                     if (tmethod == null) return null;
                     return mCodeTool.CallMethodNoTry(tmethod, mObject, _prams);
                 }

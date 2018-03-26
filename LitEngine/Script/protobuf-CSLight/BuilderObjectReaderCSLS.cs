@@ -220,7 +220,7 @@ namespace LitEngine
                 AddMember(tchild);
                 tchild.ReadMember(_reader);
 
-                object tmet = mCodeTool.GetLMethod(mFunType, "Add",1);
+                MethodBase tmet = mCodeTool.GetLMethod(mFunType, "Add",1);
                 mCodeTool.CallMethod(tmet, mSelfObject, tchild.Value);
                 
                 mIndex++;

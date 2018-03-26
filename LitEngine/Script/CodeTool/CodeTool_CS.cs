@@ -93,15 +93,10 @@ namespace LitEngine
         }
         #endregion
         #region 方法
-        override public object GetLMethod(IType _type, string _funname, int _pamcount)
+        override public MethodBase GetLMethod(IType _type, string _funname, int _pamcount)
         {
-            return _type.TypeForCLR.GetMethod(_funname, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
-        }
-
-        override public object CallMethod(object method, object _this, params object[] _params)
-        {
-            if (method == null) return null;
-            return ((MethodInfo)method).Invoke(_this, _params);
+            MethodInfo tmethod =  _type.TypeForCLR.GetMethod(_funname, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
+            return tmethod != null ? new Method_CS(tmethod) : null;
         }
 
         override public object CallMethodByName(string _name, object _this, params object[] _params)
@@ -111,7 +106,7 @@ namespace LitEngine
             int tpramcount = _params != null ? _params.Length : 0;
 
             IType ttype = GetICLRTypeAss(_this.GetType());
-            object tmethod = GetLMethod(ttype, _name, tpramcount);
+            MethodBase tmethod = GetLMethod(ttype, _name, tpramcount);
             return CallMethod(tmethod, _this, _params);
         }
         #endregion
@@ -189,7 +184,7 @@ namespace LitEngine
         {
             if (_classtype == null || _target == null) return default(K);
             object ret = null;
-            MethodInfo methodctor = (MethodInfo)GetLMethod(_classtype, _Function, 0);
+            MethodBase methodctor = GetLMethod(_classtype, _Function, 0);
             if (methodctor == null) return default(K);
             ret = Delegate.CreateDelegate(typeof(K), _target, _Function);
             return (K)ret;

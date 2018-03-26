@@ -72,17 +72,24 @@ namespace LitEngine
         }
         #endregion
         #region 方法
-        virtual public object GetLMethod(IType _type, string _funname, int _pamcount)
+        virtual public MethodBase GetLMethod(IType _type, string _funname, int _pamcount)
         {
             return null;
         }
-        virtual public object CallMethodNoTry(object method, object _this, params object[] _params)
+        virtual public object CallMethodNoTry(MethodBase method, object _this, params object[] _params)
         {
-            return null;
+            return method.Invoke(_this, _params);
         }
-        virtual public object CallMethod(object method, object _this, params object[] _params)
+        virtual public object CallMethod(MethodBase method, object _this, params object[] _params)
         {
-            if (method == null) throw new NullReferenceException("CallMethod method = null");
+            try
+            {
+                return CallMethodNoTry(method, _this, _params);
+            }
+            catch (Exception _erro)
+            {
+                DLog.LogError(_erro);
+            }
             return null;
         }
 
@@ -176,6 +183,17 @@ namespace LitEngine
             return default(K);
         }
         #endregion
+    }
+
+    public abstract class MethodBase
+    {
+        public MethodBase()
+        {
+            
+        }
+
+        public abstract object Invoke(object obj, object[] parameters);
+
     }
 }
 
