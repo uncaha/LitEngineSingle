@@ -132,7 +132,7 @@ namespace LitEngine
                 if (_class.Length == 0 || mInitScript) return;
                 try {
 
-                    mCodeTool = GameCore.Core.SManager.CodeTool;
+                    mCodeTool = GameCore.CodeTool;
                     mScriptClass = _class;
                     mScriptType = mCodeTool.GetLType(mScriptClass);
                     mObject = mCodeTool.GetCSLEObjectParmasByType(mScriptType, this);

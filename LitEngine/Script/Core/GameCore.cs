@@ -110,29 +110,25 @@ namespace LitEngine
         #region 类变量
         protected bool mIsInited = false;
 
-        public string mPersistentDataPath;
-        public string mStreamingAssetsDataPath;
-        public string mResourcesDataPath;
+        protected string mPersistentDataPath;
+        protected string mStreamingAssetsDataPath;
+        protected string mResourcesDataPath;
 
-        public string mPersistentResDataPath;
-        public string mStreamingAssetsResDataPath;
-        public string mResourcesResDataPath;
+        protected string mPersistentResDataPath;
+        protected string mStreamingAssetsResDataPath;
+        protected string mResourcesResDataPath;
 
-        public string mPersistentConfigDataPath;
-        public string mStreamingAssetsConfigDataPath;
-        public string mResourcesConfigDataPath;
+        protected string mPersistentConfigDataPath;
+        protected string mStreamingAssetsConfigDataPath;
+        protected string mResourcesConfigDataPath;
 
-        public string mPersistentScriptDataPath;
-        public string mStreamingAssetsScriptDataPath;
-        public string mResourcesScriptDataPath;
-        public ScriptManager SManager
-        {
-            get;
-            private set;
-        }
+        protected string mPersistentScriptDataPath;
+        protected string mStreamingAssetsScriptDataPath;
+        protected string mResourcesScriptDataPath;
+        protected ScriptManager mScriptManager;
         #endregion
 
-
+        static public CodeToolBase CodeTool { get { return Core.mScriptManager.CodeTool; } }
 
         #region 初始化
         protected GameCore()
@@ -147,7 +143,7 @@ namespace LitEngine
                 return;
             }
 
-            Core.SManager = new ScriptManager(_scripttype);
+            Core.mScriptManager = new ScriptManager(_scripttype);
             Core.InitScriptFile(_filename);
             Core.mIsInited = true;
         }
@@ -175,7 +171,7 @@ namespace LitEngine
             tdllreader.Dispose();
             tpdbreader.Dispose();
 
-            SManager.LoadProjectByBytes(dllbytes, pdbbytes);
+            mScriptManager.LoadProjectByBytes(dllbytes, pdbbytes);
         }
 
         #endregion
@@ -200,12 +196,17 @@ namespace LitEngine
         }
         static public object GetScriptObject(string _classname, params object[] _parmas)
         {
-            return Core.SManager.CodeTool.GetCSLEObjectParmas(_classname);
+            return GameCore.CodeTool.GetCSLEObjectParmas(_classname);
         }
 
         static public object CallMethodByName(string _name, object _this, params object[] _params)
         {
-            return Core.SManager.CodeTool.CallMethodByName(_name, _this, _params);
+            return GameCore.CodeTool.CallMethodByName(_name, _this, _params);
+        }
+
+        static public object GetCSLEObjectParmasByType(ILRuntime.CLR.TypeSystem.IType _type,object _object, params object[] _parmas)
+        {
+            return GameCore.CodeTool.GetCSLEObjectParmasByType(_type, _object);
         }
         #endregion
     }
