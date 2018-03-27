@@ -102,7 +102,7 @@ namespace LitEngine
                     return false;
                 }
                 if (!IsPlaying) return false;
-                mAnimator.Update(Time.deltaTime);
+                mAnimator.Update(Time.unscaledDeltaTime);
                 if (IsDone)
                     GoToEnd();
                 return true;
