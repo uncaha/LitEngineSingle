@@ -153,8 +153,8 @@ namespace LitEngine
             if (string.IsNullOrEmpty(_filename)) return;
             string tdllPath = PersistentScriptDataPath + _filename;
 
-            byte[] dllbytes = LoaderManager.LoadTextAsset(_filename + ".dll");
-            byte[] pdbbytes = LoaderManager.LoadTextAsset(_filename + ".pdb");
+            byte[] dllbytes = LoaderManager.LoadScriptFile(_filename + ".dll");
+            byte[] pdbbytes = LoaderManager.LoadScriptFile(_filename + ".pdb");
 
             if (dllbytes == null || pdbbytes == null)
             {

@@ -192,7 +192,7 @@ namespace LitEngine
                 DLog.LogError("The Scene is Loading.");
                 return;
             }
-            LoaderManager.LoadAsset(_scenename.EndsWith(".unity") ? _scenename : _scenename + ".unity");
+            LoaderManager.LoadAsset(_scenename);
             SceneManager.LoadScene(_scenename.EndsWith(".unity") ? _scenename.Replace(".unity", "") : _scenename, LoadSceneMode.Single);
         }
         
@@ -205,7 +205,6 @@ namespace LitEngine
             }
             IsSceneLoading = true;
             mLoadSceneCall = _FinishdCall;
-            _scenename = _scenename.EndsWith(".unity") ? _scenename : _scenename + ".unity";
             LoaderManager.LoadAssetAsync(_scenename, _scenename, LoadedStartScene);
         }
 
@@ -418,7 +417,7 @@ namespace LitEngine
         #endregion
 
         #region 文本读取
-        static public byte[] LoadTextAsset(string _filename)
+        static public byte[] LoadScriptFile(string _filename)
         {
             string tfullname = GameCore.PersistentScriptDataPath + _filename;
             byte[] ret = null;
@@ -429,8 +428,27 @@ namespace LitEngine
             else
             {
                 tfullname = GameCore.ResourcesScriptDataPath + _filename;
-                TextAsset tassetdll = (TextAsset)Resources.Load(BaseBundle.DeleteSuffixName(tfullname));
-                ret = tassetdll.bytes;
+                TextAsset tasset = (TextAsset)Resources.Load(BaseBundle.DeleteSuffixName(tfullname));
+                ret = tasset.bytes;
+            }
+
+            return ret;
+        }
+
+        static public byte[] LoadConfigFile(string _filename)
+        {
+            string tfullname = GameCore.PersistentConfigDataPath + _filename;
+            byte[] ret = null;
+            if (System.IO.File.Exists(tfullname))
+            {
+                ret = System.IO.File.ReadAllBytes(tfullname);
+            }
+            else
+            {
+                tfullname = GameCore.ResourcesConfigDataPath + _filename;
+                TextAsset tasset = (TextAsset)Resources.Load(BaseBundle.DeleteSuffixName(tfullname));
+                if(tasset != null)
+                    ret = tasset.bytes;
             }
 
             return ret;
