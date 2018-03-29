@@ -21,6 +21,22 @@ namespace LitEngine
                         mAsset = ((AssetBundle)mAssetsBundle).mainAsset;
                     else
                         mAsset = ((AssetBundle)mAssetsBundle).LoadAsset(DeleteSuffixName(mAssetName).ToLower());
+
+                    if(mAsset != null && mAsset.GetType() == typeof(UnityEngine.Material)
+                        &&(Application.platform == RuntimePlatform.WindowsEditor
+                           || Application.platform == RuntimePlatform.OSXEditor
+                           || Application.platform == RuntimePlatform.LinuxEditor)
+                        )
+                    {
+                        
+                        UnityEngine.Material tmat = (UnityEngine.Material)mAsset;
+                        Shader tshader = Shader.Find(tmat.shader.name);
+                        if (tshader != null)
+                            tmat.shader = tshader;
+                        else
+                            DLog.LogError("未能找到对应的shader.name = "+ tmat.shader.name);
+                        
+                    }
                 }
                 else
                     DLog.LogError("AssetsBundleFromFile打开文件失败,请检查资源是否存在-" + mPathName);

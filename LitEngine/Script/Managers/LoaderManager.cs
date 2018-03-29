@@ -193,6 +193,7 @@ namespace LitEngine
                 return;
             }
             LoaderManager.LoadAsset(_scenename);
+            _scenename = BaseBundle.DeleteSuffixName(_scenename);
             SceneManager.LoadScene(_scenename.EndsWith(".unity") ? _scenename.Replace(".unity", "") : _scenename, LoadSceneMode.Single);
         }
         
@@ -211,6 +212,7 @@ namespace LitEngine
         
         static private void LoadedStartScene(string _key, object _object)
         {
+            _key = BaseBundle.DeleteSuffixName(_key);
             mNowLoadingScene = _key.Replace(".unity", "");
             SceneManager.sceneLoaded += LoadSceneCall;
             AsyncOperation topert = SceneManager.LoadSceneAsync(mNowLoadingScene);
