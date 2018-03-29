@@ -144,34 +144,8 @@ namespace LitEngine
             }
 
             Core.mScriptManager = new ScriptManager(_scripttype);
-            Core.InitScriptFile(_filename);
+            Core.mScriptManager.LoadScriptFile(_filename);
             Core.mIsInited = true;
-        }
-
-        private void InitScriptFile(string _filename)
-        {
-            if (string.IsNullOrEmpty(_filename)) return;
-            string tdllPath = PersistentScriptDataPath + _filename;
-
-            byte[] dllbytes = LoaderManager.LoadScriptFile(_filename + ".dll");
-            byte[] pdbbytes = LoaderManager.LoadScriptFile(_filename + ".pdb");
-
-            if (dllbytes == null || pdbbytes == null)
-            {
-                DLog.LogErrorFormat("LoadScriptFormFile{dllbytes = {0},pdbbytes = {1}}", dllbytes, pdbbytes);
-                return;
-            }
-
-            AESReader tdllreader = new AESReader(dllbytes);
-            AESReader tpdbreader = new AESReader(pdbbytes);
-
-            dllbytes = tdllreader.ReadAllBytes();
-            pdbbytes = tpdbreader.ReadAllBytes();
-
-            tdllreader.Dispose();
-            tpdbreader.Dispose();
-
-            mScriptManager.LoadProjectByBytes(dllbytes, pdbbytes);
         }
 
         #endregion

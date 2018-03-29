@@ -12,6 +12,7 @@ namespace LitEngine
     {
         UseScriptType_System = 1,
         UseScriptType_LS = 2,
+        UseScriptType_Unity = 3,
     }
     public class ScriptManager: ManagerInterface
     {
@@ -40,6 +41,7 @@ namespace LitEngine
                     Env = new ILRuntime.Runtime.Enviorment.AppDomain();
                     mCodeTool = new CodeTool_LS(Env);
                     break;
+                case UseScriptType.UseScriptType_Unity:
                 case UseScriptType.UseScriptType_System:
                     mCodeTool = new CodeTool_SYS();
                     break;
@@ -82,68 +84,49 @@ namespace LitEngine
             private set;
         }
 
-        public void LoadProject(string _PathFile)
+
+
+        public void LoadScriptFile(string _filename)
         {
-            try
+            
+            if(UseScriptType.UseScriptType_Unity == mUseSystemAssm)
             {
-                var dll = System.IO.File.ReadAllBytes(_PathFile + ".dll");
-                var pdb = System.IO.File.ReadAllBytes(_PathFile + ".pdb");
-                LoadProjectByBytes(dll, pdb);
-            }
-            catch (Exception err)
-            {
-                DLog.LogError("LoadProject" + err);
-            }
+                Assembly[] tasss = System.AppDomain.CurrentDomain.GetAssemblies();
 
-
-        }
-
-        public void LoadProjectFromPacket(string _PathFile)
-        {
-            try
-            {
-                using (AESReader treader = new AESReader(_PathFile))
+                Assembly tunityscrp = null;
+                for(int i = 0;i<tasss.Length;i++)
                 {
-
-                    int len = treader.ReadInt32();
-                    byte[] tbuffer = treader.ReadBytes(len);
-                    byte[] tdllbyts = null;
-                    byte[] tpdbbyts = null;
-                    Stream tstream = new MemoryStream(tbuffer);
-                    #region build ProjectList
-
-                    using (ZipInputStream f = new ZipInputStream(tstream))
-                    {
-
-                        while (true)
-                        {
-                            ZipEntry zp = f.GetNextEntry();
-                            if (zp == null) break;
-                            if (!zp.IsDirectory && zp.Crc != 00000000L)
-                            {
-
-                                byte[] b = new byte[f.Length];
-                                int treadlen = f.Read(b, 0, b.Length);
-
-                                //取得文件所有数据
-                                if (zp.Name.Contains(".dll"))
-                                    tdllbyts = b;
-                                else if (zp.Name.Contains(".pdb"))
-                                    tpdbbyts = b;
-                            }
-                        }
-                        f.Close();
-                    }
-                    #endregion
-                    tstream.Close();
-                    LoadProjectByBytes(tdllbyts, tpdbbyts);
+                    if (!tasss[i].FullName.Contains("Assembly-CSharp")) continue;
+                    tunityscrp = tasss[i];
+                    break;
                 }
+                ((CodeTool_SYS)CodeTool).AddAssembly(tunityscrp);
             }
-            catch (Exception err)
+            else
             {
-                DLog.LogError("loadpacket" + err);
-            }
 
+                if (string.IsNullOrEmpty(_filename)) return;
+                byte[] dllbytes = LoaderManager.LoadScriptFile(_filename + ".dll");
+                byte[] pdbbytes = LoaderManager.LoadScriptFile(_filename + ".pdb");
+
+                if (dllbytes == null || pdbbytes == null)
+                {
+                    DLog.LogErrorFormat("LoadScriptFormFile{dllbytes = {0},pdbbytes = {1}}", dllbytes, pdbbytes);
+                    return;
+                }
+
+                AESReader tdllreader = new AESReader(dllbytes);
+                AESReader tpdbreader = new AESReader(pdbbytes);
+
+                dllbytes = tdllreader.ReadAllBytes();
+                pdbbytes = tpdbreader.ReadAllBytes();
+
+                tdllreader.Dispose();
+                tpdbreader.Dispose();
+
+                LoadProjectByBytes(dllbytes, pdbbytes);
+            }
+            ProjectLoaded = true;
         }
 
         public void LoadProjectByBytes(byte[] _dll, byte[] _pdb)
@@ -174,8 +157,71 @@ namespace LitEngine
 
 
         }
-
-       
     }
+    /*
+    public void LoadProject(string _PathFile)
+    {
+        try
+        {
+            var dll = System.IO.File.ReadAllBytes(_PathFile + ".dll");
+            var pdb = System.IO.File.ReadAllBytes(_PathFile + ".pdb");
+            LoadProjectByBytes(dll, pdb);
+        }
+        catch (Exception err)
+        {
+            DLog.LogError("LoadProject" + err);
+        }
+
+
+    }
+
+    public void LoadProjectFromPacket(string _PathFile)
+    {
+        try
+        {
+            using (AESReader treader = new AESReader(_PathFile))
+            {
+
+                int len = treader.ReadInt32();
+                byte[] tbuffer = treader.ReadBytes(len);
+                byte[] tdllbyts = null;
+                byte[] tpdbbyts = null;
+                Stream tstream = new MemoryStream(tbuffer);
+                #region build ProjectList
+
+                using (ZipInputStream f = new ZipInputStream(tstream))
+                {
+
+                    while (true)
+                    {
+                        ZipEntry zp = f.GetNextEntry();
+                        if (zp == null) break;
+                        if (!zp.IsDirectory && zp.Crc != 00000000L)
+                        {
+
+                            byte[] b = new byte[f.Length];
+                            int treadlen = f.Read(b, 0, b.Length);
+
+                            //取得文件所有数据
+                            if (zp.Name.Contains(".dll"))
+                                tdllbyts = b;
+                            else if (zp.Name.Contains(".pdb"))
+                                tpdbbyts = b;
+                        }
+                    }
+                    f.Close();
+                }
+                #endregion
+                tstream.Close();
+                LoadProjectByBytes(tdllbyts, tpdbbyts);
+            }
+        }
+        catch (Exception err)
+        {
+            DLog.LogError("loadpacket" + err);
+        }
+
+    }
+    */
 }
 

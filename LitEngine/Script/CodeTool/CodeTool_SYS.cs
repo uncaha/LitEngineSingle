@@ -30,6 +30,13 @@ namespace LitEngine
             if (_dll == null) throw new System.NullReferenceException("AddAssemblyType bytes 不可为null");
 
             mAssembly = System.AppDomain.CurrentDomain.Load(_dll, _pdb);
+            AddAssembly(mAssembly);
+        }
+
+        public void AddAssembly(Assembly _assembly)
+        {
+            if (_assembly == null) return;
+            mAssembly = _assembly;
             if (mAssembType == null)
                 mAssembType = new SafeMap<string, Type>();
             Type[] ttypes = mAssembly.GetTypes();
