@@ -96,7 +96,7 @@ namespace LitEngine
                 Assembly tunityscrp = null;
                 for(int i = 0;i<tasss.Length;i++)
                 {
-                    if (!tasss[i].FullName.Contains("Assembly-CSharp")) continue;
+                    if (!tasss[i].GetName().Name.Equals("Assembly-CSharp")) continue;
                     tunityscrp = tasss[i];
                     break;
                 }
