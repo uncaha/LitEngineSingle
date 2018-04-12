@@ -99,8 +99,6 @@ namespace LitEngine
                 _key = BaseBundle.DeleteSuffixName(_key).ToLower();
                 if (Contains(_key))
                     this[_key].Release();
-                else
-                    DLog.LogError( "BundleVector 尝试释放一个不存在的资源._key = " + _key);
             }
         }
     }

@@ -13,6 +13,7 @@ namespace LitEngine
                 Showing,
                 Hidden,
             }
+            public int Deep = 0;
             protected UISate mState = UISate.Normal;
             protected Dictionary<UIAniType, UIAnimator> mAniMap;
             protected UIAnimator mCurAni;
