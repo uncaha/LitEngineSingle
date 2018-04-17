@@ -7,47 +7,39 @@ namespace LitEngine
         public class AESWriter : AesStreamBase
         {
             protected BinaryWriter mWriterStream = null;
-
+            protected MemoryStream mMemorystream = null;
             public AESWriter(string _filename)
             {
-                mStream = File.Create(_filename);
+                mFileName = _filename;
                 Init();
             }
-
-            public AESWriter(Stream _stream)
-            {
-                mStream = _stream;
-                Init();
-            }
-
             protected void Init()
             {
-                mRijindael = GetRijndael();
-                ICryptoTransform cTransform = mRijindael.CreateEncryptor();
-                mCrypto = new CryptoStream(mStream, cTransform, CryptoStreamMode.Write);
-                mWriterStream = new BinaryWriter(mCrypto);
-                WriteBytes(System.Text.Encoding.UTF8.GetBytes(AesTag));
+                mMemorystream = new MemoryStream();
+                mWriterStream = new BinaryWriter(mMemorystream);
             }
 
             override public void Close()
             {
                 if (mClosed) return;
                 mClosed = true;
-
-                //加密字串尾端偶尔会解析错误.尾端填入100 btys 可防止
-                if(SafeByteLen > 0)
-                    WriteBytes(new byte[SafeByteLen]);
-
                 Flush();
                 if (mWriterStream != null)
                     mWriterStream.Close();
+
+                BinaryWriter twriter = new BinaryWriter(File.OpenWrite(mFileName));
+                twriter.Write(System.Text.Encoding.UTF8.GetBytes(AesTag));
+                twriter.Write(mBuffer);
+                twriter.Flush();
+                twriter.Close();
                 base.Close();
             }
             override public void Flush()
             {
-                if (mWriterStream != null)
-                    mWriterStream.Flush();
-                base.Flush();
+                long tlen = mMemorystream.Length;
+                mBuffer = new byte[tlen + SafeByteLen];
+                System.Array.Copy(mMemorystream.GetBuffer(), 0, mBuffer,0, tlen);
+                EncryptAndUncrypt(mBuffer, 0, mBuffer.Length);
             }
 
             #region Write

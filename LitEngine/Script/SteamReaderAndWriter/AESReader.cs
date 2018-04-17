@@ -9,13 +9,12 @@ namespace LitEngine
             public bool IsEncrypt { get; private set; }
             public long Length { get; private set; }
             private BinaryReader mReaderStream = null;
-            private string mFileName = null;
-            private byte[] mBuffer = null;
+            
             public AESReader(string _filename)
             {
                 if (!File.Exists(_filename)) throw new System.NullReferenceException(_filename + "Can not found.");
                 mFileName = _filename;
-                mStream = File.OpenRead(mFileName);
+                mBuffer = File.ReadAllBytes(mFileName);
                 Init();
             }
 
@@ -23,57 +22,40 @@ namespace LitEngine
             {
                 if (_bytes.Length >= int.MaxValue) throw new System.IndexOutOfRangeException("_bytes长度大于 2147483647.");
                 mBuffer = _bytes;
-                mStream = new MemoryStream(mBuffer);
                 Init();
             }
 
             protected void Init()
             {
-                mRijindael = GetRijndael();
-                ICryptoTransform cTransform = mRijindael.CreateDecryptor();
-                mCrypto = new CryptoStream(mStream, cTransform, CryptoStreamMode.Read);
-                mReaderStream = new BinaryReader(mCrypto);
+                if (mBuffer.Length >= AesTag.Length)
+                {
+                    byte[] tbytes = System.Text.Encoding.UTF8.GetBytes(AesTag);
 
-                byte[] tbytes = null;
-                try
-                {
-                    tbytes = ReadBytes(AesTag.Length);
+                    IsEncrypt = true;
+                    int tcount = tbytes.Length;
+                    for (int i = 0;i< tcount;i++)
+                    {
+                        if(tbytes[i] != mBuffer[i])
+                        {
+                            IsEncrypt = false;
+                            break;
+                        }
+                    }
                 }
-                catch (System.Exception _error)
-                {
-                    IsEncrypt = false;
-                }
-                if (tbytes != null)
-                {
-                    string ttag = System.Text.Encoding.UTF8.GetString(tbytes);
-                    IsEncrypt = AesTag.Equals(ttag);
-                }
+                
                 if (!IsEncrypt)
                 {
-                    #region rest stream
-                    mReaderStream.Close();
-                    mCrypto.Close();
-                    mStream.Close();
-
-                    mCrypto.Dispose();
-                    mStream.Dispose();
-                    mRijindael.Clear();
-                    mReaderStream = null;
-                    mRijindael = null;
-                    mCrypto = null;
-                    mStream = null;
-
-                    if (!string.IsNullOrEmpty(mFileName))
-                        mStream = File.OpenRead(mFileName);
-                    else
-                        mStream = new MemoryStream(mBuffer);
-                    mReaderStream = new BinaryReader(mStream);
-                    #endregion
-
-                    Length = mStream.Length;
+                    mReaderStream = new BinaryReader(new MemoryStream(mBuffer));
+                    Length = mBuffer.Length;
                 }
                 else
-                    Length = mStream.Length - AesTag.Length;
+                {
+                    Length = mBuffer.Length - AesTag.Length - SafeByteLen;
+                    EncryptAndUncrypt(mBuffer, AesTag.Length, Length + SafeByteLen);
+                    mReaderStream = new BinaryReader(new MemoryStream(mBuffer));
+                    mReaderStream.BaseStream.Seek(AesTag.Length, SeekOrigin.Current);
+                }
+                   
             }
 
             public override void Close()
@@ -90,27 +72,12 @@ namespace LitEngine
             {
                 if (IsEncrypt)
                 {
-                    long pos = mStream.Position;
-                    byte[] tbytes = ReadBytes((int)Length);
-                    mStream.Seek(pos, SeekOrigin.Current);
-
-                    byte[] ret = new byte[tbytes.Length - SafeByteLen];
-                    System.Array.Copy(tbytes, 0, ret, 0, tbytes.Length - SafeByteLen);
+                    byte[] ret = new byte[Length];
+                    System.Array.Copy(mBuffer, AesTag.Length, ret, 0, Length);
                     return ret;
                 }
                 else
-                {
-                    if (mBuffer != null) return mBuffer;
-                    byte[] ret = new byte[mStream.Length];
-
-                    DLog.Log(mStream.Length);
-                    long pos = mStream.Position;
-                    mStream.Seek(0, SeekOrigin.Begin);
-                    mStream.Read(ret, 0, (int)mStream.Length);
-                    mStream.Seek(pos, SeekOrigin.Current);
-                    return ret;
-                }
-                
+                    return mBuffer;
             }
 
             public virtual bool ReadBoolean()
