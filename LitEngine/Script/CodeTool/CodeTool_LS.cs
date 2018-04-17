@@ -75,8 +75,6 @@ namespace LitEngine
             mApp.DelegateManager.RegisterMethodDelegate<int, string, string>();
             mApp.DelegateManager.RegisterMethodDelegate<string, object, object>();
             mApp.DelegateManager.RegisterMethodDelegate<object, object, object>();
-
-            
         }
         protected void RegFunctionDelegate()
         {
@@ -96,9 +94,23 @@ namespace LitEngine
             mApp.DelegateManager.RegisterFunctionDelegate<short, short>();
             mApp.DelegateManager.RegisterFunctionDelegate<string, string>();
             mApp.DelegateManager.RegisterFunctionDelegate<object, object>();
+
+            mApp.DelegateManager.RegisterFunctionDelegate<float, float, int>();
+            mApp.DelegateManager.RegisterFunctionDelegate<string, string, int>();
+            mApp.DelegateManager.RegisterFunctionDelegate<int, int, int>();
+            mApp.DelegateManager.RegisterFunctionDelegate<object, object,object>();
+            mApp.DelegateManager.RegisterFunctionDelegate<ILRuntime.Runtime.Intepreter.ILTypeInstance, ILRuntime.Runtime.Intepreter.ILTypeInstance, int>();
         }
         protected void RegDelegateConvertor()
         {
+            mApp.DelegateManager.RegisterDelegateConvertor<System.Comparison<ILRuntime.Runtime.Intepreter.ILTypeInstance>>((act) =>
+            {
+                return new System.Comparison<ILRuntime.Runtime.Intepreter.ILTypeInstance>((x, y) =>
+                {
+                    return ((Func<ILRuntime.Runtime.Intepreter.ILTypeInstance, ILRuntime.Runtime.Intepreter.ILTypeInstance, int>)act)(x, y);
+                });
+            });
+
             mApp.DelegateManager.RegisterDelegateConvertor<UnityEngine.Events.UnityAction>((act) =>
             {
                 return new UnityEngine.Events.UnityAction(() =>

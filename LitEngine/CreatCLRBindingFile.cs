@@ -1,5 +1,6 @@
 ﻿/*
 
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -75,7 +76,6 @@ public class CreatCLRBindingFile
         _types.Add(typeof(LitEngine.ScriptInterface.ScriptInterfaceTrigger));
         _types.Add(typeof(LitEngine.ScriptInterface.ScriptInterfaceCollision));
 
-        _types.Add(typeof(AppCore));
         _types.Add(typeof(GameCore));
 
         _types.Add(typeof(LitEngine.PublicUpdateManager));
@@ -84,7 +84,7 @@ public class CreatCLRBindingFile
         _types.Add(typeof(LitEngine.ScriptTool));
         _types.Add(typeof(LitEngine.CodeTool_LS));
         _types.Add(typeof(LitEngine.DownLoad.DownLoadTask));
-        _types.Add(typeof(LitEngine.Loader.LoaderManager));
+        _types.Add(typeof(LitEngine.LoaderManager));
 
         _types.Add(typeof(LitEngine.IO.AesStreamBase));
         _types.Add(typeof(LitEngine.IO.AESReader));
@@ -95,7 +95,6 @@ public class CreatCLRBindingFile
         _types.Add(typeof(LitEngine.NetTool.ReceiveData));
         _types.Add(typeof(LitEngine.NetTool.MSG_RECALL_DATA));
         _types.Add(typeof(LitEngine.NetTool.BufferBase));
-        _types.Add(typeof(LitEngine.NetTool.HttpNet));
         _types.Add(typeof(LitEngine.NetTool.HttpData));
 
         _types.Add(typeof(LitEngine.SafeList<ILRuntime.Runtime.Intepreter.ILTypeInstance>));
@@ -119,6 +118,8 @@ public class CreatCLRBindingFile
         _types.Add(typeof(Google.Protobuf.CodedOutputStream));
         _types.Add(typeof(Google.Protobuf.WireFormat));
 
+
+
         ILRuntime.Runtime.CLRBinding.BindingCodeGenerator.GenerateBindingCode(_types, _output);
 
         DLog.Log("导出完成.");
@@ -127,6 +128,8 @@ public class CreatCLRBindingFile
     }
 
 }
+
+
 
 
 */

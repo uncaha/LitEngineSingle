@@ -51,6 +51,12 @@ namespace LitEngine
                 LoadEnd();
                 return true;
             }
+
+            public override void LoadEnd()
+            {
+                base.LoadEnd();
+                ChoseRelease();
+            }
         }
     } 
 }

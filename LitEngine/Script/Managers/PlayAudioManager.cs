@@ -18,25 +18,41 @@ namespace LitEngine
             }
         }
 
-        static private float mMusicValue = 1;
-        static public float MusicValue {
-            get { return mMusicValue; }
-            set
-            {
-                mMusicValue = Mathf.Clamp01(value);
-                Instance.mBackMusic.volume = mMusicValue;
+        static private float mVolume = 1;
+        static public float Volume
+        {
+            get { return mVolume; }
+            set {
+                mVolume = value;
+                MusicVolume = mMusicVolume;
+                SoundVolume = mSoundVolume;
             }
         }
-        static private float mSoundValue = 1;
-        static public float SoundValue
+
+        static private float mMusicRealVolume = 1;
+        static private float mMusicVolume = 1;
+        static public float MusicVolume
         {
-            get { return mSoundValue; }
+            get { return mMusicVolume; }
             set
             {
-                mSoundValue = Mathf.Clamp01(value);
+                mMusicVolume = Mathf.Clamp01(value);
+                mMusicRealVolume = mMusicVolume * Volume;
+                Instance.mBackMusic.volume = mMusicRealVolume;
+            }
+        }
+        static private float mSoundRealVolume = 1;
+        static private float mSoundVolume = 1;
+        static public float SoundVolume
+        {
+            get { return mSoundVolume; }
+            set
+            {
+                mSoundVolume = Mathf.Clamp01(value);
+                mSoundRealVolume = Volume * mSoundVolume;
                 for (int i = 0; i < Instance.mMaxSoundCount; i++)
                 {
-                    Instance.mAudioSounds[i].volume = mSoundValue;
+                    Instance.mAudioSounds[i].volume = mSoundRealVolume;
                 }
             }
         }

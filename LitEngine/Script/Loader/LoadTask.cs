@@ -17,6 +17,8 @@
                 mBundle = _bundle;
                 mCallBack = _callThreeParmater;
                 mRetain = _retain;
+                if (mRetain)
+                    mBundle.Retain();
             }
 
             public LoadTaskVector Parent
@@ -42,11 +44,13 @@
                 }
                 if (mCallBack != null)
                 {
-                    if(mRetain)
-                        mBundle.Retain();
-                    try {
-                        mCallBack(TaskKey, mBundle.Asset);
-                    } catch (System.Exception _error) {
+                    try
+                    {
+                        if (!mBundle.WillBeReleased)
+                            mCallBack(TaskKey, mBundle.Asset);
+                    }
+                    catch (System.Exception _error)
+                    {
                         DLog.LogError(_error);
                     }
                 }
