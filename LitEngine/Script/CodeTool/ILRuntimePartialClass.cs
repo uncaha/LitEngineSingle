@@ -101,10 +101,7 @@ namespace ILRuntime.Runtime.Intepreter
             }
             try
             {
-                if (method.HasThis)
-                    return appdomain.Invoke(method, instance, mParams);
-                else
-                    return appdomain.Invoke(method, null, mParams);
+                return appdomain.Invoke(method, method.HasThis ? instance : null, mParams == null ? null : mParams);
             }
             catch(System.Exception _error)
             {

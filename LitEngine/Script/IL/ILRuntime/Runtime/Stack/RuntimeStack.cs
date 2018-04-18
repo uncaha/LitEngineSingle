@@ -91,7 +91,7 @@ namespace ILRuntime.Runtime.Stack
                 p->ObjectType = ObjectTypes.Null;
             }
 #endif
-            res.BasePointer = method.LocalVariableCount > 0 ? Add(esp, method.LocalVariableCount + 1) : esp;
+            res.BasePointer = method.LocalVariableCount > 0 ? Add(esp, method.LocalVariableCount) : esp;
             res.ManagedStackBase = managedStack.Count;
             res.ValueTypeBasePointer = valueTypePtr;
             //frames.Push(res);
@@ -218,7 +218,14 @@ namespace ILRuntime.Runtime.Stack
                     {
                         if (ft.IsValueType)
                         {
-                            AllocValueType(val, ft);
+                            if (ft is ILType || ((CLRType)ft).ValueTypeBinder != null)
+                                AllocValueType(val, ft);
+                            else
+                            {
+                                val->ObjectType = ObjectTypes.Object;
+                                val->Value = managedStack.Count;
+                                managedStack.Add(((CLRType)ft).CreateDefaultInstance());
+                            }
                         }
                         else
                         {

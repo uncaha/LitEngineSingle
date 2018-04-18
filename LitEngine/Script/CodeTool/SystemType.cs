@@ -63,6 +63,14 @@ namespace ILRuntime.CLR.TypeSystem
 
         public bool HasGenericParameter { get; set; }
 
+        public bool IsByRef { get; set; }
+
+        public bool IsInterface { get; set; }
+
+        public IType ElementType { get; set; }
+
+        public bool IsGenericParameter { get; set; }
+
         public ILRuntime.Runtime.Enviorment.AppDomain AppDomain { get; set; }
 
         /// <summary>

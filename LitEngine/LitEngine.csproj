@@ -75,6 +75,7 @@
     <Compile Include="Script\IL\ILRuntime\Runtime\Debugger\Protocol\CSEnumChildren.cs" />
     <Compile Include="Script\IL\ILRuntime\Runtime\Debugger\Protocol\CSResolveIndexer.cs" />
     <Compile Include="Script\IL\ILRuntime\Runtime\Debugger\Protocol\SCEnumChildrenResult.cs" />
+    <Compile Include="Script\IL\ILRuntime\Runtime\Enviorment\InvocationContext.cs" />
     <Compile Include="Script\Managers\CorotineManager.cs" />
     <Compile Include="Script\Managers\PlayAudioManager.cs" />
     <Compile Include="Script\Managers\PublicUpdateManager.cs" />
