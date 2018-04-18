@@ -6,6 +6,7 @@ namespace LitEngine
     using UpdateSpace;
     public class CodeTool_SYS : CodeToolBase
     {
+
         private SafeMap<string, Type> mAssembType = new SafeMap<string, Type>();
         private SafeMap<string, IType> mMapType = new SafeMap<string, IType>();
         private System.Reflection.Assembly mAssembly;
@@ -28,8 +29,9 @@ namespace LitEngine
         public void AddAssemblyType(byte[] _dll,byte[] _pdb)
         {
             if (_dll == null) throw new System.NullReferenceException("AddAssemblyType bytes 不可为null");
-
+#if !L2CPP
             mAssembly = System.AppDomain.CurrentDomain.Load(_dll, _pdb);
+#endif
             AddAssembly(mAssembly);
         }
 
@@ -58,8 +60,8 @@ namespace LitEngine
             mMapType.Add(_type.FullName, new SystemType(_type));
             return mMapType[_type.FullName];
         }
-        #endregion
-        #region 类型判断
+#endregion
+            #region 类型判断
         override public IType GetLType(string _name)
         {
             Type ttype = GetAssType(_name);
@@ -102,8 +104,8 @@ namespace LitEngine
             }
             return ret;
         }
-        #endregion
-        #region 方法
+            #endregion
+            #region 方法
         override public MethodBase GetLMethod(IType _type, string _funname, int _pamcount)
         {
             MethodInfo tmethod = _type.TypeForCLR.GetMethod(_funname, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
@@ -120,9 +122,9 @@ namespace LitEngine
             MethodBase tmethod = GetLMethod(ttype, _name, tpramcount);
             return CallMethod(tmethod, _this, _params);
         }
-        #endregion
-        #region 属性
-        #region 获取
+            #endregion
+            #region 属性
+            #region 获取
         override public object GetTargetMemberByKey(string _key, object _target)
         {
             if (_target == null) return null;
@@ -159,8 +161,8 @@ namespace LitEngine
                 throw new NullReferenceException("Base GetMember FieldInfo pi = null");
             return pi.GetValue(_object);
         }
-        #endregion
-        #region 设置
+            #endregion
+            #region 设置
         override public void SetMember(IType _type, int _index, object _object, object _target)
         {
             if (_type == null) return;
@@ -180,17 +182,17 @@ namespace LitEngine
                 throw new NullReferenceException("SYS SetMember pi = null ,_key = " + _key);
             pi.SetValue(_target, _object);
         }
-        #endregion
-        #endregion
-        #region 对象获取
+            #endregion
+            #endregion
+            #region 对象获取
         override public object GetCSLEObjectParmasByType(IType _type, params object[] _parmas)
         {
             if (_type == null) throw new NullReferenceException("SYS GetCSLEObjectParmasByType _type = null");
             return Activator.CreateInstance(_type.TypeForCLR, _parmas); 
         }
 
-        #endregion
-        #region 委托
+            #endregion
+            #region 委托
         override public UpdateBase GetUpdateObjectAction(string _Function, string _classname, object _target)
         {
             IType ttype = GetLType(_classname);
@@ -238,7 +240,7 @@ namespace LitEngine
         {
             return GetCSLEDelegate<K>(_Function, _classtype, _target);
         }
-        #endregion
+            #endregion
     }
     public class Method_CS : MethodBase
     {
@@ -251,8 +253,9 @@ namespace LitEngine
         {
             return SMethod.Invoke(obj, parameters);
         }
+        }
+
     }
-}
 
 
 

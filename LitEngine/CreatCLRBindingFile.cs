@@ -1,6 +1,5 @@
 ﻿/*
 
-
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -37,9 +36,13 @@ public class CreatCLRBindingFile
         _types.Add(typeof(List<int>));
         _types.Add(typeof(List<float>));
         _types.Add(typeof(List<string>));
-        _types.Add(typeof(List<UnityEngine.Object>));
+        
         _types.Add(typeof(List<UnityEngine.GameObject>));
         _types.Add(typeof(List<UnityEngine.Transform>));
+        _types.Add(typeof(List<UnityEngine.AudioClip>));
+        _types.Add(typeof(List<UnityEngine.Texture>));
+        _types.Add(typeof(List<UnityEngine.Material>));
+        _types.Add(typeof(List<UnityEngine.Object>));
         _types.Add(typeof(List<ILRuntime.Runtime.Intepreter.ILTypeInstance>));
 
         _types.Add(typeof(LinkedList<int>));
@@ -48,6 +51,9 @@ public class CreatCLRBindingFile
         _types.Add(typeof(LinkedList<System.Object>));
         _types.Add(typeof(LinkedList<ILRuntime.Runtime.Intepreter.ILTypeInstance>));
 
+        _types.Add(typeof(Dictionary<string, UnityEngine.AudioClip>));
+        _types.Add(typeof(Dictionary<string, UnityEngine.Transform>));
+        _types.Add(typeof(Dictionary<string, UnityEngine.Object>));
         _types.Add(typeof(Dictionary<string, ILRuntime.Runtime.Intepreter.ILTypeInstance>));
         _types.Add(typeof(Dictionary<int, ILRuntime.Runtime.Intepreter.ILTypeInstance>));
         _types.Add(typeof(Dictionary<ILRuntime.Runtime.Intepreter.ILTypeInstance, ILRuntime.Runtime.Intepreter.ILTypeInstance>));
@@ -56,7 +62,7 @@ public class CreatCLRBindingFile
         _types.Add(typeof(Transform));
         _types.Add(typeof(UnityEngine.Debug));
         _types.Add(typeof(UnityEngine.Component));
-        _types.Add(typeof(UnityEngine.Object));
+        _types.Add(typeof(UnityEngine.AnimationClip));
         _types.Add(typeof(UnityEngine.Animation));
         _types.Add(typeof(UnityEngine.Animator));
         _types.Add(typeof(UnityEngine.AudioClip));
@@ -68,6 +74,7 @@ public class CreatCLRBindingFile
         _types.Add(typeof(UnityEngine.Quaternion));
         _types.Add(typeof(UnityEngine.SceneManagement.Scene));
         _types.Add(typeof(UnityEngine.SceneManagement.SceneManager));
+        _types.Add(typeof(UnityEngine.Object));
 
         _types.Add(typeof(LitEngine.ScriptInterface.UIInterface));
         _types.Add(typeof(LitEngine.ScriptInterface.BehaviourInterfaceBase));
@@ -77,10 +84,6 @@ public class CreatCLRBindingFile
         _types.Add(typeof(LitEngine.ScriptInterface.ScriptInterfaceCollision));
 
         _types.Add(typeof(GameCore));
-
-        _types.Add(typeof(LitEngine.PublicUpdateManager));
-        _types.Add(typeof(GameUpdateManager));
-        _types.Add(typeof(LitEngine.ScriptManager));
         _types.Add(typeof(LitEngine.ScriptTool));
         _types.Add(typeof(LitEngine.CodeTool_LS));
         _types.Add(typeof(LitEngine.DownLoad.DownLoadTask));
@@ -117,8 +120,6 @@ public class CreatCLRBindingFile
         _types.Add(typeof(Google.Protobuf.CodedInputStream));
         _types.Add(typeof(Google.Protobuf.CodedOutputStream));
         _types.Add(typeof(Google.Protobuf.WireFormat));
-
-
 
         ILRuntime.Runtime.CLRBinding.BindingCodeGenerator.GenerateBindingCode(_types, _output);
 

@@ -34,7 +34,11 @@ namespace LitEngine
         }
         public ScriptManager(UseScriptType _stype)
         {
+#if !L2CPP
             mUseSystemAssm = _stype;
+#else
+            mUseSystemAssm = UseScriptType.UseScriptType_LS;
+#endif
             switch (mUseSystemAssm)
             {
                 case UseScriptType.UseScriptType_LS:
@@ -47,7 +51,7 @@ namespace LitEngine
                     break;
             }
         }
-        #region 释放
+#region 释放
         bool mDisposed = false;
         public void Dispose()
         {
@@ -75,7 +79,7 @@ namespace LitEngine
         {
             Dispose(false);
         }
-        #endregion
+#endregion
 
 
         public bool ProjectLoaded
@@ -187,7 +191,7 @@ namespace LitEngine
                 byte[] tdllbyts = null;
                 byte[] tpdbbyts = null;
                 Stream tstream = new MemoryStream(tbuffer);
-                #region build ProjectList
+#region build ProjectList
 
                 using (ZipInputStream f = new ZipInputStream(tstream))
                 {
@@ -211,7 +215,7 @@ namespace LitEngine
                     }
                     f.Close();
                 }
-                #endregion
+#endregion
                 tstream.Close();
                 LoadProjectByBytes(tdllbyts, tpdbbyts);
             }
