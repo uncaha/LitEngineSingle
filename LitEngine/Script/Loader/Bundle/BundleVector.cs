@@ -97,6 +97,8 @@ namespace LitEngine
             {
                 if (Contains(_key))
                     this[_key].Release();
+                else
+                    DLog.LogError("没找到资源 key="+ _key);
             }
         }
     }

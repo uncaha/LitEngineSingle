@@ -156,7 +156,7 @@ namespace LitEngine
 
         static public void ReleaseAsset(string _key)
         {
-            Instance.mBundleList.ReleaseBundle(_key);
+            Instance.mBundleList.ReleaseBundle(BaseBundle.DeleteSuffixName(_key.ToLowerInvariant()));
         }
 
         private void RemoveAllAsset()
@@ -166,7 +166,7 @@ namespace LitEngine
 
         static public void RemoveAsset(string _AssetsName)
         {
-            Instance.mBundleList.Remove(_AssetsName);
+            Instance.mBundleList.Remove(BaseBundle.DeleteSuffixName(_AssetsName.ToLowerInvariant()));
         }
 
         #endregion
@@ -246,17 +246,17 @@ namespace LitEngine
         
         static public void LoadResourcesAsync(string _key, string _AssetsName, System.Action<string, object> _callback)
         {
-            Instance.LoadResourcesAsync_(_key.ToLowerInvariant(), _AssetsName.ToLowerInvariant(), _callback);
+            Instance.LoadResourcesAsync_(_key, _AssetsName.ToLowerInvariant(), _callback);
         }
 
         static public void LoadAssetAsync(string _key, string _AssetsName, System.Action<string, object> _callback)
         {
-            Instance.LoadAssetAsyncRetain(_key.ToLowerInvariant(), _AssetsName.ToLowerInvariant(), _callback, true);
+            Instance.LoadAssetAsyncRetain(_key, _AssetsName.ToLowerInvariant(), _callback, true);
         }
 
         static public BaseBundle WWWLoadAsync(string _key, string _FullName, System.Action<string, object> _callback)
         {
-            return Instance.WWWLoad(_key.ToLowerInvariant(), _FullName.ToLowerInvariant(), _callback);
+            return Instance.WWWLoad(_key, _FullName.ToLowerInvariant(), _callback);
         }
         #endregion
 
