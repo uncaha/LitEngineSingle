@@ -66,12 +66,13 @@ namespace LitEngine
         static public string CombinePath(params object[] _params)
         {
             System.Text.StringBuilder tformatbuilder = new System.Text.StringBuilder();
+            char[] tdes = { '/' };
             for (int i = 0; i < _params.Length; i++)
             {
                 string tobjstr = _params[i].ToString();
                 if(i!=0)
-                    tobjstr = RemoveStartWithString(tobjstr, "/");
-                tobjstr = RemoveEndWithString(tobjstr, "/");
+                    tobjstr = RemoveStartWithString(tobjstr, tdes);
+                tobjstr = RemoveEndWithString(tobjstr, tdes);
                 tformatbuilder.Append(tobjstr);
                 tformatbuilder.Append("/");
             }
@@ -81,12 +82,13 @@ namespace LitEngine
         static public string CombineFilePath(params object[] _params)
         {
             System.Text.StringBuilder tformatbuilder = new System.Text.StringBuilder();
+            char[] tdes = {'/'};
             for (int i = 0; i < _params.Length; i++)
             {
                 string tobjstr = _params[i].ToString();
                 if (i != 0)
-                    tobjstr = RemoveStartWithString(tobjstr, "/");
-                tobjstr = RemoveEndWithString(tobjstr, "/");
+                    tobjstr = RemoveStartWithString(tobjstr, tdes);
+                tobjstr = RemoveEndWithString(tobjstr, tdes);
                 tformatbuilder.Append(tobjstr);
                 if (i < _params.Length - 1)
                     tformatbuilder.Append("/");
@@ -94,16 +96,16 @@ namespace LitEngine
             return tformatbuilder.ToString();
         }
 
-        static public string RemoveEndWithString(string _source,string _des)
+        static public string RemoveEndWithString(string _source,char[] _des)
         {
-            if (string.IsNullOrEmpty(_des)) return _source;
-            return _source.TrimEnd(_des.ToCharArray());
+            if (_des == null) return _source;
+            return _source.TrimEnd(_des);
         }
 
-        static public string RemoveStartWithString(string _source, string _des)
+        static public string RemoveStartWithString(string _source, char[] _des)
         {
-            if (string.IsNullOrEmpty(_des)) return _source;
-            return _source.TrimStart(_des.ToCharArray());
+            if (_des == null) return _source;
+            return _source.TrimStart(_des);
         }
 
         #endregion
