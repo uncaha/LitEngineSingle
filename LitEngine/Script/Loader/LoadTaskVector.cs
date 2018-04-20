@@ -5,7 +5,7 @@ namespace LitEngine
     {
         public class LoadTaskVector
         {
-            private List<LoadTask> mList = new List<LoadTask>();
+            private List<LoadTask> mList = new List<LoadTask>(10);
 
             public int Count
             {

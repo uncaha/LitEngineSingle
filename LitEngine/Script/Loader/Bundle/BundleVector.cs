@@ -17,11 +17,11 @@ namespace LitEngine
             {
                 get
                 {
-                    return mList[BaseBundle.DeleteSuffixName(key).ToLower()];
+                    return mList[key];
                 }
                 set
                 {
-                    mList[BaseBundle.DeleteSuffixName(key).ToLower()] = value;
+                    mList[key] = value;
                 }
             }
 
@@ -52,7 +52,7 @@ namespace LitEngine
 
             public bool Contains(string _key)
             {
-                return mList.ContainsKey(BaseBundle.DeleteSuffixName(_key).ToLower());
+                return mList.ContainsKey(_key);
             }
 
             public void Add(BaseBundle _bundle)
@@ -74,12 +74,11 @@ namespace LitEngine
 
             public void Remove(string _key, bool _destory = true)
             {
-                _key = BaseBundle.DeleteSuffixName(_key).ToLower();
                 if (!Contains(_key))
                     return;
                 BaseBundle tbundle = this[_key];
                 tbundle.Parent = null;
-                mList.Remove(BaseBundle.DeleteSuffixName(_key));              
+                mList.Remove(_key);              
                 if (_destory)
                     tbundle.Destory();
             }
@@ -96,7 +95,6 @@ namespace LitEngine
 
             public void ReleaseBundle(string _key)
             {
-                _key = BaseBundle.DeleteSuffixName(_key).ToLower();
                 if (Contains(_key))
                     this[_key].Release();
             }

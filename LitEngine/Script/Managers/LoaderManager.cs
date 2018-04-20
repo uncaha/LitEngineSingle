@@ -44,9 +44,9 @@ namespace LitEngine
         static public string GetFullPath(string _filename)
         {
             _filename = BaseBundle.CombineSuffixName(_filename);
-            string tfullpathname = Path.Combine(GameCore.PersistentResDataPath, _filename);
+            string tfullpathname = GameCore.CombineFilePath(GameCore.PersistentResDataPath, _filename);
             if (!File.Exists(tfullpathname))
-                tfullpathname = Path.Combine(GameCore.StreamingAssetsResDataPath, _filename);
+                tfullpathname = GameCore.CombineFilePath(GameCore.StreamingAssetsResDataPath, _filename);
             return tfullpathname;
         }
         #endregion
@@ -206,21 +206,20 @@ namespace LitEngine
             }
             IsSceneLoading = true;
             mLoadSceneCall = _FinishdCall;
+            _scenename = BaseBundle.DeleteSuffixName(_scenename);
+            mNowLoadingScene = _scenename.Replace(".unity", "");
             LoaderManager.LoadAssetAsync(_scenename, _scenename, LoadedStartScene);
         }
 
         
         static private void LoadedStartScene(string _key, object _object)
         {
-            _key = BaseBundle.DeleteSuffixName(_key);
-            mNowLoadingScene = _key.Replace(".unity", "");
             SceneManager.sceneLoaded += LoadSceneCall;
             AsyncOperation topert = SceneManager.LoadSceneAsync(mNowLoadingScene);
 
         }
         static private void LoadSceneCall(Scene _scene, LoadSceneMode _mode)
         {
-            if (!_scene.name.Equals(mNowLoadingScene)) return;
             if (mLoadSceneCall != null)
                 mLoadSceneCall();
             mLoadSceneCall = null;
@@ -234,12 +233,12 @@ namespace LitEngine
         #region 同步
         static public Object sLoadResources(string _AssetsName)
         {
-            return Instance.LoadResources(_AssetsName);
+            return Instance.LoadResources(_AssetsName.ToLowerInvariant());
         }
 
         static public UnityEngine.Object LoadAsset(string _AssetsName)
         {
-            return (UnityEngine.Object)Instance.LoadAssetRetain(_AssetsName).Retain();
+            return (UnityEngine.Object)Instance.LoadAssetRetain(_AssetsName.ToLowerInvariant()).Retain();
         }
         #endregion
 
@@ -247,17 +246,17 @@ namespace LitEngine
         
         static public void LoadResourcesAsync(string _key, string _AssetsName, System.Action<string, object> _callback)
         {
-            Instance.LoadResourcesAsync_(_key, _AssetsName, _callback);
+            Instance.LoadResourcesAsync_(_key.ToLowerInvariant(), _AssetsName.ToLowerInvariant(), _callback);
         }
 
         static public void LoadAssetAsync(string _key, string _AssetsName, System.Action<string, object> _callback)
         {
-            Instance.LoadAssetAsyncRetain(_key, _AssetsName, _callback, true);
+            Instance.LoadAssetAsyncRetain(_key.ToLowerInvariant(), _AssetsName.ToLowerInvariant(), _callback, true);
         }
 
         static public BaseBundle WWWLoadAsync(string _key, string _FullName, System.Action<string, object> _callback)
         {
-            return Instance.WWWLoad(_key, _FullName, _callback);
+            return Instance.WWWLoad(_key.ToLowerInvariant(), _FullName.ToLowerInvariant(), _callback);
         }
         #endregion
 
@@ -271,10 +270,9 @@ namespace LitEngine
         /// </summary>
         /// <param name="_AssetsName">_curPathname 是相对于path/Date/下的路径 例如目录结构Assets/Resources/Date/ +_curPathname</param>
         /// <returns></returns>
-        public Object LoadResources(string _AssetsName)
+        private Object LoadResources(string _AssetsName)
         {
             if (_AssetsName == null || _AssetsName.Equals("")) return null;
-            _AssetsName = BaseBundle.DeleteSuffixName(_AssetsName).ToLower();
             if (mBundleList.Contains(_AssetsName))
             {
                 return (Object)mBundleList[_AssetsName].Retain();
@@ -288,8 +286,7 @@ namespace LitEngine
         #endregion
         private BaseBundle LoadAssetRetain(string _AssetsName)
         {
-            if (_AssetsName == null || _AssetsName.Equals("")) return null;
-            _AssetsName = BaseBundle.DeleteSuffixName(_AssetsName).ToLower();
+            if (string.IsNullOrEmpty(_AssetsName)) return null;
             if (!mBundleList.Contains(_AssetsName))
             {
                 AssetsBundleHaveDependencie tbundle = new AssetsBundleHaveDependencie(_AssetsName, LoadAssetRetain);
@@ -310,7 +307,7 @@ namespace LitEngine
             ActiveLoader(true);
         }
 
-        public void LoadResourcesAsync_(string _key, string _AssetsName, System.Action<string, object> _callback)
+        protected void LoadResourcesAsync_(string _key, string _AssetsName, System.Action<string, object> _callback)
         {
             if (_AssetsName.Length == 0)
             {
@@ -321,7 +318,6 @@ namespace LitEngine
                 DLog.LogError("LoadResourcesBundleByRelativePathNameAsync -- CallBack Fun can not be null");
                 return;
             }
-            _AssetsName = BaseBundle.DeleteSuffixName(_AssetsName).ToLower();
             if (mBundleList.Contains(_AssetsName))
             {
                 if (mBundleList[_AssetsName].Loaded)
@@ -357,7 +353,6 @@ namespace LitEngine
                 DLog.LogError("LoadAssetsBundleByFullNameAsync -- CallBack Fun can not be null");
                 return null;
             }
-            _AssetsName = BaseBundle.DeleteSuffixName(_AssetsName).ToLower();
             if (mBundleList.Contains(_AssetsName))
             {
                 if (mBundleList[_AssetsName].Loaded)
@@ -385,7 +380,7 @@ namespace LitEngine
         }
         #endregion
         #region WWW载入
-        public BaseBundle WWWLoad(string _key, string _FullName, System.Action<string, object> _callback)
+        protected BaseBundle WWWLoad(string _key, string _FullName, System.Action<string, object> _callback)
         {
             if (_callback == null)
             {

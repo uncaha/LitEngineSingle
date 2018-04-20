@@ -20,7 +20,7 @@ namespace LitEngine
                     if (((AssetBundle)mAssetsBundle).isStreamedSceneAssetBundle)
                         mAsset = ((AssetBundle)mAssetsBundle).mainAsset;
                     else
-                        mAsset = ((AssetBundle)mAssetsBundle).LoadAsset(DeleteSuffixName(mAssetName).ToLower());
+                        mAsset = ((AssetBundle)mAssetsBundle).LoadAsset(mAssetName);
 
                     if(mAsset != null && mAsset.GetType() == typeof(UnityEngine.Material)
                         &&(Application.platform == RuntimePlatform.WindowsEditor

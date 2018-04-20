@@ -37,7 +37,7 @@ namespace LitEngine
                     DLog.LogError("AssetBundle 转换失败.mAssetName = " + mAssetName);
                     return;
                 }
-                string tname = DeleteSuffixName(mAssetName).ToLower();
+                string tname = DeleteSuffixName(mAssetName);
                 mLoadObjReq = ((AssetBundle)mAssetsBundle).LoadAssetAsync(tname);
 
             }
@@ -65,7 +65,7 @@ namespace LitEngine
                 if (mAsset == null)
                 {
                     mAsset = ((AssetBundle)mAssetsBundle).mainAsset;
-                    DLog.LogError("在资源包 " + mPathName + " 中找不到文件名:" + DeleteSuffixName(mAssetName).ToLower() + " 的资源。或者因为资源的命名不规范导致unity加载模块找不到该资源. ");
+                    DLog.LogError("在资源包 " + mPathName + " 中找不到文件名:" + DeleteSuffixName(mAssetName).ToLowerInvariant() + " 的资源。或者因为资源的命名不规范导致unity加载模块找不到该资源. ");
                 }
 
                 if (mAsset != null && mAsset.GetType() == typeof(UnityEngine.Material)

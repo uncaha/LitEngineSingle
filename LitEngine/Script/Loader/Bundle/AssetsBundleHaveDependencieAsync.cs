@@ -22,7 +22,7 @@ namespace LitEngine
                 {
                     for (int i = 0; i < tdeps.Length; i++)
                     {
-                        string tdepassetname = tdeps[i];
+                        string tdepassetname = DeleteSuffixName(tdeps[i]);
                         BaseBundle tchile = mLoadCall(tdepassetname, tdepassetname, DependencieCallBack,false);
                         mDepList.Add(tchile);
                     }
