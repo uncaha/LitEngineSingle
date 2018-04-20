@@ -38,7 +38,7 @@ namespace LitEngine
                     return;
                 }
                 string tname = DeleteSuffixName(mAssetName);
-                mLoadObjReq = ((AssetBundle)mAssetsBundle).LoadAssetAsync(tname);
+                mLoadObjReq = tasbd.LoadAssetAsync(tname);
 
             }
             override public bool IsDone()
