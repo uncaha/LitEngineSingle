@@ -9,6 +9,8 @@ namespace LitEngine
             #region mymethod
             protected Action<Collision> mOnCollisionEnter;
             protected Action<Collision> mOnCollisionExit;
+
+            public Collider AptCol { get; set; }
             #endregion
             #region 脚本初始化以及析构
             public ScriptInterfaceCollision()
@@ -32,6 +34,7 @@ namespace LitEngine
             protected void OnCollisionEnter(Collision _collision)
             {
                 if (mOnCollisionEnter == null) return;
+                if (AptCol != null && !AptCol.Equals(_collision.contacts[0].thisCollider)) return;
                 if (!IsInTagList(_collision.gameObject)) return;
                 if (mCollEnterTimer > Time.realtimeSinceStartup) return;
                 mCollEnterTimer = Time.realtimeSinceStartup + mCollEnterInterval;
@@ -41,6 +44,7 @@ namespace LitEngine
             protected void OnCollisionExit(Collision _collision)
             {
                 if (mOnCollisionExit == null) return;
+                if (AptCol != null && !AptCol.Equals(_collision.contacts[0].thisCollider)) return;
                 if (!IsInTagList(_collision.gameObject)) return;
                 CallAction(mOnCollisionExit, _collision);
             }
