@@ -311,11 +311,14 @@ namespace LitEngine
         {
             if (_AssetsName.Length == 0)
             {
-                DLog.LogError("LoadResourcesBundleByRelativePathNameAsync -- _AssetsName 的长度不能为空");
+                DLog.LogError("LoadResourcesAsync_ -- _AssetsName 的长度不能为空");
+                if (_callback != null)
+                    _callback(_key, null);
+                return;
             }
             if (_callback == null)
             {
-                DLog.LogError("LoadResourcesBundleByRelativePathNameAsync -- CallBack Fun can not be null");
+                DLog.LogError("LoadResourcesAsync_ -- CallBack Fun can not be null");
                 return;
             }
             if (mBundleList.Contains(_AssetsName))
@@ -323,7 +326,7 @@ namespace LitEngine
                 if (mBundleList[_AssetsName].Loaded)
                 {
                     if (mBundleList[_AssetsName].Asset == null)
-                        DLog.LogError("ResourcesBundleAsync-erro in vector。文件载入失败,请检查文件名:" + _AssetsName);
+                        DLog.LogError("LoadResourcesAsync_-erro in vector。文件载入失败,请检查文件名:" + _AssetsName);
 
                     mBundleList[_AssetsName].Retain();
                     _callback(_key, mBundleList[_AssetsName].Asset);
@@ -346,11 +349,14 @@ namespace LitEngine
 
             if (_AssetsName.Length == 0)
             {
-                DLog.LogError("LoadAssetsBundleByFullNameAsync -- _AssetsName 的长度不能为空");
+                DLog.LogError("LoadAssetAsyncRetain -- _AssetsName 的长度不能为空");
+                if (_callback != null)
+                    _callback(_key, null);
+                return null;
             }
             if (_callback == null)
             {
-                DLog.LogError("LoadAssetsBundleByFullNameAsync -- CallBack Fun can not be null");
+                DLog.LogError("LoadAssetAsyncRetain -- CallBack Fun can not be null");
                 return null;
             }
             if (mBundleList.Contains(_AssetsName))
@@ -358,7 +364,7 @@ namespace LitEngine
                 if (mBundleList[_AssetsName].Loaded)
                 {
                     if (mBundleList[_AssetsName].Asset == null)
-                        DLog.LogError("AssetsBundleAsyncFromFile-erro in vector。文件载入失败,请检查文件名:" + _AssetsName);
+                        DLog.LogError("LoadAssetAsyncRetain-erro in vector。文件载入失败,请检查文件名:" + _AssetsName);
                     if (_retain)
                         mBundleList[_AssetsName].Retain();
                     _callback(_key, mBundleList[_AssetsName].Asset);

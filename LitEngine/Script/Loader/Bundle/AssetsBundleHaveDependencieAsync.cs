@@ -24,7 +24,8 @@ namespace LitEngine
                     {
                         string tdepassetname = DeleteSuffixName(tdeps[i]);
                         BaseBundle tchile = mLoadCall(tdepassetname, tdepassetname, DependencieCallBack,false);
-                        mDepList.Add(tchile);
+                        if(tchile != null)
+                            mDepList.Add(tchile);
                     }
                 }
                 mMainBundle = new AssetsBundleAsyncFromFile(mAssetName);
