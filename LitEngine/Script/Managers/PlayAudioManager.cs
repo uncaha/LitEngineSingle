@@ -90,6 +90,7 @@ namespace LitEngine
 
         static public void PlayMusic(AudioClip _clip)
         {
+            if (Instance.mBackMusic.clip != null && Instance.mBackMusic.clip.Equals( _clip)) return;
             Instance.mBackMusic.Stop();
             Instance.mBackMusic.clip = _clip;
             Instance.mBackMusic.loop = true;
