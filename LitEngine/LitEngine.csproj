@@ -83,6 +83,7 @@
     <Compile Include="Script\SteamReaderAndWriter\AesStreamBase.cs" />
     <Compile Include="Script\SteamReaderAndWriter\AESWriter.cs" />
     <Compile Include="Script\STL\SafeList.cs" />
+    <Compile Include="Script\Tool\SpriteArray.cs" />
     <Compile Include="Script\UnZip\UnZipFile.cs" />
     <Compile Include="Script\DownLoad\DownLoadObject.cs" />
     <Compile Include="Script\Task\DownLoadTask.cs" />
