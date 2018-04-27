@@ -44,7 +44,7 @@ namespace LitEngine
             protected void OnCollisionExit(Collision _collision)
             {
                 if (mOnCollisionExit == null) return;
-                if (AptCol != null && !AptCol.Equals(_collision.contacts[0].thisCollider)) return;
+               // if (AptCol != null && !AptCol.Equals(_collision.contacts[0].thisCollider)) return;
                 if (!IsInTagList(_collision.gameObject)) return;
                 CallAction(mOnCollisionExit, _collision);
             }
