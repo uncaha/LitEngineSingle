@@ -48,10 +48,10 @@ namespace LitEngine
             public T TryGetValue<T>(string _fieldkey)
             {
                 DataField tfield = this[_fieldkey];
-                return tfield != null ? (T)tfield.Value : default(T);
+                return tfield != null ? tfield.TryGetValue<T>() : default(T);
             }
 
-            public void Load(LitEngine.IO.AESReader _loader)
+            override public void Load(LitEngine.IO.AESReader _loader)
             {
                 Key = _loader.ReadString();
                 int tfieldCount = _loader.ReadInt32();
@@ -62,7 +62,7 @@ namespace LitEngine
                     fieldMap.Add(tfield.Key, tfield);
                 }
             }
-            public void Save(LitEngine.IO.AESWriter _writer)
+            override public void Save(LitEngine.IO.AESWriter _writer)
             {
                 _writer.WriteString(Key);
                 List<DataField> tfields = new List<DataField>(fieldMap.Values);

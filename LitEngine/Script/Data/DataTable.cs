@@ -55,10 +55,10 @@ namespace LitEngine
             public T TryGetValue<T>(string _rowkey, string _fieldkey)
             {
                 DataField tfield = SearchField(_rowkey, _fieldkey);
-                return tfield != null ? (T)tfield.Value : default(T);
+                return tfield != null ? tfield.TryGetValue<T>() : default(T);
             }
 
-            public void Load(LitEngine.IO.AESReader _loader)
+            override public void Load(LitEngine.IO.AESReader _loader)
             {
                 TableName = _loader.ReadString();
                 int trowCount = _loader.ReadInt32();
@@ -69,7 +69,7 @@ namespace LitEngine
                     rowMap.Add(trow.Key, trow);
                 }
             }
-            public void Save(LitEngine.IO.AESWriter _writer)
+            override public void Save(LitEngine.IO.AESWriter _writer)
             {
                 _writer.WriteString(TableName);
                 List<DataRow> trowValues = new List<DataRow>(rowMap.Values);

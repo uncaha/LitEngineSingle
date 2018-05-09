@@ -25,13 +25,24 @@
                 Value = _value;
             }
 
-            public T TryGetValue<T>(string _fieldkey)
+            public T TryGetValue<T>()
             {
-                return Value != null ? (T)Value : default(T);
+                try
+                {
+                    checked
+                    {
+                       return Value == null ? default(T) : (T)Value;
+                    }
+                }
+                catch (System.Exception erro)
+                {
+                    DLog.LogError(erro.ToString());
+                }
+                return default(T);
             }
 
             #region load
-            public void Load(LitEngine.IO.AESReader _loader)
+            override public void Load(LitEngine.IO.AESReader _loader)
             {
                 Key = _loader.ReadString();
                 ValueType = _loader.ReadString();
@@ -99,7 +110,7 @@
             #endregion
 
             #region save
-            public void Save(LitEngine.IO.AESWriter _writer)
+            override  public void Save(LitEngine.IO.AESWriter _writer)
             {
                 _writer.WriteString(Key);
                 _writer.WriteString(ValueType == null ? "null" : ValueType);

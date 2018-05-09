@@ -7,8 +7,8 @@ namespace LitEngine
     {
         public class AesStreamBase : System.IDisposable
         {
-            public static string AESKey = "fjeicl458c81k53mc7ckd823ng5bKHKchkhdkaa*(&*%$%fdf&(KHHJKHDDdfdsaf4534&*^*(^cr32";
-            public const string AesTag = "LitEngineAes";
+            protected static string AESKey = "fjeicl458c81k53mc7ckd823ng5bKHKchkhdkaa*(&*%$%fdf&(KHHJKHDDdfdsaf4534&*^*(^cr32";
+            protected const string AesTag = "LitEngineAes";
             protected const int SafeByteLen = 100;
             protected bool mClosed = false;
             protected string mFileName = null;
@@ -49,7 +49,7 @@ namespace LitEngine
             {
             }
 
-            static public void EncryptAndUncrypt(byte[] _value,int _offset, long _size)
+            static protected void EncryptAndUncrypt(byte[] _value,int _offset, long _size)
             {
                 byte[] tSecret = Encoding.UTF8.GetBytes(AESKey);
                 int j = 0;
