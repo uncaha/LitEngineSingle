@@ -95,6 +95,9 @@ namespace LitEngine
             public static DataBase Data { get { if (dataInstance == null) dataInstance = new DataBase(); return dataInstance; } }
             private static DataBase dataInstance = null;
 
+            public Dictionary<string, DataTable>.ValueCollection Tables { get { return tableMap.Values; } }
+            public Dictionary<string, DataTable>.KeyCollection Keys { get { return tableMap.Keys; } }
+
             private Dictionary<string, DataTable> tableMap = new Dictionary<string, DataTable>();
             private DataBase()
             {

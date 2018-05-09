@@ -6,7 +6,8 @@ namespace LitEngine
         public sealed class DataRow : DataBaseElement
         {
             private Dictionary<string, DataField> fieldMap = new Dictionary<string, DataField>();
-
+            public Dictionary<string, DataField>.ValueCollection Fields { get { return fieldMap.Values; } }
+            public Dictionary<string, DataField>.KeyCollection Keys { get { return fieldMap.Keys; } }
             public string Key { get; private set; }
             public int Count { get { return fieldMap.Count; } }
             public DataRow(string _key = null)
