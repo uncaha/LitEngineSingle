@@ -43,7 +43,7 @@ namespace LitEngine
 
             public T TryGetValue<T>(string _fieldkey, object _defaultValue = null)
             {
-                if (!fieldMap.ContainsKey(_fieldkey)) return (T)_defaultValue;
+                if (!fieldMap.ContainsKey(_fieldkey)) return _defaultValue == null ? default(T) : (T)_defaultValue;
                 return fieldMap[_fieldkey].TryGetValue<T>(_defaultValue);
             }
 

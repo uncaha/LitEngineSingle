@@ -76,7 +76,7 @@ namespace LitEngine
             public T TryGetValue<T>(string _rowkey, string _fieldkey,object _defaultValue = null)
             {
                 DataRow trow = this[_rowkey];
-                return trow != null ? trow.TryGetValue<T>(_fieldkey, _defaultValue) : (T)_defaultValue;
+                return trow != null ? trow.TryGetValue<T>(_fieldkey, _defaultValue) : _defaultValue == null ? default(T) : (T)_defaultValue;
             }
 
             override public void Load(LitEngine.IO.AESReader _loader)

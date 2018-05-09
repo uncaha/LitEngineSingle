@@ -31,14 +31,14 @@
                 {
                     checked
                     {
-                       return Value == null ? (T)_defaultValue : (T)Value;
+                       return Value != null ? (T)Value : _defaultValue == null ? default(T) : (T)_defaultValue;
                     }
                 }
                 catch (System.Exception erro)
                 {
                     DLog.LogError(erro.ToString());
                 }
-                return (T)_defaultValue;
+                return _defaultValue == null ? default(T) : (T)_defaultValue;
             }
 
             #region load

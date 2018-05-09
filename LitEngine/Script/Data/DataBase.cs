@@ -78,14 +78,14 @@ namespace LitEngine
                     object obj = Attribut[keyParameter];
                     checked
                     {
-                        return obj == null ? (T)_defaultValue : (T)obj;
+                        return obj != null ? (T)obj : _defaultValue == null ? default(T) : (T)_defaultValue;
                     }
                 }
                 catch (System.Exception erro)
                 {
                     DLog.LogError(erro.ToString());
                 }
-                return (T)_defaultValue;
+                return _defaultValue == null ? default(T) : (T)_defaultValue;
             }
         }
 
@@ -146,7 +146,7 @@ namespace LitEngine
             public T TryGetValue<T>(string _table, string _rowkey, string _fieldkey, object _defaultValue = null)
             {
                 DataField tfield = SearchField(_table, _rowkey, _fieldkey);
-                return tfield != null ? tfield.TryGetValue<T>(_defaultValue) : default(T);
+                return tfield != null ? tfield.TryGetValue<T>(_defaultValue) : _defaultValue == null ? default(T) : (T)_defaultValue;
             }
             #endregion
 
