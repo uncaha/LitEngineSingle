@@ -73,14 +73,13 @@ namespace LitEngine
 
             public T TryGetAttribute<T>(string keyParameter)
             {
-                T ret;
                 try
                 {
                     object obj = Attribut[keyParameter];
                     checked
                     {
-                        ret = obj == null ? default(T) : (T)obj;
-                    } 
+                        return obj == null ? default(T) : (T)obj;
+                    }
                 }
                 catch (System.Exception erro)
                 {
