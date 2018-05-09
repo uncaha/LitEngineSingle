@@ -61,6 +61,7 @@ namespace LitEngine
             override public void Load(LitEngine.IO.AESReader _loader)
             {
                 TableName = _loader.ReadString();
+                Attribut.Load(_loader);
                 int trowCount = _loader.ReadInt32();
                 for (int i = 0; i < trowCount; i++)
                 {
@@ -72,6 +73,7 @@ namespace LitEngine
             override public void Save(LitEngine.IO.AESWriter _writer)
             {
                 _writer.WriteString(TableName);
+                Attribut.Save(_writer);
                 List<DataRow> trowValues = new List<DataRow>(rowMap.Values);
                 int trowCount = trowValues.Count;
                 _writer.WriteInt(trowCount);

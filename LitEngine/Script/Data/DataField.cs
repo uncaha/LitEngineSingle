@@ -45,6 +45,7 @@
             override public void Load(LitEngine.IO.AESReader _loader)
             {
                 Key = _loader.ReadString();
+                Attribut.Load(_loader);
                 ValueType = _loader.ReadString();
                 LoadByType(_loader);
             }
@@ -113,6 +114,7 @@
             override  public void Save(LitEngine.IO.AESWriter _writer)
             {
                 _writer.WriteString(Key);
+                Attribut.Save(_writer);
                 _writer.WriteString(ValueType == null ? "null" : ValueType);
                 if (ValueType != null)
                     SaveByType(_writer);

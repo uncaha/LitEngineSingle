@@ -54,6 +54,7 @@ namespace LitEngine
             override public void Load(LitEngine.IO.AESReader _loader)
             {
                 Key = _loader.ReadString();
+                Attribut.Load(_loader);
                 int tfieldCount = _loader.ReadInt32();
                 for (int i = 0; i < tfieldCount; i++)
                 {
@@ -65,6 +66,7 @@ namespace LitEngine
             override public void Save(LitEngine.IO.AESWriter _writer)
             {
                 _writer.WriteString(Key);
+                Attribut.Save(_writer);
                 List<DataField> tfields = new List<DataField>(fieldMap.Values);
                 int tfieldCount = tfields.Count;
                 _writer.WriteInt(tfieldCount);
