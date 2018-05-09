@@ -47,15 +47,36 @@ namespace LitEngine
                 }
             }
 
-            public DataField SearchField(string _rowkey, string _fieldkey)
+            public object this[string _rowKey,string _fieldKey]
             {
-                return this[_rowkey] != null ? this[_rowkey][_fieldkey] : null;
+                get
+                {
+                    if (!rowMap.ContainsKey(_rowKey)) return null;
+                    return rowMap[_rowKey][_fieldKey];
+                }
+
+                set
+                {
+                    bool isHaveRow = rowMap.ContainsKey(_rowKey);
+                    DataRow trow = null;
+                    if (!isHaveRow && value != null)
+                    {
+                        rowMap.Add(trow.Key, new DataRow(_rowKey));
+                    }
+                    else if(isHaveRow)
+                    {
+                        rowMap[_rowKey][_fieldKey] = value;
+                        if (value == null && trow.Count == 0)
+                            rowMap.Remove(_rowKey);
+                    }
+                    
+                }
             }
 
-            public T TryGetValue<T>(string _rowkey, string _fieldkey)
+            public T TryGetValue<T>(string _rowkey, string _fieldkey,object _defaultValue = null)
             {
-                DataField tfield = SearchField(_rowkey, _fieldkey);
-                return tfield != null ? tfield.TryGetValue<T>() : default(T);
+                DataRow trow = this[_rowkey];
+                return trow != null ? trow.TryGetValue<T>(_fieldkey, _defaultValue) : (T)_defaultValue;
             }
 
             override public void Load(LitEngine.IO.AESReader _loader)

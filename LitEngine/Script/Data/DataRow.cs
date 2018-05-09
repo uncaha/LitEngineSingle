@@ -21,34 +21,36 @@ namespace LitEngine
                 return fieldMap[_fieldName];
             }
 
-            public DataField this[string _fieldKey]
+            public object this[string _fieldKey]
             {
                 get
                 {
                     if (!fieldMap.ContainsKey(_fieldKey)) return null;
-                    return fieldMap[_fieldKey];
+                    return fieldMap[_fieldKey].Value;
                 }
 
                 set
                 {
-                    if (!fieldMap.ContainsKey(_fieldKey))
-                    {
-                        fieldMap.Add(_fieldKey, value);
-                    }
-                    else
-                    {
-                        if (value != null)
-                            fieldMap[_fieldKey] = value;
-                        else
-                            fieldMap.Remove(_fieldKey);
-                    }
+                    bool isHave = fieldMap.ContainsKey(_fieldKey);
+                    if (!isHave && value != null)
+                        fieldMap.Add(_fieldKey, new DataField(_fieldKey, value));
+                    else if(isHave && value != null)
+                        fieldMap[_fieldKey].Value = value;
+                    else if (isHave && value == null)
+                        fieldMap.Remove(_fieldKey);
                 }
             }
 
-            public T TryGetValue<T>(string _fieldkey)
+            public T TryGetValue<T>(string _fieldkey, object _defaultValue = null)
             {
-                DataField tfield = this[_fieldkey];
-                return tfield != null ? tfield.TryGetValue<T>() : default(T);
+                if (!fieldMap.ContainsKey(_fieldkey)) return (T)_defaultValue;
+                return fieldMap[_fieldkey].TryGetValue<T>(_defaultValue);
+            }
+
+            public DataField SearchField(string _fieldkey)
+            {
+                if (!fieldMap.ContainsKey(_fieldkey)) return null;
+                return fieldMap[_fieldkey];
             }
 
             override public void Load(LitEngine.IO.AESReader _loader)

@@ -25,20 +25,20 @@
                 Value = _value;
             }
 
-            public T TryGetValue<T>()
+            public T TryGetValue<T>(object _defaultValue = null)
             {
                 try
                 {
                     checked
                     {
-                       return Value == null ? default(T) : (T)Value;
+                       return Value == null ? (T)_defaultValue : (T)Value;
                     }
                 }
                 catch (System.Exception erro)
                 {
                     DLog.LogError(erro.ToString());
                 }
-                return default(T);
+                return (T)_defaultValue;
             }
 
             #region load
