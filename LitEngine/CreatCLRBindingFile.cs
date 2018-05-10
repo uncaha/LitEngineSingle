@@ -1,10 +1,12 @@
 ﻿/*
 
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
 using LitEngine;
+using ILRuntime.Runtime.Intepreter;
 public class CreatCLRBindingFile
 {
     [UnityEditor.MenuItem("GenerateBinding/AutoBinding")]
@@ -49,14 +51,14 @@ public class CreatCLRBindingFile
         _types.Add(typeof(LinkedList<float>));
         _types.Add(typeof(LinkedList<string>));
         _types.Add(typeof(LinkedList<System.Object>));
-        _types.Add(typeof(LinkedList<ILRuntime.Runtime.Intepreter.ILTypeInstance>));
+        _types.Add(typeof(LinkedList<ILTypeInstance>));
 
         _types.Add(typeof(Dictionary<string, UnityEngine.AudioClip>));
         _types.Add(typeof(Dictionary<string, UnityEngine.Transform>));
         _types.Add(typeof(Dictionary<string, UnityEngine.Object>));
-        _types.Add(typeof(Dictionary<string, ILRuntime.Runtime.Intepreter.ILTypeInstance>));
-        _types.Add(typeof(Dictionary<int, ILRuntime.Runtime.Intepreter.ILTypeInstance>));
-        _types.Add(typeof(Dictionary<ILRuntime.Runtime.Intepreter.ILTypeInstance, ILRuntime.Runtime.Intepreter.ILTypeInstance>));
+        _types.Add(typeof(Dictionary<string, ILTypeInstance>));
+        _types.Add(typeof(Dictionary<int, ILTypeInstance>));
+        _types.Add(typeof(Dictionary<ILTypeInstance,ILTypeInstance>));
 
         _types.Add(typeof(GameObject));
         _types.Add(typeof(Transform));
@@ -70,7 +72,6 @@ public class CreatCLRBindingFile
         _types.Add(typeof(UnityEngine.Mathf));
         _types.Add(typeof(UnityEngine.Vector2));
         _types.Add(typeof(UnityEngine.Vector3));
-        _types.Add(typeof(UnityEngine.Vector4));
         _types.Add(typeof(UnityEngine.Quaternion));
         _types.Add(typeof(UnityEngine.SceneManagement.Scene));
         _types.Add(typeof(UnityEngine.SceneManagement.SceneManager));
@@ -115,11 +116,25 @@ public class CreatCLRBindingFile
         _types.Add(typeof(LitEngine.XmlLoad.SmallXmlParser));
         _types.Add(typeof(DLog));
 
+        _types.Add(typeof(LitEngine.Data.DataBase));
+        _types.Add(typeof(LitEngine.Data.DataTable));
+        _types.Add(typeof(LitEngine.Data.DataRow));
+        _types.Add(typeof(LitEngine.Data.DataField));
 
         _types.Add(typeof(Google.Protobuf.ByteString));
         _types.Add(typeof(Google.Protobuf.CodedInputStream));
         _types.Add(typeof(Google.Protobuf.CodedOutputStream));
         _types.Add(typeof(Google.Protobuf.WireFormat));
+
+
+        _types.Add(typeof(CarControl));
+        _types.Add(typeof(CarBase));
+        _types.Add(typeof(CarCamera));
+        _types.Add(typeof(AiDriverCtl));
+        _types.Add(typeof(AIControl));
+        _types.Add(typeof(CarSpace.CarData));
+        _types.Add(typeof(Helper));
+        _types.Add(typeof(AICarCollision));
 
         ILRuntime.Runtime.CLRBinding.BindingCodeGenerator.GenerateBindingCode(_types, _output);
 

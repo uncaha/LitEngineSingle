@@ -112,11 +112,19 @@ namespace LitEngine
                 });
             });
 
-            mApp.DelegateManager.RegisterDelegateConvertor<System.Comparison<ILRuntime.Runtime.Intepreter.ILTypeInstance>>((act) =>
+            mApp.DelegateManager.RegisterDelegateConvertor<Predicate<ILTypeInstance>>((act) =>
             {
-                return new System.Comparison<ILRuntime.Runtime.Intepreter.ILTypeInstance>((x, y) =>
+                return new System.Predicate<ILRuntime.Runtime.Intepreter.ILTypeInstance>((obj) =>
                 {
-                    return ((Func<ILRuntime.Runtime.Intepreter.ILTypeInstance, ILRuntime.Runtime.Intepreter.ILTypeInstance, int>)act)(x, y);
+                    return ((Func<ILTypeInstance, bool>)act)(obj);
+                });
+            });
+
+            mApp.DelegateManager.RegisterDelegateConvertor<System.Comparison<ILTypeInstance>>((act) =>
+            {
+                return new System.Comparison<ILTypeInstance>((x, y) =>
+                {
+                    return ((Func<ILTypeInstance,ILTypeInstance, int>)act)(x, y);
                 });
             });
 
