@@ -28,6 +28,13 @@ namespace LitEngine
                 if (_obj == null || mList.Contains(_obj))
                     return;
                 _obj.Owner = this;
+                _obj.RegToOwner();
+            }
+
+            public void AddNoSetOwner(UpdateBase _obj)
+            {
+                if (_obj == null || mList.Contains(_obj))
+                    return;
                 mList.Add(_obj);
             }
 
@@ -38,23 +45,12 @@ namespace LitEngine
                 mList.Remove(_obj);
             }
 
-            public void ClearObj(UpdateBase _obj)
-            {
-                if (_obj == null || !mList.Contains(_obj))
-                    return;
-                mList.Remove(_obj);
-                _obj.Owner = null;
-                _obj.Dispose();
-                
-            }
-
             public void Clear()
             {
                 for (int i = mList.Count - 1; i >= 0; i--)
                 {
                     UpdateBase tobj = mList[i];
                     mList.RemoveAt(i);
-                    tobj.Owner = null;
                     tobj.Dispose();
                 }
                 mList.Clear();
@@ -91,7 +87,7 @@ namespace LitEngine
                     if (!mList[i].Dead)
                         RunUpdate(mList[i]);
                     else
-                        ClearObj(mList[i]);
+                        mList[i].Dispose();
                 }
             }
         }

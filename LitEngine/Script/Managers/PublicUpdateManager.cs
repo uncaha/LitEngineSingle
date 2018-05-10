@@ -62,12 +62,6 @@ namespace LitEngine
             UpdateList.Remove(_updateobj);
         }
 
-        static public void ClearUpdate(UpdateBase _updateobj)
-        {
-            UpdateList.ClearObj(_updateobj);
-        }
-
-
         void Update()
         {
             mUpdateList.Update();

@@ -76,24 +76,24 @@ namespace LitEngine
             virtual protected void DisposeObj()
             {
                 UnRegToOwner();
-                IsRegToOwner = false;
                 Owner = null;
                 mZeroDelegate = null;
+                Dead = true;
             }
             #endregion
-
-
             virtual public void RegToOwner()
             {
-                if (Owner == null || IsRegToOwner) return;
-                Owner.Add(this);
+                if (IsRegToOwner) return;
+                if (Owner != null)
+                    Owner.AddNoSetOwner(this);
                 IsRegToOwner = true;
             }
 
             virtual public void UnRegToOwner()
             {
-                if (Owner == null || !IsRegToOwner) return;
-                Owner.Remove(this);
+                if (!IsRegToOwner) return;
+                if (Owner != null)
+                    Owner.Remove(this);
                 IsRegToOwner = false;
             }
 

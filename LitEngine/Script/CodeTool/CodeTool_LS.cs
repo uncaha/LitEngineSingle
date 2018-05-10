@@ -88,6 +88,7 @@ namespace LitEngine
             mApp.DelegateManager.RegisterFunctionDelegate<UnityEngine.Transform>();
             mApp.DelegateManager.RegisterFunctionDelegate<object>();
 
+            mApp.DelegateManager.RegisterFunctionDelegate<int, bool>();
             mApp.DelegateManager.RegisterFunctionDelegate<float, float>();
             mApp.DelegateManager.RegisterFunctionDelegate<int, int>();
             mApp.DelegateManager.RegisterFunctionDelegate<bool, bool>();
@@ -103,6 +104,14 @@ namespace LitEngine
         }
         protected void RegDelegateConvertor()
         {
+            mApp.DelegateManager.RegisterDelegateConvertor<Predicate<int>>((act) =>
+            {
+                return new System.Predicate<int>((obj) =>
+                {
+                    return ((Func<int, bool>)act)(obj);
+                });
+            });
+
             mApp.DelegateManager.RegisterDelegateConvertor<System.Comparison<ILRuntime.Runtime.Intepreter.ILTypeInstance>>((act) =>
             {
                 return new System.Comparison<ILRuntime.Runtime.Intepreter.ILTypeInstance>((x, y) =>
