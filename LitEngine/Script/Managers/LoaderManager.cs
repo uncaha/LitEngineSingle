@@ -185,30 +185,41 @@ namespace LitEngine
         static private System.Action mLoadSceneCall = null;
         static private string mNowLoadingScene = null;
 
-        static public void LoadScene(string _scenename)
+        static public bool LoadScene(string _scenename)
         {
             if (IsSceneLoading)
             {
                 DLog.LogError("The Scene is Loading.");
-                return;
+                return false;
             }
-            LoaderManager.LoadAsset(_scenename);
             _scenename = BaseBundle.DeleteSuffixName(_scenename);
-            SceneManager.LoadScene(_scenename.EndsWith(".unity") ? _scenename.Replace(".unity", "") : _scenename, LoadSceneMode.Single);
+            string tusname = _scenename.EndsWith(".unity") ? _scenename.Replace(".unity", "") : _scenename;
+            if (SceneManager.GetActiveScene().name.Equals(tusname))
+                return false;
+                
+            LoaderManager.LoadAsset(_scenename);
+            SceneManager.LoadScene(tusname, LoadSceneMode.Single);
+            return true;
         }
         
-        static public void LoadSceneAsync(string _scenename, System.Action _FinishdCall)
+        static public bool LoadSceneAsync(string _scenename, System.Action _FinishdCall)
         {
             if (IsSceneLoading)
             {
                 DLog.LogError("The Scene is Loading.");
-                return;
+                return false;
             }
+            _scenename = BaseBundle.DeleteSuffixName(_scenename);
+            mNowLoadingScene = _scenename.EndsWith(".unity") ? _scenename.Replace(".unity", "") : _scenename;
+            if (SceneManager.GetActiveScene().name.Equals(mNowLoadingScene))
+                return false;
+
             IsSceneLoading = true;
             mLoadSceneCall = _FinishdCall;
-            _scenename = BaseBundle.DeleteSuffixName(_scenename);
-            mNowLoadingScene = _scenename.Replace(".unity", "");
+
             LoaderManager.LoadAssetAsync(_scenename, _scenename, LoadedStartScene);
+
+            return true;
         }
 
         
