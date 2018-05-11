@@ -32,7 +32,7 @@ namespace LitEngine
         private WaitingList mWaitLoadBundleList = null;
         public AssetBundleManifest Manifest { get; private set; }
         private bool mInited = false;
-
+        private bool isDisposed = false;
         #endregion
         #region 路径获取
 
@@ -76,6 +76,8 @@ namespace LitEngine
         }
         override protected void OnDestroy()
         {
+            if (isDisposed) return;
+            isDisposed = true;
             DisposeNoGcCode();
             base.OnDestroy();
         }
@@ -86,6 +88,7 @@ namespace LitEngine
             mBundleTaskList.Clear();
             mWaitLoadBundleList.Clear();
             RemoveAllAsset();
+            sInstance = null;
         }
         #endregion
 
