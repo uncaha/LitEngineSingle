@@ -193,10 +193,9 @@ namespace LitEngine
                 return false;
             }
             _scenename = BaseBundle.DeleteSuffixName(_scenename);
-            string tusname = _scenename.EndsWith(".unity") ? _scenename.Replace(".unity", "") : _scenename;
+            string tusname = _scenename.EndsWith(".unity") ? _scenename.Replace(".unity", "") : _scenename;          
             if (SceneManager.GetActiveScene().name.Equals(tusname))
                 return false;
-                
             LoaderManager.LoadAsset(_scenename);
             SceneManager.LoadScene(tusname, LoadSceneMode.Single);
             return true;
