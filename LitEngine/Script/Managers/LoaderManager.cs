@@ -88,7 +88,6 @@ namespace LitEngine
             mBundleTaskList.Clear();
             mWaitLoadBundleList.Clear();
             RemoveAllAsset();
-            sInstance = null;
         }
         #endregion
 
