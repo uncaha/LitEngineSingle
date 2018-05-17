@@ -10,13 +10,16 @@ namespace LitEngine
     public class LoaderManager : MonoManagerBase
     {
         static public string ManifestName = "AppManifest";
+        private static bool IsDispose = false;
         private static LoaderManager sInstance = null;
         private static LoaderManager Instance
         {
             get
             {
+                
                 if (sInstance == null)
                 {
+                    IsDispose = false;
                     GameObject tobj = new GameObject("LoaderManager");
                     GameObject.DontDestroyOnLoad(tobj);
                     sInstance = tobj.AddComponent<LoaderManager>();
@@ -88,6 +91,8 @@ namespace LitEngine
             mBundleTaskList.Clear();
             mWaitLoadBundleList.Clear();
             RemoveAllAsset();
+            IsDispose = true;
+            sInstance = null;
         }
         #endregion
 
@@ -158,6 +163,7 @@ namespace LitEngine
 
         static public void ReleaseAsset(string _key)
         {
+            if (IsDispose) return;
             Instance.mBundleList.ReleaseBundle(BaseBundle.DeleteSuffixName(_key.ToLowerInvariant()));
         }
 
@@ -168,6 +174,7 @@ namespace LitEngine
 
         static public void RemoveAsset(string _AssetsName)
         {
+            if (IsDispose) return;
             Instance.mBundleList.Remove(BaseBundle.DeleteSuffixName(_AssetsName.ToLowerInvariant()));
         }
 

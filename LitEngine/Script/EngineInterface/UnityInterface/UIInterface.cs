@@ -37,7 +37,7 @@ namespace LitEngine
             protected override void Awake()
             {
                 base.Awake();
-                Animator tanitor = GetComponent<Animator>();
+                UnityEngine.Animator tanitor = GetComponent<UnityEngine.Animator>();
                 if (tanitor != null)
                 {
                     tanitor.enabled = false;
@@ -128,7 +128,7 @@ namespace LitEngine
                     mState = UISate.Showing;
                     if (!PlayUIAni(UIAniType.Show))
                     {
-                        OnShowAnimationEnd();
+                        OnShowAnimationEnd(null);
                     }
                 }  
                 else
@@ -139,32 +139,32 @@ namespace LitEngine
                     if (!PlayUIAni(UIAniType.Hide))
                     {
                         base.SetActive(false);
-                        OnHideAnimationEnd();
+                        OnHideAnimationEnd(null);
                     }
                          
                 }              
             }
 
-            protected void OnShowAnimationEnd()
+            protected void OnShowAnimationEnd(string senderKey)
             {
                 PlayUIAni(UIAniType.Normal);
                 mState = UISate.Normal;
                 CallScriptFunctionByNameParams("OnShowAnimationEnd");
             }
 
-            protected void OnHideAnimationEnd()
+            protected void OnHideAnimationEnd(string senderKey)
             {
                 mState = UISate.Normal;
                 base.SetActive(false);
                 CallScriptFunctionByNameParams("OnHideAnimationEnd");
             }
 
-            protected void OnNormalAnimationEnd()
+            protected void OnNormalAnimationEnd(string senderKey)
             {
                 CallScriptFunctionByNameParams("OnNormalAnimationEnd");
             }
 
-            protected void OnCustomAnimationEnd()
+            protected void OnCustomAnimationEnd(string senderKey)
             {
                 CallScriptFunctionByNameParams("OnCustomAnimationEnd");
             }

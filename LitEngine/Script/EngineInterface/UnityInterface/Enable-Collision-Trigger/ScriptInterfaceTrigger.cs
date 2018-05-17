@@ -34,7 +34,7 @@ namespace LitEngine
             {
                 if (mOnTriggerEnter == null) return;
                 if (mTriggerTarget != null && mTriggerTarget != _other.transform) return;
-                if (!_other.name.Equals(TriggerTargetName)) return;
+                if (!string.IsNullOrEmpty(TriggerTargetName) && !_other.name.Equals(TriggerTargetName)) return;
 
                 if (mTriggerEnterTimer > Time.realtimeSinceStartup) return;
                 mTriggerEnterTimer = Time.realtimeSinceStartup + mTriggerEnterInterval;
@@ -44,7 +44,7 @@ namespace LitEngine
             {
                 if (mOnTriggerExit == null) return;
                 if (mTriggerTarget != null && mTriggerTarget != _other.transform) return;
-                if (!_other.name.Equals(TriggerTargetName)) return;
+                if (!string.IsNullOrEmpty(TriggerTargetName) && !_other.name.Equals(TriggerTargetName)) return;
                 CallAction(mOnTriggerExit, _other);
             }
 
