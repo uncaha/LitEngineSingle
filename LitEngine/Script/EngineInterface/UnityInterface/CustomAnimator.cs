@@ -53,6 +53,7 @@ namespace LitEngine
 
             virtual public bool Play(string _state)
             {
+                if (IsPlaying && State != null && State.Equals(_state)) return true;
                 State = _state;
                 GetCanPlay();
                 return Play();
