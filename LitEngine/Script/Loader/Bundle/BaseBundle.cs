@@ -97,6 +97,16 @@ namespace LitEngine
             }
             #endregion
 
+            protected void RestShader(UnityEngine.Material targetMat)
+            {
+                if (targetMat == null) return;
+                Shader tshader = Shader.Find(targetMat.shader.name);
+                if (tshader != null)
+                    targetMat.shader = tshader;
+                else
+                    DLog.LogError("未能找到对应的shader.name = " + targetMat.shader.name);
+            }
+
             public virtual bool IsDone()
             {
                 if (!mStartLoad) return false;

@@ -68,20 +68,13 @@ namespace LitEngine
                     DLog.LogError("在资源包 " + mPathName + " 中找不到文件名:" + DeleteSuffixName(mAssetName).ToLowerInvariant() + " 的资源。或者因为资源的命名不规范导致unity加载模块找不到该资源. ");
                 }
 
-                if (mAsset != null && mAsset.GetType() == typeof(UnityEngine.Material)
-                       && (Application.platform == RuntimePlatform.WindowsEditor
-                          || Application.platform == RuntimePlatform.OSXEditor
-                          || Application.platform == RuntimePlatform.LinuxEditor)
-                       )
+                if (mAsset != null && mAsset.GetType().Equals(typeof(UnityEngine.Material))
+                        && (Application.platform == RuntimePlatform.WindowsEditor
+                           || Application.platform == RuntimePlatform.OSXEditor
+                           || Application.platform == RuntimePlatform.LinuxEditor)
+                        )
                 {
-
-                    UnityEngine.Material tmat = (UnityEngine.Material)mAsset;
-                    Shader tshader = Shader.Find(tmat.shader.name);
-                    if (tshader != null)
-                        tmat.shader = tshader;
-                    else
-                        DLog.LogError("未能找到对应的shader.name = " + tmat.shader.name);
-
+                    RestShader((UnityEngine.Material)mAsset);
                 }
 
                 mCreat = null;
