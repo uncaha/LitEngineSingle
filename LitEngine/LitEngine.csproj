@@ -70,6 +70,8 @@
     <Compile Include="Script\EngineInterface\Event\ObjectEventBase.cs" />
     <Compile Include="Script\EngineInterface\Event\ObjectEventCustom.cs" />
     <Compile Include="Script\EngineInterface\Event\ObjectEventParticle.cs" />
+    <Compile Include="Script\EngineInterface\Event\ObjectEventsQueue.cs" />
+    <Compile Include="Script\EngineInterface\Event\ObjectEventsSynchronize.cs" />
     <Compile Include="Script\EngineInterface\UnityInterface\CustomAnimator.cs" />
     <Compile Include="Script\EngineInterface\Event\ScriptInterfaceTriggerEvent.cs" />
     <Compile Include="Script\EngineInterface\UnityInterface\UIAnimation.cs" />

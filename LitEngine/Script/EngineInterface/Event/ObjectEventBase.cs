@@ -17,7 +17,7 @@ namespace LitEngine.ScriptInterface.Event
         public string Key;
         public BehaviourInterfaceBase Parent { get; set; }
 
-        abstract public void Awake();
+        abstract public void Init();
         abstract public void Play();
         abstract public void Stop();
         abstract public bool IsPlaying { get; }

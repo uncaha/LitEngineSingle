@@ -3,7 +3,7 @@ namespace LitEngine.ScriptInterface.Event
 {
     public class ObjectEventCustom : ObjectEventBase
     {
-        override public void Awake()
+        override public void Init()
         {
 
         }

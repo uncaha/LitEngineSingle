@@ -3,9 +3,9 @@ namespace LitEngine.ScriptInterface.Event
 {
     public class ObjectEventAnimator : ObjectEventBase
     {
-        override public void Awake()
+        override public void Init()
         {
-
+            Stop();
         }
 
         override public void Play()

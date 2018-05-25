@@ -5,7 +5,7 @@ namespace LitEngine.ScriptInterface.Event
     public class ObjectEvent : ObjectEventBase
     {
         protected ObjectEventBase targetEvent;
-        override public void Awake()
+        override public void Init()
         {
             System.Type ttype = Target.GetType();
             if (ttype.Equals(typeof(Animator)))
@@ -19,7 +19,7 @@ namespace LitEngine.ScriptInterface.Event
             targetEvent.Target = Target;
             targetEvent.Parent = Parent;
             targetEvent.Key = Key;
-            targetEvent.Stop();
+            targetEvent.Init();
         }
 
         override public void Play()

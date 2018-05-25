@@ -3,9 +3,9 @@ namespace LitEngine.ScriptInterface.Event
 {
     public class ObjectEventParticle : ObjectEventBase
     {
-        override public void Awake()
+        override public void Init()
         {
-
+            Stop();
         }
 
         override public void Play()
