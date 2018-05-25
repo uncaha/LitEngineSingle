@@ -30,7 +30,7 @@ namespace LitEngine
             }
             #endregion
             #region Unity 
-            protected void OnTriggerEnter(Collider _other)
+            virtual protected void OnTriggerEnter(Collider _other)
             {
                 if (mOnTriggerEnter == null) return;
                 if (mTriggerTarget != null && mTriggerTarget != _other.transform) return;
@@ -40,7 +40,7 @@ namespace LitEngine
                 mTriggerEnterTimer = Time.realtimeSinceStartup + mTriggerEnterInterval;
                 CallAction(mOnTriggerEnter, _other);
             }
-            protected void OnTriggerExit(Collider _other)
+            virtual protected void OnTriggerExit(Collider _other)
             {
                 if (mOnTriggerExit == null) return;
                 if (mTriggerTarget != null && mTriggerTarget != _other.transform) return;

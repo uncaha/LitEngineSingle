@@ -65,7 +65,13 @@
     <Compile Include="Script\Data\DataField.cs" />
     <Compile Include="Script\Data\DataRow.cs" />
     <Compile Include="Script\Data\DataTable.cs" />
+    <Compile Include="Script\EngineInterface\Event\ObjectEventAnimator.cs" />
+    <Compile Include="Script\EngineInterface\Event\ObjectEventAudioSource.cs" />
+    <Compile Include="Script\EngineInterface\Event\ObjectEventBase.cs" />
+    <Compile Include="Script\EngineInterface\Event\ObjectEventCustom.cs" />
+    <Compile Include="Script\EngineInterface\Event\ObjectEventParticle.cs" />
     <Compile Include="Script\EngineInterface\UnityInterface\CustomAnimator.cs" />
+    <Compile Include="Script\EngineInterface\Event\ScriptInterfaceTriggerEvent.cs" />
     <Compile Include="Script\EngineInterface\UnityInterface\UIAnimation.cs" />
     <Compile Include="Script\EngineInterface\UnityInterface\UIInterface.cs" />
     <Compile Include="Script\GoogleProto\ByteArray.cs" />
@@ -88,6 +94,7 @@
     <Compile Include="Script\SteamReaderAndWriter\AesStreamBase.cs" />
     <Compile Include="Script\SteamReaderAndWriter\AESWriter.cs" />
     <Compile Include="Script\STL\SafeList.cs" />
+    <Compile Include="Script\EngineInterface\Event\ObjectEvent.cs" />
     <Compile Include="Script\Tool\SpriteArray.cs" />
     <Compile Include="Script\UnZip\UnZipFile.cs" />
     <Compile Include="Script\DownLoad\DownLoadObject.cs" />

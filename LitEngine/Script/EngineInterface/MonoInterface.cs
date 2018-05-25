@@ -1,15 +1,12 @@
 ﻿using System;
 using UnityEngine;
-namespace LitEngine
+namespace LitEngine.ScriptInterface
 {
-    namespace ScriptInterface
+    public interface MonoInterface
     {
-        public interface MonoInterface
-        {
-            Transform transform { get; }
-            GameObject gameobject { get; }
-            BehaviourInterfaceBase Parent { get; }
-            void Awake();
-        }
-    } 
+        Transform transform { get; }
+        GameObject gameobject { get; }
+        BehaviourInterfaceBase Parent { get; }
+        void Awake();
+    }
 }

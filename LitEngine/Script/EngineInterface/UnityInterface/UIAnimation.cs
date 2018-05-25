@@ -1,30 +1,27 @@
 ﻿using UnityEngine;
-namespace LitEngine
+namespace LitEngine.ScriptInterface
 {
-    namespace ScriptInterface
+    public enum UIAniType
     {
-        public enum UIAniType
+        None = 0,
+        Show,
+        Hide,
+        Normal,
+        Custom,
+    }
+    public class UIAnimator : CustomAnimator
+    {
+        public UIAniType Type = UIAniType.None;
+
+        override protected void Awake()
         {
-            None = 0,
-            Show,
-            Hide,
-            Normal,
-            Custom,
+            base.Awake();
         }
-        public class UIAnimator : CustomAnimator
+
+        override public bool Play(string _state)
         {
-            public UIAniType Type = UIAniType.None;
-
-            override protected void Awake()
-            {
-                base.Awake();
-            }
-
-            override public bool Play(string _state)
-            {
-                if (Type != UIAniType.Custom) return false;
-                return base.Play(_state);
-            }
+            if (Type != UIAniType.Custom) return false;
+            return base.Play(_state);
         }
     }
 }
