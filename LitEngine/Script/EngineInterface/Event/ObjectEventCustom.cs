@@ -3,11 +3,7 @@ namespace LitEngine.ScriptInterface.Event
 {
     public class ObjectEventCustom : ObjectEventBase
     {
-        override public void Init()
-        {
-
-        }
-
+        public UnityEngine.Object target;
         override public void Play()
         {
         }

@@ -3,23 +3,44 @@ namespace LitEngine.ScriptInterface.Event
 {
     public class ObjectEventAudioSource : ObjectEventBase
     {
-        override public void Init()
+        public enum SoundPlayType
         {
-            Stop();
+            normal = 0,
+            useSoundMix,
         }
-
+        public AudioSource target;
+        public SoundPlayType PlayType;
+        protected override void Awake()
+        {
+            base.Awake();
+            if (target == null) return;
+            switch (PlayType)
+            {
+                case SoundPlayType.normal:
+                    target.outputAudioMixerGroup = null;
+                    break;
+                case SoundPlayType.useSoundMix:
+                    target.outputAudioMixerGroup = PlayAudioManager.SoundMixer;
+                    break;
+                default:
+                    break;
+            }
+        }
         override public void Play()
         {
-            ((AudioSource)Target).Play();
+            target.Play();
         }
         override public void Stop()
         {
-            ((AudioSource)Target).Stop();
+            target.Stop();
         }
 
         override public bool IsPlaying
         {
-            get { return ((AudioSource)Target).isPlaying; }
+            get
+            {
+                return target.isPlaying;
+            }
         }
     }
 }

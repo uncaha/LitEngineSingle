@@ -3,23 +3,19 @@ namespace LitEngine.ScriptInterface.Event
 {
     public class ObjectEventParticle : ObjectEventBase
     {
-        override public void Init()
-        {
-            Stop();
-        }
-
+        public ParticleSystem target;
         override public void Play()
         {
-            ((ParticleSystem)Target).Play(true);
+            target.Play(true);
         }
         override public void Stop()
         {
-            ((ParticleSystem)Target).Stop(true);
+            target.Stop(true);
         }
 
         override public bool IsPlaying
         {
-            get { return ((ParticleSystem)Target).isPlaying;}
+            get { return target.isPlaying;}
         }
     }
 }

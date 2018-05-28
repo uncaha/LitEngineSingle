@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
+﻿using UnityEngine;
 namespace LitEngine.ScriptInterface.Event
 {
     public enum EventType
@@ -10,22 +6,28 @@ namespace LitEngine.ScriptInterface.Event
         Play = 0,
         Stop,
     }
-    public abstract class ObjectEventBase
+    public enum EventEnterType
     {
-        public EventType Type = EventType.Play;
-        public Object Target;
-        public string Key;
-        public BehaviourInterfaceBase Parent { get; set; }
+        oneshoot = 1,
+        repeatability,
+    }
+    public abstract class ObjectEventBase : MonoBehaviour
+    {
+        public EventType Type = EventType.Play;    
+        public int Index = 0;    
+        public BehaviourInterfaceBase Parent { get; private set; }
+        virtual protected void Awake()
+        {
+            Parent = GetComponent<ScriptInterfaceTriggerEvent>();
+        }
 
-        abstract public void Init();
         abstract public void Play();
         abstract public void Stop();
-        abstract public bool IsPlaying { get; }
+        abstract public bool IsPlaying { get;}
 
         virtual public void OnEventEnter()
         {
-            if (Parent != null)
-                Parent.CallScriptFunctionByNameParams("OnEventEnter", Target, Key, Type);
+            
             switch (Type)
             {
                 case EventType.Play:
@@ -37,6 +39,8 @@ namespace LitEngine.ScriptInterface.Event
                 default:
                     break;
             }
+            if (Parent != null)
+                Parent.CallScriptFunctionByNameParams("OnEventEnter", this);
         }
     }
 }

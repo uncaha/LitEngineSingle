@@ -129,7 +129,7 @@ namespace LitEngine
             }
             virtual public void InitScript(string _class)
             {
-                if (_class.Length == 0 || mInitScript) return;
+                if (string.IsNullOrEmpty(_class) || mInitScript) return;
                 try {
 
                     mCodeTool = GameCore.CodeTool;
