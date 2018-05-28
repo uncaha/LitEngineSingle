@@ -6,11 +6,6 @@ namespace LitEngine.ScriptInterface.Event
         Play = 0,
         Stop,
     }
-    public enum EventEnterType
-    {
-        oneshoot = 1,
-        repeatability,
-    }
     public abstract class ObjectEventBase : MonoBehaviour
     {
         public EventType Type = EventType.Play;    

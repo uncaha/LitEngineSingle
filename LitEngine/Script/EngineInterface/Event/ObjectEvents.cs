@@ -9,6 +9,11 @@ namespace LitEngine.ScriptInterface.Event
             Synchronize = 1,
             queue,
         }
+        public enum EventEnterType
+        {
+            oneshot = 1,
+            repeatability,
+        }
         public EventEnterType EnterType = EventEnterType.repeatability;
         public PlayType playType = PlayType.Synchronize;
         private ObjectEventBase[] Events = null;
@@ -97,7 +102,11 @@ namespace LitEngine.ScriptInterface.Event
         public void OnEventEnter()
         {
             playCount++;
-            if (EnterType == EventEnterType.oneshoot && playCount > 1) return;
+            if (EnterType == EventEnterType.oneshot)
+            {
+                Parent.enabled = false;
+                if (playCount > 1) return;
+            }
             switch (playType)
             {
                 case PlayType.Synchronize:
