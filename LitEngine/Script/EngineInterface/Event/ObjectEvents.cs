@@ -203,8 +203,8 @@ namespace LitEngine.ScriptInterface.Event
             playCount++;
             if (EnterType == EventEnterType.oneshot)
             {
-                Parent.enabled = false;
                 if (playCount > 1) return;
+                Parent.enabled = false; 
             }
             switch (playType)
             {
