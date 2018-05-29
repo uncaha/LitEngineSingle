@@ -74,30 +74,25 @@ namespace LitEngine.ScriptInterface.Event
             Events = Parent.GetComponents<ObjectEventBase>();
             if (Events == null) return;
             maxCount = Events.Length;
-            if (playType == PlayType.groupQueue)
+            System.Array.Sort(Events, (a, b) => { return a.Index.CompareTo(b.Index); });
+
+            #region initgroup
+            Dictionary<int, EventsGroup> tgroups = new Dictionary<int, EventsGroup>();
+            for (int i = 0; i < Events.Length; i++)
             {
-                Dictionary<int, EventsGroup> tgroups = new Dictionary<int, EventsGroup>();
-
-                for (int i = 0; i < Events.Length; i++)
-                {
-                    if (!tgroups.ContainsKey(Events[i].Index))
-                        tgroups.Add(Events[i].Index, new EventsGroup(Events[i].Index));
-                    tgroups[Events[i].Index].Events.Add(Events[i]);
-                }
-
-                Groups = new List<EventsGroup>(tgroups.Values);
-                Groups.Sort((a, b) => { return a.GroupId.CompareTo(b.GroupId); });
-
-                for (int i = 0; i < Groups.Count; i++)
-                {
-                    Groups[i].Events.Sort((a, b) => { return a.Index.CompareTo(b.Index); });
-                }
+                if (!tgroups.ContainsKey(Events[i].Index))
+                    tgroups.Add(Events[i].Index, new EventsGroup(Events[i].Index));
+                tgroups[Events[i].Index].Events.Add(Events[i]);
             }
-            else
+
+            Groups = new List<EventsGroup>(tgroups.Values);
+            Groups.Sort((a, b) => { return a.GroupId.CompareTo(b.GroupId); });
+
+            for (int i = 0; i < Groups.Count; i++)
             {
-                System.Array.Sort(Events, (a, b) => { return a.Index.CompareTo(b.Index); }); 
+                Groups[i].Events.Sort((a, b) => { return a.Index.CompareTo(b.Index); });
             }
-      
+            #endregion
         }
         #region queue
         public void PlayQueue()
