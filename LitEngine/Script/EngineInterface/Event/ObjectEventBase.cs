@@ -9,8 +9,8 @@ namespace LitEngine.ScriptInterface.Event
     public abstract class ObjectEventBase : MonoBehaviour
     {
         public EventType Type = EventType.Play;    
-        public int Index = 0;    
-        public BehaviourInterfaceBase Parent { get; private set; }
+        public int Index = 0;
+        private BehaviourInterfaceBase Parent;
         virtual protected void Awake()
         {
             Parent = GetComponent<ScriptInterfaceTriggerEvent>();
