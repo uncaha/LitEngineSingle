@@ -10,7 +10,7 @@ namespace LitEngine.ScriptInterface.Event
     {
         public EventType Type = EventType.Play;    
         public int Index = 0;
-        private BehaviourInterfaceBase Parent;
+        protected BehaviourInterfaceBase Parent;
         virtual protected void Awake()
         {
             Parent = GetComponent<ScriptInterfaceTriggerEvent>();
@@ -34,8 +34,6 @@ namespace LitEngine.ScriptInterface.Event
                 default:
                     break;
             }
-            if (Parent != null)
-                Parent.CallScriptFunctionByNameParams("OnEventEnter", this);
         }
     }
 }

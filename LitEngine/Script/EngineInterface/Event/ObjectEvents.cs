@@ -66,7 +66,7 @@ namespace LitEngine.ScriptInterface.Event
         private int playIndex = 0;
         private int maxCount = 0;
         private System.Collections.IEnumerator playIEnumerator;
-
+        private System.Collections.IEnumerator WaitEndEnumerator;
         private List<EventsGroup> Groups = null;
         public void Init(ScriptInterfaceTriggerEvent newParent)
         {
@@ -220,6 +220,19 @@ namespace LitEngine.ScriptInterface.Event
                 default:
                     break;
             }
+            if(WaitEndEnumerator != null)
+                Parent.StopCoroutine(WaitEndEnumerator);
+            WaitEndEnumerator = WaitEnd();
+            Parent.StartCoroutine(WaitEndEnumerator);
+        }
+
+        private System.Collections.IEnumerator WaitEnd()
+        {
+            while (IsPlaying)
+                yield return new WaitForSeconds(0.2f);
+            if (Parent != null)
+                Parent.CallScriptFunctionByNameParams("OnGroupEventsEnd");
+            WaitEndEnumerator = null;
         }
     }
 }
