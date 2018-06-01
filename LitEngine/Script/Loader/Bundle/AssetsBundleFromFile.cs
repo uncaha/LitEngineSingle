@@ -12,6 +12,7 @@ namespace LitEngine
             }
             public override void Load()
             {
+                base.Load();
                 mPathName = LoaderManager.GetFullPath(mAssetName);
 
                 mAssetsBundle = AssetBundle.LoadFromFile(mPathName);

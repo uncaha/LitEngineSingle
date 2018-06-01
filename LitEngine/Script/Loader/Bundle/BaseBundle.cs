@@ -3,8 +3,17 @@ namespace LitEngine
 {
     namespace Loader
     {
+        public enum StepState
+        {
+            None = 0,
+            BundleLoad,
+            AssetsLoad,
+            WaitingLoadAsset,
+            LoadEnd,
+        }
         public class BaseBundle 
         {
+
             #region 类属性
             static public string sSuffixName = ".bytes";
             protected string mAssetName = "";
@@ -17,6 +26,7 @@ namespace LitEngine
             protected int mPCount = 0;
             protected float mProgress = 0;
             protected BundleVector mParent;
+            public StepState Step { get; protected set; }
             #endregion
             public BaseBundle()
             {
@@ -115,10 +125,12 @@ namespace LitEngine
             public virtual void Load()
             {
                 mStartLoad = true;
+                Step = StepState.BundleLoad;
             }
             public virtual void LoadEnd()
             {
                 mIsLoaded = true;
+                Step = StepState.LoadEnd;
             }
 
             #region 资源计数以及删除

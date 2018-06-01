@@ -21,6 +21,7 @@ namespace LitEngine
 
             public override void Load()
             {
+                base.Load();
                 string[] tdeps = LoaderManager.GetDirectDependencies(mAssetName);
                 if (tdeps != null)
                 {
@@ -33,7 +34,7 @@ namespace LitEngine
 
                 mMainBundle = new AssetsBundleFromFile(mAssetName);
                 mMainBundle.Load();
-
+                
                 LoadEnd();
             }
 

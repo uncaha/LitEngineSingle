@@ -28,9 +28,11 @@ namespace LitEngine
                             mDepList.Add(tchile);
                     }
                 }
-                mMainBundle = new AssetsBundleAsyncFromFile(mAssetName);
+                mMainBundle = new AssetsBundleAsyncFromFile(mAssetName,true);
                 mMainBundle.Load();
+
                 mStartLoad = true;
+                Step = StepState.BundleLoad;
             }
 
             protected void DependencieCallBack(string _key,object _res)
@@ -45,12 +47,54 @@ namespace LitEngine
 
             override public bool IsDone()
             {
-                if (!base.IsDone()) return false;
-                if (Loaded) return true;
+                switch (Step)
+                {
+                    case StepState.None:
+                        return base.IsDone();
+                    case StepState.LoadEnd:
+                        return true;
+                    case StepState.BundleLoad:
+                        return BundleLoad();
+                    case StepState.AssetsLoad:
+                        return AssetsLoad();
+                    default:
+                        return false;
+                }
+            }
+
+            private bool BundleLoad()
+            {
+                mMainBundle.IsDone();
+                if (mMainBundle.Step == StepState.BundleLoad) return false;
+                for (int i = 0; i < mDepList.Count; i++)
+                {
+                    
+                    if (mDepList[i].Step == StepState.BundleLoad)
+                        return false;
+                }
+                StartLoadAssets();
+                return false;
+            }
+
+            private bool AssetsLoad()
+            {
                 if (!mMainBundle.IsDone()) return false;
                 if (mLoadedCount < mNeedLoadCount) return false;
                 LoadEnd();
-                return true;
+                return false;
+            }
+
+            public void StartLoadAssets()
+            {
+                for (int i = 0; i < mDepList.Count; i++)
+                {
+                    AssetsBundleHaveDependencieAsync tbd = (AssetsBundleHaveDependencieAsync)mDepList[i];
+                    if (tbd.Step == StepState.WaitingLoadAsset)
+                        tbd.StartLoadAssets();
+                }
+                ((AssetsBundleAsyncFromFile)mMainBundle).StartLoadAssets();
+                Step = StepState.AssetsLoad;
+               // DLog.Log(AssetName + "--AssetsLoad");
             }
 
             public override void LoadEnd()

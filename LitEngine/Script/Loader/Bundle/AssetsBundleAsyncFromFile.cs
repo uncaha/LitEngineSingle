@@ -5,28 +5,21 @@ namespace LitEngine
     {
         public class AssetsBundleAsyncFromFile : BaseBundle
         {
-            public enum StepState
-            {
-                None = 0,
-                BundleLoad,
-                AssetsLoad,
-                LoadEnd,
-            }
-
+            
             private AssetBundleCreateRequest mCreat = null;
             private AssetBundleRequest mLoadObjReq = null;
-            private StepState mStep = StepState.None;
+            private bool WaitCallStartLoadAsset = false;
             public AssetsBundleAsyncFromFile()
             {
             }
 
-            public AssetsBundleAsyncFromFile(string _assetsname) : base(_assetsname)
+            public AssetsBundleAsyncFromFile(string _assetsname, bool _waitloadcall = false) : base(_assetsname)
             {
+                WaitCallStartLoadAsset = _waitloadcall;
             }
 
             public override void LoadEnd()
             {
-                mStep = StepState.LoadEnd;
                 base.LoadEnd();
             }
             void CreatBundleReq()
@@ -43,7 +36,7 @@ namespace LitEngine
             }
             override public bool IsDone()
             {
-                switch(mStep)
+                switch(Step)
                 {
                     case StepState.None:
                         return base.IsDone();
@@ -53,8 +46,15 @@ namespace LitEngine
                         return BundleLoad();
                     case StepState.AssetsLoad:
                         return AssetsLoad();
+                    case StepState.WaitingLoadAsset:
+                        return Waiting();
                 }
                 return true;
+            }
+
+            private bool Waiting()
+            {
+                return false;
             }
 
             private bool AssetsLoad()
@@ -106,28 +106,36 @@ namespace LitEngine
                     return true;
                 }
 
+                if (WaitCallStartLoadAsset)
+                    Step = StepState.WaitingLoadAsset;
+                else
+                    StartLoadAssets();
+                return false;
+            }
+
+            public void StartLoadAssets()
+            {
+                if (Step != StepState.WaitingLoadAsset) return;
+
                 if (((AssetBundle)mAssetsBundle).isStreamedSceneAssetBundle)
                 {
                     mAsset = ((AssetBundle)mAssetsBundle).mainAsset;
                     mCreat = null;
                     mLoadObjReq = null;
                     LoadEnd();
-                    return true;
                 }
                 else
                 {
                     CreatBundleReq();
-                    mStep = StepState.AssetsLoad;
-                    return false;
+                    Step = StepState.AssetsLoad;
                 }
-                 
+                
             }
 
             public override void Load()
             {
                 mPathName = LoaderManager.GetFullPath(mAssetName);
                 mCreat = AssetBundle.LoadFromFileAsync(mPathName);
-                mStep = StepState.BundleLoad;
                 base.Load();
             }
 
