@@ -8,6 +8,7 @@ namespace LitEngine
             None = 0,
             BundleLoad,
             AssetsLoad,
+            ChildenAssetLoad,
             WaitingLoadAsset,
             LoadEnd,
         }

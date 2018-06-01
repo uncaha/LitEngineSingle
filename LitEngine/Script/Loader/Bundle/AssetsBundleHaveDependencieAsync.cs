@@ -57,6 +57,8 @@ namespace LitEngine
                         return BundleLoad();
                     case StepState.AssetsLoad:
                         return AssetsLoad();
+                    case StepState.ChildenAssetLoad:
+                        return ChildenAssetsLoad();
                     default:
                         return false;
                 }
@@ -84,17 +86,36 @@ namespace LitEngine
                 return false;
             }
 
-            public void StartLoadAssets()
+            private bool ChildenAssetsLoad()
             {
                 for (int i = 0; i < mDepList.Count; i++)
                 {
-                    AssetsBundleHaveDependencieAsync tbd = (AssetsBundleHaveDependencieAsync)mDepList[i];
-                    if (tbd.Step == StepState.WaitingLoadAsset)
-                        tbd.StartLoadAssets();
+                    if (!mDepList[i].IsDone())
+                        return false;
                 }
                 ((AssetsBundleAsyncFromFile)mMainBundle).StartLoadAssets();
                 Step = StepState.AssetsLoad;
-               // DLog.Log(AssetName + "--AssetsLoad");
+                return false;
+            }
+
+            public void StartLoadAssets()
+            {
+                if(mDepList.Count > 0 )
+                {
+                    for (int i = 0; i < mDepList.Count; i++)
+                    {
+                        AssetsBundleHaveDependencieAsync tbd = (AssetsBundleHaveDependencieAsync)mDepList[i];
+                        if (tbd.Step == StepState.WaitingLoadAsset)
+                            tbd.StartLoadAssets();
+                    }
+                    Step = StepState.ChildenAssetLoad;
+                }
+                else
+                {
+                    ((AssetsBundleAsyncFromFile)mMainBundle).StartLoadAssets();
+                    Step = StepState.AssetsLoad;
+                }
+
             }
 
             public override void LoadEnd()
