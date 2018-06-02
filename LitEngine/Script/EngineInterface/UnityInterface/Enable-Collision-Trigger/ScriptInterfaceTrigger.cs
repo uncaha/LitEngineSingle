@@ -7,6 +7,20 @@ namespace LitEngine
     {
         public class ScriptInterfaceTrigger : ScriptInterfaceCETBase
         {
+            private bool _CanEnter = true;
+            public bool CanEnter
+            {
+                get { return _CanEnter; }
+                set
+                {
+                    _CanEnter = value;
+                    if (SelfCollider != null)
+                        SelfCollider.enabled = value;
+                    enabled = value;
+                }
+            }
+
+            protected Collider SelfCollider = null;
             #region mymethod
             protected Action<Collider> mOnTriggerEnter;
             protected Action<Collider> mOnTriggerExit;
@@ -16,6 +30,13 @@ namespace LitEngine
             {
 
             }
+
+            override protected void Awake()
+            {
+                base.Awake();
+                SelfCollider = GetComponent<Collider>();
+            }
+
             override public void ClearScriptObject()
             {
                 mOnTriggerEnter = null;
@@ -32,6 +53,7 @@ namespace LitEngine
             #region Unity 
             virtual protected void OnTriggerEnter(Collider _other)
             {
+                if (!CanEnter) return;
                 if (mOnTriggerEnter == null) return;
                 if (mTriggerTarget != null && mTriggerTarget != _other.transform) return;
                 if (!string.IsNullOrEmpty(TriggerTargetName) && !_other.name.Equals(TriggerTargetName)) return;

@@ -61,7 +61,7 @@ namespace LitEngine.ScriptInterface.Event
         public EventEnterType EnterType = EventEnterType.repeatability;
         public PlayType playType = PlayType.Synchronize;
         private ObjectEventBase[] Events = null;
-        private BehaviourInterfaceBase Parent = null;
+        private ScriptInterfaceTriggerEvent Parent = null;
         private int playCount = 0;
         private int playIndex = 0;
         private int maxCount = 0;
@@ -204,7 +204,7 @@ namespace LitEngine.ScriptInterface.Event
             if (EnterType == EventEnterType.oneshot)
             {
                 if (playCount > 1) return;
-                Parent.enabled = false; 
+                Parent.CanEnter = false; 
             }
             switch (playType)
             {
