@@ -21,7 +21,7 @@ namespace LitEngine.ScriptInterface
         override protected void OnTriggerEnter(Collider _other)
         {
             if (!CanEnter) return;
-            if (mTriggerTarget != null && mTriggerTarget != _other.transform) return;
+            if (mTriggerTarget != null && !mTriggerTarget.Equals(_other.transform)) return;
             if (!string.IsNullOrEmpty(TriggerTargetName) && !_other.name.Equals(TriggerTargetName)) return;
             if (mTriggerEnterTimer > Time.realtimeSinceStartup) return;
 

@@ -55,7 +55,7 @@ namespace LitEngine
             {
                 if (!CanEnter) return;
                 if (mOnTriggerEnter == null) return;
-                if (mTriggerTarget != null && mTriggerTarget != _other.transform) return;
+                if (mTriggerTarget != null && !mTriggerTarget.Equals(_other.transform)) return;
                 if (!string.IsNullOrEmpty(TriggerTargetName) && !_other.name.Equals(TriggerTargetName)) return;
 
                 if (mTriggerEnterTimer > Time.realtimeSinceStartup) return;
