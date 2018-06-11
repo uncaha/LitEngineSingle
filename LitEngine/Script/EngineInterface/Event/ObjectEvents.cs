@@ -99,8 +99,12 @@ namespace LitEngine.ScriptInterface.Event
         {
             if (Events == null || IsPlaying) return;
             playIndex = 0;
-            playIEnumerator = StartQueue();
-            Parent.StartCoroutine(playIEnumerator);
+            if (Parent.gameObject.activeInHierarchy)
+            {
+                playIEnumerator = StartQueue();
+                Parent.StartCoroutine(playIEnumerator);
+            }
+                
         }
         public void StopQueue()
         {
@@ -153,8 +157,11 @@ namespace LitEngine.ScriptInterface.Event
         {
             if (Groups == null || IsPlaying) return;
             playIndex = 0;
-            playIEnumerator = StartGroupQueue();
-            Parent.StartCoroutine(playIEnumerator);
+            if (Parent.gameObject.activeInHierarchy)
+            {
+                playIEnumerator = StartGroupQueue();
+                Parent.StartCoroutine(playIEnumerator);
+            }     
         }
         public void StopGroupQueue()
         {
@@ -222,8 +229,18 @@ namespace LitEngine.ScriptInterface.Event
             }
             if(WaitEndEnumerator != null)
                 Parent.StopCoroutine(WaitEndEnumerator);
-            WaitEndEnumerator = WaitEnd();
-            Parent.StartCoroutine(WaitEndEnumerator);
+
+            if (Parent.gameObject.activeInHierarchy && IsPlaying)
+            {
+                WaitEndEnumerator = WaitEnd();
+                Parent.StartCoroutine(WaitEndEnumerator);
+            }
+            else
+            {
+                if (Parent != null)
+                    Parent.CallScriptFunctionByNameParams("OnGroupEventsEnd");
+            }
+           
         }
 
         private System.Collections.IEnumerator WaitEnd()

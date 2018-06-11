@@ -1,45 +1,40 @@
 ﻿using UnityEngine;
 namespace LitEngine.ScriptInterface.Event
 {
-    public class ObjectEventAudioSource : ObjectEventBase
+    public class ObjectEventAudioClip : ObjectEventBase
     {
         public enum SoundPlayType
         {
             normal = 0,
             useSoundMix,
         }
-        public AudioSource target;
+        public AudioClip target;
         public SoundPlayType PlayType = SoundPlayType.normal;
-        protected override void Awake()
+
+        override public void Play()
         {
-            base.Awake();
-            if (target == null) return;
             switch (PlayType)
             {
                 case SoundPlayType.normal:
-                    target.outputAudioMixerGroup = null;
+                    PlayAudioManager.PlaySound(target);
                     break;
                 case SoundPlayType.useSoundMix:
-                    target.outputAudioMixerGroup = PlayAudioManager.SoundMixer;
+                    PlayAudioManager.PlayMixerSound(target);
                     break;
                 default:
                     break;
             }
-        }
-        override public void Play()
-        {
-            target.Play();
+           
         }
         override public void Stop()
         {
-            target.Stop();
         }
 
         override public bool IsPlaying
         {
             get
             {
-                return target.isPlaying;
+                return false;
             }
         }
     }
