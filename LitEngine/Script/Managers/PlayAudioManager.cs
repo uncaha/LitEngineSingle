@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Audio;
+using System.Collections.Generic;
 namespace LitEngine
 {
     public class PlayAudioManager : MonoManagerBase
@@ -103,6 +104,8 @@ namespace LitEngine
         
         private int mIndex = 0;
         private int mMixerIndex = 0;
+
+        private List<AudioSource> audioSources = new List<AudioSource>();
         private void Awake()
         {
             mBackMusic = gameObject.AddComponent<AudioSource>();
@@ -118,10 +121,20 @@ namespace LitEngine
             {
                 mAudioSounds[i] = gameObject.AddComponent<AudioSource>();
             }
+
+            audioSources.Add(mBackMusic);
+            audioSources.AddRange(mAudioMixerSounds);
+            audioSources.AddRange(mAudioSounds);
         }
         override protected void OnDestroy()
         {
+            audioSources.Clear();
             base.OnDestroy();
+        }
+
+        static public bool IsChild(AudioSource targetAudio)
+        {
+            return Instance.audioSources.Contains(targetAudio);
         }
 
         static public void PlayMixerSound(AudioClip _clip)
@@ -153,9 +166,20 @@ namespace LitEngine
             Instance.mBackMusic.Play();
         }
 
+        #region stop,pause
         static public void StopMusic()
         {
             Instance.mBackMusic.Stop();
+        }
+
+        static public void PauseMusic()
+        {
+            Instance.mBackMusic.Pause();
+        }
+
+        static public void UnPauseMusic()
+        {
+            Instance.mBackMusic.UnPause();
         }
 
         static public void StopSound()
@@ -170,6 +194,57 @@ namespace LitEngine
                 Instance.mAudioMixerSounds[i].Stop();
             }
         }
+
+        static public void PauseSound()
+        {
+            for (int i = 0; i < Instance.mMaxSoundCount; i++)
+            {
+                Instance.mAudioSounds[i].Pause();
+            }
+
+            for (int i = 0; i < Instance.mMaxSoundCount; i++)
+            {
+                Instance.mAudioMixerSounds[i].Pause();
+            }
+        }
+
+        static public void UnPauseSound()
+        {
+            for (int i = 0; i < Instance.mMaxSoundCount; i++)
+            {
+                Instance.mAudioSounds[i].UnPause();
+            }
+
+            for (int i = 0; i < Instance.mMaxSoundCount; i++)
+            {
+                Instance.mAudioMixerSounds[i].UnPause();
+            }
+        }
+
+        static public void PauseAllAudioExceptSound()
+        {
+            AudioSource[] tevents = FindObjectsOfType<AudioSource>();
+            int tlen = tevents.Length;
+            for (int i = 0; i < tlen; i++)
+            {
+                if (!IsChild(tevents[i]))
+                    tevents[i].Pause();
+            }
+            PauseMusic();
+        }
+        static public void UnPauseAllAudioExceptSound()
+        {
+            AudioSource[] tevents = FindObjectsOfType<AudioSource>();
+            int tlen = tevents.Length;
+            for (int i = 0; i < tlen; i++)
+            {
+                if (!IsChild(tevents[i]))
+                    tevents[i].UnPause();
+            }
+            UnPauseMusic();
+        }
+        #endregion
+
 
         static public void Clear()
         {
