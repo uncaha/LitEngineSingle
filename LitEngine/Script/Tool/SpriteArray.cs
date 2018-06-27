@@ -14,6 +14,11 @@ public class SpriteArray : MonoBehaviour
             spdic = new Dictionary<string, Sprite>();
             for (int i = 0; i < sprites.Length; i++)
             {
+                if(spdic.ContainsKey(sprites[i].name))
+                {
+                    DLog.LogError("SpriteArray init error.重复的key : " + sprites[i].name);
+                    continue;
+                }
                 spdic.Add(sprites[i].name, sprites[i]);
             }
         }
