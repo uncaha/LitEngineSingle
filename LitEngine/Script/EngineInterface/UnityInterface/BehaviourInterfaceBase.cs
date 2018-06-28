@@ -137,15 +137,19 @@ namespace LitEngine
                     mScriptType = mCodeTool.GetLType(mScriptClass);
                     mObject = mCodeTool.GetCSLEObjectParmasByType(mScriptType, this);
                     InitParamList();
-                    CallScriptFunctionByName("Awake");
+                    InitInterfacr();
                     mInitScript = true;
+                    CallScriptFunctionByName("Awake");
                 }
                 catch (Exception _erro)
                 {
                     DLog.LogError( string.Format("脚本初始化出错:Class = {0},GameObject = {1},InitScript ->{2}", mScriptClass,gameObject.name, _erro.ToString()));
-                }
-                
-                
+                } 
+            }
+
+            virtual protected void InitInterfacr()
+            {
+
             }
             #endregion
             #region 调用脚本函数

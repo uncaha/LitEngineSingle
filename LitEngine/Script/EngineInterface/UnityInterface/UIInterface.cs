@@ -4,6 +4,12 @@ namespace LitEngine.ScriptInterface
 {
     public class UIInterface : BehaviourInterfaceBase
     {
+        [System.Serializable]
+        public class UIObject
+        {
+            public string key;
+            public GameObject gameobject;
+        }
         public enum UISate
         {
             Normal = 0,
@@ -11,6 +17,8 @@ namespace LitEngine.ScriptInterface
             Hidden,
         }
         public int Deep = 0;
+        public UIObject[] objects;
+        protected Dictionary<string, GameObject> objectDic = new Dictionary<string, GameObject>();
         protected UISate mState = UISate.Normal;
         protected Dictionary<UIAniType, UIAnimator> mAniMap;
         protected UIAnimator mCurAni;
@@ -20,20 +28,8 @@ namespace LitEngine.ScriptInterface
 
         }
 
-        override protected void InitParamList()
+        override protected void InitInterfacr()
         {
-            base.InitParamList();
-        }
-
-        override public void ClearScriptObject()
-        {
-            base.ClearScriptObject();
-        }
-        #endregion
-        #region Unity 
-        protected override void Awake()
-        {
-            base.Awake();
             UnityEngine.Animator tanitor = GetComponent<UnityEngine.Animator>();
             if (tanitor != null)
             {
@@ -67,7 +63,32 @@ namespace LitEngine.ScriptInterface
                     mAniMap.Add(tanimators[i].Type, tanimators[i]);
                 }
             }
+
+            if (objects != null && objects.Length > 0)
+            {
+                for (int i = 0; i < objects.Length; i++)
+                {
+                    objectDic.Add(objects[i].key, objects[i].gameobject);
+                    if (mObject != null)
+                    {
+                        mCodeTool.SetTargetMember(mObject, objects[i].key, objects[i].gameobject);
+                    }
+                }
+
+            }
         }
+
+        override protected void InitParamList()
+        {
+            base.InitParamList();
+        }
+
+        override public void ClearScriptObject()
+        {
+            base.ClearScriptObject();
+        }
+        #endregion
+        #region Unity 
         override protected void OnDisable()
         {
             base.OnDisable();
@@ -94,6 +115,15 @@ namespace LitEngine.ScriptInterface
         }
         #endregion
         #region Call
+
+        public Object this[string key]
+        {
+            get
+            {
+                if (!objectDic.ContainsKey(key)) return null;
+                return objectDic[key];
+            }
+        }
 
         #region ani
         override public void PlayAnimation(string _state)
