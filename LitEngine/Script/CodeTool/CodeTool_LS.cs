@@ -211,7 +211,6 @@ namespace LitEngine
 
         override protected void DisposeNoGcCode()
         {
-            mApp.Clear();
             mApp = null;
         }
         #endregion

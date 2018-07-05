@@ -23,7 +23,7 @@ namespace ILRuntime.Runtime.Enviorment
     public delegate object CLRCreateDefaultInstanceDelegate();
     public delegate object CLRCreateArrayInstanceDelegate(int size);
 
-    public partial class AppDomain
+    public class AppDomain
     {
         Queue<ILIntepreter> freeIntepreters = new Queue<ILIntepreter>();
         Dictionary<int, ILIntepreter> intepreters = new Dictionary<int, ILIntepreter>();
@@ -51,12 +51,13 @@ namespace ILRuntime.Runtime.Enviorment
         /// </summary>
         public bool AllowUnboundCLRMethod { get; set; }
 
-#if UNITY_EDITOR
+#if DEBUG && (UNITY_EDITOR || UNITY_ANDROID || UNITY_IPHONE)
         public int UnityMainThreadID { get; set; }
 #endif
         public unsafe AppDomain()
         {
             AllowUnboundCLRMethod = true;
+            InvocationContext.InitializeDefaultConverters();
             loadedAssemblies = System.AppDomain.CurrentDomain.GetAssemblies();
             var mi = typeof(System.Runtime.CompilerServices.RuntimeHelpers).GetMethod("InitializeArray");
             RegisterCLRMethodRedirection(mi, CLRRedirections.InitializeArray);
@@ -66,9 +67,13 @@ namespace ILRuntime.Runtime.Enviorment
                 {
                     RegisterCLRMethodRedirection(i, CLRRedirections.CreateInstance);
                 }
-                else if(i.Name == "CreateInstance" && i.GetParameters().Length == 1)
+                else if (i.Name == "CreateInstance" && i.GetParameters().Length == 1)
                 {
                     RegisterCLRMethodRedirection(i, CLRRedirections.CreateInstance2);
+                }
+                else if (i.Name == "CreateInstance" && i.GetParameters().Length == 2)
+                {
+                    RegisterCLRMethodRedirection(i, CLRRedirections.CreateInstance3);
                 }
             }
             foreach (var i in typeof(System.Type).GetMethods())
@@ -77,7 +82,7 @@ namespace ILRuntime.Runtime.Enviorment
                 {
                     RegisterCLRMethodRedirection(i, CLRRedirections.GetType);
                 }
-                if(i.Name=="Equals" && i.GetParameters()[0].ParameterType == typeof(Type))
+                if (i.Name == "Equals" && i.GetParameters()[0].ParameterType == typeof(Type))
                 {
                     RegisterCLRMethodRedirection(i, CLRRedirections.TypeEquals);
                 }
@@ -88,22 +93,22 @@ namespace ILRuntime.Runtime.Enviorment
                 {
                     RegisterCLRMethodRedirection(i, CLRRedirections.DelegateCombine);
                 }
-                if(i.Name == "Remove")
+                if (i.Name == "Remove")
                 {
                     RegisterCLRMethodRedirection(i, CLRRedirections.DelegateRemove);
                 }
-                if(i.Name == "op_Equality")
+                if (i.Name == "op_Equality")
                 {
                     RegisterCLRMethodRedirection(i, CLRRedirections.DelegateEqulity);
                 }
-                if(i.Name == "op_Inequality")
+                if (i.Name == "op_Inequality")
                 {
                     RegisterCLRMethodRedirection(i, CLRRedirections.DelegateInequlity);
                 }
             }
-            foreach(var i in typeof(MethodBase).GetMethods())
+            foreach (var i in typeof(MethodBase).GetMethods())
             {
-                if(i.Name == "Invoke" && i.GetParameters().Length == 2)
+                if (i.Name == "Invoke" && i.GetParameters().Length == 2)
                 {
                     RegisterCLRMethodRedirection(i, CLRRedirections.MethodInfoInvoke);
                 }
@@ -113,6 +118,18 @@ namespace ILRuntime.Runtime.Enviorment
                 if (i.Name == "Parse" && i.GetParameters().Length == 2)
                 {
                     RegisterCLRMethodRedirection(i, CLRRedirections.EnumParse);
+                }
+                if (i.Name == "GetValues" && i.GetParameters().Length == 1)
+                {
+                    RegisterCLRMethodRedirection(i, CLRRedirections.EnumGetValues);
+                }
+                if (i.Name == "GetNames" && i.GetParameters().Length == 1)
+                {
+                    RegisterCLRMethodRedirection(i, CLRRedirections.EnumGetNames);
+                }
+                if(i.Name == "GetName")
+                {
+                    RegisterCLRMethodRedirection(i, CLRRedirections.EnumGetName);
                 }
             }
             mi = typeof(System.Type).GetMethod("GetTypeFromHandle");
@@ -156,7 +173,7 @@ namespace ILRuntime.Runtime.Enviorment
 
         public DelegateManager DelegateManager { get { return dMgr; } }
 
-        
+
         /// <summary>
         /// 加载Assembly 文件，从指定的路径
         /// </summary>
@@ -328,7 +345,7 @@ namespace ILRuntime.Runtime.Enviorment
         public void LoadAssembly(System.IO.Stream stream)
         {
             LoadAssembly(stream, null, null);
-        }        
+        }
 
         /// <summary>
         /// 从流加载Assembly,以及symbol符号文件(pdb)
@@ -340,7 +357,7 @@ namespace ILRuntime.Runtime.Enviorment
         {
             var module = ModuleDefinition.ReadModule(stream); //从MONO中加载模块
 
-            if (symbolReader != null && symbol != null) 
+            if (symbolReader != null && symbol != null)
             {
                 module.ReadSymbols(symbolReader.GetSymbolReader(module, symbol)); //加载符号表
             }
@@ -584,7 +601,7 @@ namespace ILRuntime.Runtime.Enviorment
             int depth = 0;
             baseType = "";
             genericParams = null;
-            if (fullname.Length >2 && fullname.Substring(fullname.Length - 2) == "[]")
+            if (fullname.Length > 2 && fullname.Substring(fullname.Length - 2) == "[]")
             {
                 fullname = fullname.Substring(0, fullname.Length - 2);
                 isArray = true;
@@ -761,7 +778,7 @@ namespace ILRuntime.Runtime.Enviorment
                         }
                         else
                             val = GetType(gType.GenericArguments[i], contextType, contextMethod);
-                        if (val != null && val.HasGenericParameter)
+                        if (val != null && gType.GenericArguments[i].ContainsGenericParameter)
                             dummyGenericInstance = true;
                         if (val != null)
                             genericArguments[i] = new KeyValuePair<string, IType>(key, val);
@@ -888,7 +905,7 @@ namespace ILRuntime.Runtime.Enviorment
             if (mapType.TryGetValue(type, out t))
             {
                 ILType ilType = t as ILType;
-                if(ilType != null)
+                if (ilType != null)
                 {
                     bool hasConstructor = args != null && args.Length != 0;
                     var res = ilType.Instantiate(!hasConstructor);
@@ -905,6 +922,22 @@ namespace ILRuntime.Runtime.Enviorment
         }
 
         /// <summary>
+        /// Prewarm all methods of the specified type
+        /// </summary>
+        /// <param name="type"></param>
+        public void Prewarm(string type)
+        {
+            IType t = GetType(type);
+            if (t == null || t is CLRType)
+                return;
+            var methods = t.GetMethods();
+            foreach(var i in methods)
+            {
+                ((ILMethod)i).Prewarm();
+            }
+        }
+
+        /// <summary>
         /// Invoke a method
         /// </summary>
         /// <param name="type">Type's fullname</param>
@@ -916,10 +949,10 @@ namespace ILRuntime.Runtime.Enviorment
             IType t = GetType(type);
             if (t == null)
                 return null;
-            var m = t.GetMethod(method, p != null ? p.Length : 0);            
+            var m = t.GetMethod(method, p != null ? p.Length : 0);
             if (m != null)
             {
-                for(int i = 0; i < m.ParameterCount; i++)
+                for (int i = 0; i < m.ParameterCount; i++)
                 {
                     if (p[i] == null)
                         continue;
@@ -1046,7 +1079,7 @@ namespace ILRuntime.Runtime.Enviorment
             else
                 throw new NotSupportedException("Cannot invoke CLRMethod");
         }
-        internal IMethod GetMethod(object token, ILType contextType,ILMethod contextMethod, out bool invalidToken)
+        internal IMethod GetMethod(object token, ILType contextType, ILMethod contextMethod, out bool invalidToken)
         {
             string methodname = null;
             string typename = null;
@@ -1242,7 +1275,7 @@ namespace ILRuntime.Runtime.Enviorment
         public void RegisterCrossBindingAdaptor(CrossBindingAdaptor adaptor)
         {
             var bType = adaptor.BaseCLRType;
-            
+
             if (bType != null)
             {
                 if (!crossAdaptors.ContainsKey(bType))
@@ -1285,7 +1318,7 @@ namespace ILRuntime.Runtime.Enviorment
                     else
                         throw new Exception("Crossbinding Adapter for " + i.FullName + " is already added.");
                 }
-            } 
+            }
         }
     }
 }

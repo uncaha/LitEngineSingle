@@ -90,6 +90,22 @@ namespace ILRuntime.Runtime.Intepreter
                             if ((byte)f.Constant == intVal)
                                 return f.Name;
                         }
+                        else if (f.Constant is uint)
+                        {
+                            int val = (int) (uint) f.Constant;
+                            if (val == intVal)
+                                return f.Name;
+                        }
+                        else if (f.Constant is ushort)
+                        {
+                            if ((ushort)f.Constant == intVal)
+                                return f.Name;
+                        }
+                        else if (f.Constant is sbyte)
+                        {
+                            if ((sbyte)f.Constant == intVal)
+                                return f.Name;
+                        }
                         else
                             throw new NotImplementedException();
                     }
@@ -460,7 +476,14 @@ namespace ILRuntime.Runtime.Intepreter
                 }
             }
             else
-                return base.GetHashCode();
+            {
+                if (this is ILEnumTypeInstance)
+                {
+                    return ((ILEnumTypeInstance)this).fields[0].Value.GetHashCode();
+                }
+                else
+                    return base.GetHashCode();
+            }
         }
 
         public bool CanAssignTo(IType type)
