@@ -26,14 +26,8 @@ namespace LitEngine.DownLoad
             }
         }
 
-        public bool IsDone
-        {
-            get
-            {
-                if (mIsDone) return true;
-                return false;
-            }
-        }
+        public DownloadState State { get; private set; }
+        public bool IsDone { get { return State == DownloadState.finished; } }
 
         public object Current { get; }
 
@@ -50,9 +44,7 @@ namespace LitEngine.DownLoad
         public long DownLoadedLength { get; private set; }
 
         private bool mIsClear = false;
-        private bool mIsDone = false;
 
-        private bool mIsStart = false;
         private bool mThreadRuning = false;
 
         private HttpWebRequest mReqest;
@@ -76,6 +68,8 @@ namespace LitEngine.DownLoad
 
             TempFile = DestinationPath + "/" + FileName + ".temp";
             CompleteFile = DestinationPath + "/" + FileName;
+
+            State = DownloadState.normal;
         }
 
         ~DownLoadObject()
@@ -104,10 +98,17 @@ namespace LitEngine.DownLoad
             CloseHttpClient();
         }
         #endregion
+
+        public void RestState()
+        {
+            if (State != DownloadState.finished || Error == null) return;
+            State = DownloadState.normal;
+        }
+
         public void StartDownLoadAsync()
         {
-            if (mIsStart) return;
-            mIsStart = true;
+            if (State != DownloadState.normal) return;
+            State = DownloadState.downloading;
 
             mThreadRuning = true;
             mDownLoadThread = new Thread(ReadNetByte);
@@ -117,8 +118,8 @@ namespace LitEngine.DownLoad
 
         public void StartDownLoad()
         {
-            if (mIsStart) return;
-            mIsStart = true;
+            if (State != DownloadState.normal) return;
+            State = DownloadState.downloading;
 
             mThreadRuning = true;
             ReadNetByte();
@@ -224,7 +225,7 @@ namespace LitEngine.DownLoad
             }
 
             CloseHttpClient();
-            mIsDone = true;
+            State = DownloadState.finished;
         }
         private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
         {

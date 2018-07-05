@@ -3,6 +3,12 @@ using System.Collections.Generic;
 using LitEngine.UpdateSpace;
 namespace LitEngine.DownLoad
 {
+    public enum DownloadState
+    {
+        normal = 1,
+        downloading,
+        finished,
+    }
 
     public class DownLoadGroup : System.Collections.IEnumerator, IDisposable
     {
@@ -16,20 +22,23 @@ namespace LitEngine.DownLoad
             }
         }
 
-        public bool IsDone { get; private set; }
-        public bool IsStart { get; private set; }
+        public bool IsDone { get { return State == DownloadState.finished; } }
+        public DownloadState State { get; private set; }
         public string Key { get; private set; }
+        public string Error { get; private set; }
 
         private bool autoDispose = false;
         private Action<string[], string> FinishedDelegate;
         private Action<long, long, float> ProgressDelegate;
         private List<DownLoadObject> groupList = new List<DownLoadObject>();
-        private UpdateNeedDisObject mUpdateObject;
+        private UpdateNeedDisObject updateObject;
         public DownLoadGroup(string newKey ,bool newAutoDispose = true)
         {
             Key = newKey;
             autoDispose = newAutoDispose;
-            mUpdateObject = new UpdateNeedDisObject(Key, Update, Dispose);
+            updateObject = new UpdateNeedDisObject(Key, Update, Dispose);
+            State = DownloadState.normal;
+            Error = null;
         }
         ~DownLoadGroup()
         {
@@ -59,8 +68,8 @@ namespace LitEngine.DownLoad
                 groupList[i].Dispose();
             }
             groupList.Clear();
-            mUpdateObject.UnRegToOwner();
-            mUpdateObject = null;
+            updateObject.UnRegToOwner();
+            updateObject = null;
             FinishedDelegate = null;
             ProgressDelegate = null;
         }
@@ -86,7 +95,7 @@ namespace LitEngine.DownLoad
 
         public void Add(DownLoadObject newObject)
         {
-            if(IsStart)
+            if(State != DownloadState.normal)
             {
                 DLog.LogError("已经开始的任务不可插入新内容." );
                 return;
@@ -101,15 +110,30 @@ namespace LitEngine.DownLoad
 
         public void StartAsync()
         {
-            if (IsStart) return;
-            IsStart = true;
+            if (State != DownloadState.normal) return;
+            State = DownloadState.downloading;
 
             for (int i = 0; i < groupList.Count; i++)
             {
                 groupList[i].StartDownLoadAsync();
             }
 
-            PublicUpdateManager.AddUpdate(mUpdateObject);
+            PublicUpdateManager.AddUpdate(updateObject);
+        }
+
+        public void ReTryDownload()
+        {
+            if (State != DownloadState.finished || Error == null) return;
+            State = DownloadState.normal;
+            for (int i = groupList.Count - 1; i >= 0; i--)
+            {
+                if (groupList[i].IsDone && groupList[i].Error == null)
+                    groupList.RemoveAt(i);
+                else
+                    groupList[i].RestState();
+            }
+            if (groupList.Count > 0)
+                StartAsync();
         }
 
         bool isAllDone = false;
@@ -127,27 +151,31 @@ namespace LitEngine.DownLoad
                 if (!groupList[i].IsDone)
                     isAllDone = false;
             }
-            IsDone = isAllDone;
 
             if (ProgressDelegate != null)
                 ProgressDelegate(DownLoadedLength,ContentLength, Progress);
 
-            if (IsDone)
+            if (isAllDone)
             {
+                State = DownloadState.finished;
+
                 string[] tcmpfile = new string[groupList.Count];
-                string terror = "";
+                string terror = null;
                 for (int i = 0; i < groupList.Count; i++)
                 {
                     tcmpfile[i] = groupList[i].CompleteFile;
-                    terror += groupList[i].Error == null ? "" : groupList[i].Error + "|";
+                    if (groupList[i].Error != null)
+                        terror += groupList[i].Error + "|";
                 }
+
+                Error = terror;
 
                 Action<string[], string> tfinished = FinishedDelegate;
 
                 if (autoDispose)
                     Dispose();
                 else
-                    mUpdateObject.UnRegToOwner();
+                    updateObject.UnRegToOwner();
 
                 try
                 {
