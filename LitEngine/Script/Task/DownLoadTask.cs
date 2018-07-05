@@ -36,10 +36,7 @@ namespace LitEngine
             #endregion
 
             #region 构造析构
-            private DownLoadTask()
-            {
 
-            }
             public DownLoadTask(string _key,string _sourceurl, string _destination, bool _IsClear, Action<string,string> _finished, Action<long, long, float> _progress)
             {
                 try

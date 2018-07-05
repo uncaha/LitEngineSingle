@@ -93,7 +93,7 @@ namespace LitEngine
                     if (mIsDone) return true;
                     if (mUnZipObject == null) return false;
                     if (mProgress != null)
-                        mProgress(mUnZipObject.progress);
+                        mProgress(mUnZipObject.Progress);
                     if (!mUnZipObject.IsDone) return false;
                     mIsDone = true;
 

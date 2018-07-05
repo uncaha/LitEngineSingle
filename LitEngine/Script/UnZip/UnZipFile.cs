@@ -8,10 +8,10 @@ namespace LitEngine
 {
     namespace UnZip
     {
-        public class UnZipObject : YieldInstruction, System.IDisposable
+        public class UnZipObject : System.Collections.IEnumerator, System.IDisposable
         {
             public static int CodePage = Encoding.Default.CodePage;
-            public float progress { get; private set; }
+            public float Progress { get; private set; }
             public string CurFile { get; private set; }
             public bool IsDone { get; private set; }
             public bool IsStart { get; private set; }
@@ -76,7 +76,16 @@ namespace LitEngine
 
             #endregion
 
+            public object Current { get; }
 
+            public bool MoveNext()
+            {
+                return !IsDone;
+            }
+            public void Reset()
+            {
+
+            }
 
             public void StartUnZip()
             {
@@ -122,7 +131,7 @@ namespace LitEngine
                         {
                             CurFile = zp.Name;
                             tunziplen += zp.CompressedSize;
-                            progress = (float)tunziplen / tFileLen;
+                            Progress = (float)tunziplen / tFileLen;
 
                             string un_tmp2;
                             if (zp.Name.IndexOf("/") >= 0)
@@ -174,7 +183,7 @@ namespace LitEngine
                     Error = _error.ToString();
                 }
 
-                progress = 1;
+                Progress = 1;
                 mStream.Close();
                 mStream.Dispose();
                 mStream = null;

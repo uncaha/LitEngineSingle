@@ -11,7 +11,7 @@ namespace LitEngine
 {
     namespace DownLoad
     {
-        public class DownLoadObject: YieldInstruction, System.IDisposable
+        public class DownLoadObject:System.Collections.IEnumerator, System.IDisposable
         {
             #region 属性
             public string DestinationPath { get; private set; }
@@ -36,9 +36,19 @@ namespace LitEngine
                 }
             }
 
+            public object Current { get; }
+
+            public bool MoveNext()
+            {
+                return !IsDone;
+            }
+            public void Reset()
+            {
+
+            }
+
             public long ContentLength { get; private set; }
             public long DownLoadedLength { get; private set; }
-            //public long DownLoadedPart { get; private set; }
 
             private bool mIsClear = false;
             private bool mIsDone = false;
