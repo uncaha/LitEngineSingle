@@ -15,9 +15,17 @@ namespace LitEngine.ScriptInterface
         {
             get
             {
-                AnimatorStateInfo tstate = mAnimator.GetCurrentAnimatorStateInfo(0);
-                float ttime = Mathf.Clamp01(tstate.normalizedTime);
-                return !tstate.loop && ttime == 1f;
+                if (mAnimator.runtimeAnimatorController != null)
+                {
+                    AnimatorStateInfo tstate = mAnimator.GetCurrentAnimatorStateInfo(0);
+                    float ttime = Mathf.Clamp01(tstate.normalizedTime);
+                    return !tstate.loop && ttime == 1f;
+                }
+                else
+                {
+                    return true;
+                }
+                
             }
         }
 
@@ -93,21 +101,30 @@ namespace LitEngine.ScriptInterface
             enabled = _active;
         }
 
-        virtual protected void OnDestroy()
+        virtual protected void RegLateUpdate()
+        {
+            if (lateUpdateobject != null)
+                lateUpdateobject.RegToOwner();
+        }
+
+        virtual protected void UnRegLateUpdate()
         {
             if (lateUpdateobject != null)
                 lateUpdateobject.UnRegToOwner();
         }
 
+        virtual protected void OnDestroy()
+        {
+            UnRegLateUpdate();
+        }
+
         virtual protected void OnDisable()
         {
-            if (lateUpdateobject != null)
-                lateUpdateobject.UnRegToOwner();
+            UnRegLateUpdate();
         }
         virtual protected void OnEnable()
         {
-            if (lateUpdateobject != null)
-                lateUpdateobject.RegToOwner();
+            RegLateUpdate();
         }
 
         virtual protected void AniUpdate()
