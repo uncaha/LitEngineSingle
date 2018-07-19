@@ -172,6 +172,20 @@ namespace LitEngine
             mBundleList.Clear();
         }
 
+        public void ReleaseUnUsedAssets()
+        {
+            List<BaseBundle> tlist = new List<BaseBundle>(mBundleList.values);
+            for (int i = tlist.Count - 1; i >= 0; i--)
+            {
+                BaseBundle tbundle = tlist[i];
+                if (tbundle.WillBeReleased && tbundle.Loaded)
+                {
+                    tbundle.Release();
+                }
+                   
+            }
+        }
+
         static public void RemoveAsset(string _AssetsName)
         {
             if (IsDispose) return;

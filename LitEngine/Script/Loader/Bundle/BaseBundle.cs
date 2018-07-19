@@ -138,24 +138,24 @@ namespace LitEngine
             public virtual void Release(int _count)
             {
                 mPCount -= _count;
-                if (!Loaded)
+                if (mPCount < 0)
                 {
-                    DLog.LogWarning( "不合理的释放时机，资源还没有载入完成.资源将在载入完成后自动释放.retain会中断自动释放. assetsname = " + AssetName);
-                    return;
+                    DLog.LogWarning(AssetName + " 资源计数释放异常 pcount = " + mPCount);
+                    mPCount = 0;
                 }
-
+                    
+                if (!Loaded) return;
                 ChoseRelease();
             }
 
             protected void ChoseRelease()
             {
-                if (mPCount < 0)
-                    DLog.LogError("资源计数释放异常 pcount = " + mPCount);
                 if (mPCount <= 0)
                 {
                     DestoryFormParent();
                 }
             }
+
 
             public virtual void Release()
             {
