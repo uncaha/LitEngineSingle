@@ -22,6 +22,12 @@ namespace LitEngine
                 return fieldMap[_fieldName];
             }
 
+            public void RemoveField(string _fieldName)
+            {
+                if (fieldMap.ContainsKey(_fieldName))
+                    fieldMap.Remove(_fieldName);
+            }
+
             public object this[string _fieldKey]
             {
                 get
@@ -32,13 +38,18 @@ namespace LitEngine
 
                 set
                 {
-                    bool isHave = fieldMap.ContainsKey(_fieldKey);
-                    if (!isHave && value != null)
-                        fieldMap.Add(_fieldKey, new DataField(_fieldKey, value));
-                    else if(isHave && value != null)
-                        fieldMap[_fieldKey].Value = value;
-                    else if (isHave && value == null)
-                        fieldMap.Remove(_fieldKey);
+                    if (!fieldMap.ContainsKey(_fieldKey))
+                    {
+                        if (value != null)
+                            fieldMap.Add(_fieldKey, new DataField(_fieldKey, value));
+                    }
+                    else
+                    {
+                        if (value != null)
+                            fieldMap[_fieldKey].Value = value;
+                        else
+                            fieldMap.Remove(_fieldKey);
+                    }
                 }
             }
 

@@ -22,6 +22,11 @@ namespace LitEngine
                     rowMap.Add(_rowName, new DataRow(_rowName));
                 return rowMap[_rowName];
             }
+            public void RemoveRow(string _rowName)
+            {
+                if (rowMap.ContainsKey(_rowName))
+                    rowMap.Remove(_rowName);
+            }
 
             public DataRow this[string _rowKey]
             {
@@ -35,7 +40,8 @@ namespace LitEngine
                 {
                     if (!rowMap.ContainsKey(_rowKey))
                     {
-                        rowMap.Add(_rowKey, value);
+                        if(value != null)
+                            rowMap.Add(_rowKey, value);
                     }
                     else
                     {
