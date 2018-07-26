@@ -486,7 +486,8 @@ namespace LitEngine
                 if(tasset != null)
                     ret = tasset.bytes;
             }
-
+            if (ret == null)
+                DLog.LogError("文件读取失败 name = " + _filename);
             return ret;
         }
         #endregion
