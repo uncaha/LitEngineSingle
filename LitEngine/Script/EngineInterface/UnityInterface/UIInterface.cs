@@ -28,7 +28,7 @@ namespace LitEngine.ScriptInterface
 
         }
 
-        override protected void InitInterfacr()
+        override protected void InitInterface()
         {
             UnityEngine.Animator tanitor = GetComponent<UnityEngine.Animator>();
             if (tanitor != null)

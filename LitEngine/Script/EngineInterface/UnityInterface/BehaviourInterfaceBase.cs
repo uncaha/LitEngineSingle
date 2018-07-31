@@ -130,24 +130,31 @@ namespace LitEngine
             virtual public void InitScript(string _class)
             {
                 if (string.IsNullOrEmpty(_class) || mInitScript) return;
-                try {
+                mScriptClass = _class;
+                InitScriptOnAwake();
+                OnEnable();
+            }
 
+            virtual protected void InitScriptOnAwake()
+            {
+                if (string.IsNullOrEmpty(mScriptClass) || mInitScript) return;
+                try
+                {
                     mCodeTool = GameCore.CodeTool;
-                    mScriptClass = _class;
                     mScriptType = mCodeTool.GetLType(mScriptClass);
                     mObject = mCodeTool.GetCSLEObjectParmasByType(mScriptType, this);
                     InitParamList();
-                    InitInterfacr();
+                    InitInterface();
                     mInitScript = true;
                     CallScriptFunctionByName("Awake");
                 }
                 catch (Exception _erro)
                 {
-                    DLog.LogError( string.Format("脚本初始化出错:Class = {0},GameObject = {1},InitScript ->{2}", mScriptClass,gameObject.name, _erro.ToString()));
-                } 
+                    DLog.LogError(string.Format("脚本初始化出错:Class = {0},GameObject = {1},InitScript ->{2}", mScriptClass, gameObject.name, _erro.ToString()));
+                }
             }
 
-            virtual protected void InitInterfacr()
+            virtual protected void InitInterface()
             {
 
             }
@@ -254,7 +261,7 @@ namespace LitEngine
             #region Unity 
             virtual protected void Awake()
             {
-                InitScript(mScriptClass);
+                InitScriptOnAwake();
             }
             virtual protected void Start()
             {
