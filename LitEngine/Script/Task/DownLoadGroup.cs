@@ -28,8 +28,8 @@ namespace LitEngine.DownLoad
         public string Error { get; private set; }
 
         private bool autoDispose = false;
-        private Action<string[], string> FinishedDelegate;
-        private Action<long, long, float> ProgressDelegate;
+        public Action<string[], string> FinishedDelegate;
+        public Action<long, long, float> ProgressDelegate;
         private List<DownLoadObject> groupList = new List<DownLoadObject>();
         private UpdateNeedDisObject updateObject;
         public DownLoadGroup(string newKey ,bool newAutoDispose = true)
@@ -157,8 +157,6 @@ namespace LitEngine.DownLoad
 
             if (isAllDone)
             {
-                State = DownloadState.finished;
-
                 string[] tcmpfile = new string[groupList.Count];
                 string terror = null;
                 for (int i = 0; i < groupList.Count; i++)
@@ -186,6 +184,9 @@ namespace LitEngine.DownLoad
                 {
                     DLog.LogError(_error);
                 }
+
+                State = DownloadState.finished;
+
             }
         }
     }
