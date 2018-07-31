@@ -132,7 +132,11 @@ namespace LitEngine
                 if (string.IsNullOrEmpty(_class) || mInitScript) return;
                 mScriptClass = _class;
                 InitScriptOnAwake();
-                OnEnable();
+                if(gameObject.activeInHierarchy)
+                {
+                    CallScriptFunctionByName("Awake");
+                    OnEnable();
+                }
             }
 
             virtual protected void InitScriptOnAwake()
@@ -146,7 +150,6 @@ namespace LitEngine
                     InitParamList();
                     InitInterface();
                     mInitScript = true;
-                    CallScriptFunctionByName("Awake");
                 }
                 catch (Exception _erro)
                 {
@@ -262,6 +265,7 @@ namespace LitEngine
             virtual protected void Awake()
             {
                 InitScriptOnAwake();
+                CallScriptFunctionByName("Awake");
             }
             virtual protected void Start()
             {
