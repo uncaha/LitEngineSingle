@@ -97,8 +97,8 @@ namespace LitEngine.ScriptInterface.Event
         #region queue
         public void PlayQueue()
         {
-            if (Events == null || IsPlaying) return;
-            playIndex = 0;
+            if (Events == null || Events.Length == 0 || IsPlaying) return;
+            
             if (Parent.gameObject.activeInHierarchy)
             {
                 playIEnumerator = StartQueue();
@@ -120,7 +120,7 @@ namespace LitEngine.ScriptInterface.Event
 
         System.Collections.IEnumerator StartQueue()
         {
-           
+            playIndex = 0;
             while (true)
             {
                 Events[playIndex].OnEventEnter();
@@ -155,8 +155,8 @@ namespace LitEngine.ScriptInterface.Event
         #region groupQueue
         public void PlayGroupQueue()
         {
-            if (Groups == null || IsPlaying) return;
-            playIndex = 0;
+            if (Groups == null || Groups.Count == 0 || IsPlaying) return;
+            
             if (Parent.gameObject.activeInHierarchy)
             {
                 playIEnumerator = StartGroupQueue();
@@ -177,7 +177,7 @@ namespace LitEngine.ScriptInterface.Event
 
         System.Collections.IEnumerator StartGroupQueue()
         {
-
+            playIndex = 0;
             while (true)
             {
                 Groups[playIndex].Play();

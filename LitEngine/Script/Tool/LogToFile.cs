@@ -34,7 +34,7 @@ public class LogToFile
         if (!Directory.Exists(sFilePath))
             Directory.CreateDirectory(sFilePath);
         string filename = GetNowLogName();
-        File.AppendAllText(filename, GetTitleStr(), System.Text.Encoding.UTF8);
+        SaveFile(filename, GetTitleStr(), System.Text.Encoding.UTF8);
     }
 
     public static void AddSaveToFileLogType(UnityEngine.LogType _type)
@@ -136,7 +136,7 @@ public class LogToFile
             sb.AppendLine("******************************************");    
         }
 
-        System.IO.File.AppendAllText(GetNowLogName(), sb.ToString(), System.Text.Encoding.UTF8);
+        SaveFile(GetNowLogName(), sb.ToString(), System.Text.Encoding.UTF8);
     }
 
     #region 堆栈信息
@@ -177,6 +177,16 @@ public class LogToFile
     }
     #endregion
 
+    static protected void SaveFile(string path, string contents, Encoding encoding)
+    {
+        try
+        {
+            System.IO.File.AppendAllText(path, contents, System.Text.Encoding.UTF8);
+        }
+        catch (Exception _e)
+        {
+        }
+    }
 }
 
 
