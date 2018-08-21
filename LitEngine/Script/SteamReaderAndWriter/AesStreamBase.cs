@@ -49,7 +49,7 @@ namespace LitEngine
             {
             }
 
-            static protected void EncryptAndUncrypt(byte[] _value,int _offset, long _size)
+            static public void EncryptAndUncrypt(byte[] _value,int _offset, long _size)
             {
                 byte[] tSecret = Encoding.UTF8.GetBytes(AESKey);
                 int j = 0;

@@ -10,10 +10,12 @@
             {
                 get
                 {
-                    return dvalue;
+                    object ret = dvalue;
+                    return ret;
                 }
                 set
                 {
+                    dvalue = null;
                     dvalue = value;
                     ValueType = dvalue != null ? dvalue.GetType().Name : null;
                 }

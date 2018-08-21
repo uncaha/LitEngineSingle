@@ -409,6 +409,7 @@
     <Compile Include="Script\ScriptTool.cs" />
     <Compile Include="Script\Tool\MemoryTool.cs" />
     <Compile Include="Script\Managers\UpdateManager\UpdateObject.cs" />
+    <Compile Include="Script\ValueType\LInt.cs" />
     <Compile Include="Script\Xml\MiniParser.cs" />
     <Compile Include="Script\Xml\SecurityParser.cs" />
     <Compile Include="Script\Xml\SmallXmlParser.cs" />
