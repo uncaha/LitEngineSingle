@@ -65,6 +65,7 @@
     <Compile Include="Script\Data\DataField.cs" />
     <Compile Include="Script\Data\DataRow.cs" />
     <Compile Include="Script\Data\DataTable.cs" />
+    <Compile Include="Script\Data\LValueTypeBase.cs" />
     <Compile Include="Script\EngineInterface\Event\ObjectEventAnimator.cs" />
     <Compile Include="Script\EngineInterface\Event\ObjectEventAudioClip.cs" />
     <Compile Include="Script\EngineInterface\Event\ObjectEventAudioSource.cs" />

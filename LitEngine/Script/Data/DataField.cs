@@ -5,7 +5,7 @@
         public sealed class DataField : DataBaseElement
         {
             public string Key { get; private set; }
-            public string ValueType { get; private set; }
+            public FieldType ValueType { get; private set; }
             public object Value
             {
                 get
@@ -17,7 +17,7 @@
                 {
                     dvalue = null;
                     dvalue = value;
-                    ValueType = dvalue != null ? dvalue.GetType().Name : null;
+                    ValueType = GetValueType(dvalue);
                 }
             }
             private object dvalue;
@@ -43,68 +43,78 @@
                 return _defaultValue == null ? default(T) : (T)_defaultValue;
             }
 
+            private FieldType GetValueType(object _obj)
+            {
+                if (_obj == null)
+                    return FieldType.Null;
+                else
+                    return GetValueTypeByString(_obj.GetType().Name);
+            }
+            private FieldType GetValueTypeByString(string _str)
+            {
+                if (string.IsNullOrEmpty(_str) || _str.Equals("null"))
+                    return FieldType.Null;
+              return !string.IsNullOrEmpty(_str) ? (FieldType)System.Enum.Parse(typeof(FieldType), _str) : FieldType.Null;
+            }
             #region load
             override public void Load(LitEngine.IO.AESReader _loader)
             {
                 Key = _loader.ReadString();
                 Attribut.Load(_loader);
-                ValueType = _loader.ReadString();
+                ValueType = GetValueTypeByString(_loader.ReadString());
                 LoadByType(_loader);
             }
             private void LoadByType(LitEngine.IO.AESReader _loader)
             {
                 switch (ValueType)
                 {
-                    case "Boolean":
-                        Value = _loader.ReadBoolean();
+                    case FieldType.Boolean:
+                        dvalue = _loader.ReadBoolean();
                         break;
-                    case "Byte":
-                        Value = _loader.ReadByte();
+                    case FieldType.Byte:
+                        dvalue = _loader.ReadByte();
                         break;
-                    case "SByte":
-                        Value = _loader.ReadSByte();
+                    case FieldType.SByte:
+                        dvalue = _loader.ReadSByte();
                         break;
-                    case "Int16":
-                        Value = _loader.ReadInt16();
+                    case FieldType.Int16:
+                        dvalue = _loader.ReadInt16();
                         break;
-                    case "UInt16":
-                        Value = _loader.ReadUInt16();
+                    case FieldType.UInt16:
+                        dvalue = _loader.ReadUInt16();
                         break;
-                    case "Int32":
-                        Value = _loader.ReadInt32();
+                    case FieldType.Int32:
+                        dvalue = _loader.ReadInt32();
                         break;
-                    case "UInt32":
-                        Value = _loader.ReadUInt32();
+                    case FieldType.UInt32:
+                        dvalue = _loader.ReadUInt32();
                         break;
-                    case "Int64":
-                        Value = _loader.ReadInt64();
+                    case FieldType.Int64:
+                        dvalue = _loader.ReadInt64();
                         break;
-                    case "UInt64":
-                        Value = _loader.ReadUInt64();
+                    case FieldType.UInt64:
+                        dvalue = _loader.ReadUInt64();
                         break;
-                    case "Single":
-                        Value = _loader.ReadSingle();
+                    case FieldType.Single:
+                        dvalue = _loader.ReadSingle();
                         break;
-                    case "Double":
-                        Value = _loader.ReadDouble();
+                    case FieldType.Double:
+                        dvalue = _loader.ReadDouble();
                         break;
-                    case "Decimal":
-                        Value = _loader.ReadDecimal();
+                    case FieldType.Decimal:
+                        dvalue = _loader.ReadDecimal();
                         break;
-                    case "String":
-                        Value = _loader.ReadString();
+                    case FieldType.String:
+                        dvalue = _loader.ReadString();
                         break;
-                    case "Char":
-                        Value = _loader.ReadChar();
+                    case FieldType.Char:
+                        dvalue = _loader.ReadChar();
                         break;
-                    case "Byte[]":
+                    case FieldType.Bytes:
                         {
                             int tlen = _loader.ReadInt32();
-                            Value = _loader.ReadBytes(tlen);
+                            dvalue = _loader.ReadBytes(tlen);
                         }
-                        break;
-                    case "null":
-                        ValueType = null;
                         break;
                     default:
                         break;
@@ -113,12 +123,12 @@
             #endregion
 
             #region save
-            override  public void Save(LitEngine.IO.AESWriter _writer)
+            override public void Save(LitEngine.IO.AESWriter _writer)
             {
                 _writer.WriteString(Key);
                 Attribut.Save(_writer);
-                _writer.WriteString(ValueType == null ? "null" : ValueType);
-                if (ValueType != null)
+                _writer.WriteString(ValueType.ToString());
+                if (ValueType != FieldType.Null)
                     SaveByType(_writer);
             }
 
@@ -126,51 +136,51 @@
             {
                 switch (ValueType)
                 {
-                    case "Boolean":
-                        _writer.WriteBool((bool)Value);
+                    case FieldType.Boolean:
+                        _writer.WriteBool((bool)dvalue);
                         break;
-                    case "Byte":
-                        _writer.WriteByte((byte)Value);
+                    case FieldType.Byte:
+                        _writer.WriteByte((byte)dvalue);
                         break;
-                    case "SByte":
-                        _writer.WriteSByte((sbyte)Value);
+                    case FieldType.SByte:
+                        _writer.WriteSByte((sbyte)dvalue);
                         break;
-                    case "Int16":
-                        _writer.WriteShort((short)Value);
+                    case FieldType.Int16:
+                        _writer.WriteShort((short)dvalue);
                         break;
-                    case "UInt16":
-                        _writer.WriteUShort((ushort)Value);
+                    case FieldType.UInt16:
+                        _writer.WriteUShort((ushort)dvalue);
                         break;
-                    case "Int32":
-                        _writer.WriteInt((int)Value);
+                    case FieldType.Int32:
+                        _writer.WriteInt((int)dvalue);
                         break;
-                    case "UInt32":
-                        _writer.WriteUInt((uint)Value);
+                    case FieldType.UInt32:
+                        _writer.WriteUInt((uint)dvalue);
                         break;
-                    case "Int64":
-                        _writer.WriteLong((long)Value);
+                    case FieldType.Int64:
+                        _writer.WriteLong((long)dvalue);
                         break;
-                    case "UInt64":
-                        _writer.WriteULong((ulong)Value);
+                    case FieldType.UInt64:
+                        _writer.WriteULong((ulong)dvalue);
                         break;
-                    case "Single":
-                        _writer.WriteFloat((float)Value);
+                    case FieldType.Single:
+                        _writer.WriteFloat((float)dvalue);
                         break;
-                    case "Double":
-                        _writer.WriteDouble((double)Value);
+                    case FieldType.Double:
+                        _writer.WriteDouble((double)dvalue);
                         break;
-                    case "Decimal":
-                        _writer.WriteDecimal((decimal)Value);
+                    case FieldType.Decimal:
+                        _writer.WriteDecimal((decimal)dvalue);
                         break;
-                    case "String":
-                        _writer.WriteString((string)Value);
+                    case FieldType.String:
+                        _writer.WriteString((string)dvalue);
                         break;
-                    case "Char":
-                        _writer.WriteChar((char)Value);
+                    case FieldType.Char:
+                        _writer.WriteChar((char)dvalue);
                         break;
-                    case "Byte[]":
+                    case FieldType.Bytes:
                         {
-                            byte[] tbytes = (byte[])Value;
+                            byte[] tbytes = (byte[])dvalue;
                             _writer.WriteInt(tbytes.Length);
                             _writer.WriteBytes(tbytes);
                         }
