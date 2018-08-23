@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LitEngine.ValueType
+namespace LitEngine.LType
 {
     public enum FieldType
     {
@@ -22,8 +22,5 @@ namespace LitEngine.ValueType
         Char,
         Decimal,
         String,
-    }
-    public class ValueTypeBase
-    {
     }
 }
