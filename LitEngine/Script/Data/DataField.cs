@@ -1,4 +1,5 @@
-﻿namespace LitEngine
+﻿using LitEngine.ValueType;
+namespace LitEngine
 {
     namespace Data
     {
@@ -15,9 +16,11 @@
                 }
                 set
                 {
+                    ValueType = GetValueType(value);
                     dvalue = null;
-                    dvalue = value;
-                    ValueType = GetValueType(dvalue);
+                    if (ValueType != FieldType.Null)
+                        dvalue = value;
+                    
                 }
             }
             private object dvalue;
@@ -43,6 +46,7 @@
                 return _defaultValue == null ? default(T) : (T)_defaultValue;
             }
 
+            #region fieldtype
             private FieldType GetValueType(object _obj)
             {
                 if (_obj == null)
@@ -54,8 +58,18 @@
             {
                 if (string.IsNullOrEmpty(_str) || _str.Equals("null"))
                     return FieldType.Null;
-              return !string.IsNullOrEmpty(_str) ? (FieldType)System.Enum.Parse(typeof(FieldType), _str) : FieldType.Null;
+                try
+                {
+                    return !string.IsNullOrEmpty(_str) ? (FieldType)System.Enum.Parse(typeof(FieldType), _str) : FieldType.Null;
+                }
+                catch (System.Exception)
+                {
+                    return FieldType.Null;
+                }
+                
             }
+            #endregion
+
             #region load
             override public void Load(LitEngine.IO.AESReader _loader)
             {
@@ -109,12 +123,6 @@
                         break;
                     case FieldType.Char:
                         dvalue = _loader.ReadChar();
-                        break;
-                    case FieldType.Bytes:
-                        {
-                            int tlen = _loader.ReadInt32();
-                            dvalue = _loader.ReadBytes(tlen);
-                        }
                         break;
                     default:
                         break;
@@ -177,13 +185,6 @@
                         break;
                     case FieldType.Char:
                         _writer.WriteChar((char)dvalue);
-                        break;
-                    case FieldType.Bytes:
-                        {
-                            byte[] tbytes = (byte[])dvalue;
-                            _writer.WriteInt(tbytes.Length);
-                            _writer.WriteBytes(tbytes);
-                        }
                         break;
                     default:
                         DLog.LogWarning($"暂不支持的类型,无法存储对应的数据.Key = {Key} , Type ={ValueType}");
