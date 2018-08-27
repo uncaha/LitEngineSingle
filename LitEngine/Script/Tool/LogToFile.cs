@@ -154,7 +154,9 @@ public class LogToFile
                 MethodBase tmethod = tframe.GetMethod();
                 if (tmethod.DeclaringType == typeof(LogToFile)
                     || tmethod.DeclaringType == typeof(DLog)
+                    #if NOILRUNTIME
                     || tmethod.DeclaringType == typeof(LitEngine.CodeTool_LS)
+                    #endif
                     || tmethod.DeclaringType == typeof(Logger)
                     || tmethod.DeclaringType == typeof(Application)
                     || tmethod.DeclaringType.ToString().Contains("DebugLogHandler")
@@ -175,7 +177,7 @@ public class LogToFile
 
         return tstacktracebuilder.ToString();
     }
-    #endregion
+#endregion
 
     static protected void SaveFile(string path, string contents, Encoding encoding)
     {

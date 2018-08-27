@@ -1,4 +1,5 @@
-﻿using ILRuntime.CLR.Method;
+﻿#if NOILRUNTIME
+using ILRuntime.CLR.Method;
 namespace ILRuntime.Runtime.Enviorment
 {
     public partial class DelegateManager
@@ -36,3 +37,4 @@ namespace ILRuntime.Runtime.Enviorment
 
     
 }
+#endif

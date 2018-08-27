@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if NOILRUNTIME
+using UnityEngine;
 using System.Collections.Generic;
 using ILRuntime.Other;
 using System;
@@ -155,3 +156,4 @@ namespace LitEngine
         }
     }
 }
+#endif

@@ -61,17 +61,20 @@ namespace LitEngine
         virtual public IType[] GetFieldTypes(IType _type)
         {
             if (_type == null) throw new NullReferenceException("Base GetFieldType _type =" + _type);
+#if NOILRUNTIME
             if (typeof(ILType) == _type.GetType())
                 return ((ILType)_type).FieldTypes;
             else if (typeof(CLRType) == _type.GetType())
                 return ((CLRType)_type).OrderedFieldTypes;
-            else if (typeof(SystemType) == _type.GetType())
+            else 
+#endif 
+            if (typeof(SystemType) == _type.GetType())
                 return ((SystemType)_type).FieldTypes;
             else
                 return null;
         }
-        #endregion
-        #region 方法
+#endregion
+#region 方法
         virtual public MethodBase GetLMethod(IType _type, string _funname, int _pamcount)
         {
             return null;
@@ -99,8 +102,8 @@ namespace LitEngine
 
             return null;
         }
-        #endregion
-        #region 属性
+#endregion
+#region 属性
         virtual public object GetTargetMemberByKey(string _key, object _target)
         {
             return null;
@@ -139,8 +142,8 @@ namespace LitEngine
         {
 
         }
-        #endregion
-        #region 对象获取
+#endregion
+#region 对象获取
         virtual public object GetCSLEObjectParmasByType(IType _type, params object[] _parmas)
         {
             return null;
@@ -150,9 +153,9 @@ namespace LitEngine
             if (_classname == null || _classname.Length == 0) return null;
             return GetCSLEObjectParmasByType(GetLType(_classname), _parmas);
         }
-        #endregion
+#endregion
 
-        #region 委托
+#region 委托
         virtual public UpdateBase GetUpdateObjectAction(string _Function, string _classname, object _target)
         {
 
@@ -182,7 +185,7 @@ namespace LitEngine
         {
             return default(K);
         }
-        #endregion
+#endregion
     }
 
     public abstract class MethodBase

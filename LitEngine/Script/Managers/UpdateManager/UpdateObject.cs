@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+#if NOILRUNTIME
 using ILRuntime.CLR.Method;
-
+#endif
 namespace LitEngine
 {
     namespace UpdateSpace
@@ -38,7 +39,7 @@ namespace LitEngine
                         mIsUseTimer = false;
                 }
             }
-            #region 构造.释放
+#region 构造.释放
 
             public UpdateBase(string _key, Action _delegate)
             {
@@ -80,7 +81,7 @@ namespace LitEngine
                 mZeroDelegate = null;
                 Dead = true;
             }
-            #endregion
+#endregion
             virtual public void RegToOwner()
             {
                 if (IsRegToOwner) return;
@@ -126,7 +127,7 @@ namespace LitEngine
             }
 
         }
-
+#if NOILRUNTIME
         public class UpdateILObject : UpdateBase
         {
             private IMethod mMethod;
@@ -146,7 +147,7 @@ namespace LitEngine
                 mApp.Invoke(mMethod, mTarget, null);
             }
         }
-
+#endif
         public class UpdateNeedDisObject : UpdateBase
         {
             private Action mDisposable = null;

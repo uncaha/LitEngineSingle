@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NOILRUNTIME
+using System;
 using ILRuntime.CLR.TypeSystem;
 using ILRuntime.Runtime.Intepreter;
 using ILRuntime.CLR.Method;
@@ -10,7 +11,7 @@ namespace LitEngine
     using UpdateSpace;
     public class CodeTool_LS : CodeToolBase
     {
-        #region 初始化
+#region 初始化
         public static System.Action<ILRuntime.Runtime.Enviorment.AppDomain> CLRBindingDelegate = null;
         public static System.Action<ILRuntime.Runtime.Enviorment.AppDomain> RegisterDelegate = null;
         public static System.Action<ILRuntime.Runtime.Enviorment.AppDomain> TypeBindingDelegate = null;
@@ -29,7 +30,7 @@ namespace LitEngine
             if (TypeBindingDelegate != null)
                 TypeBindingDelegate(mApp);
         }
-        #region 委托设置
+#region 委托设置
         protected void RegDelegate()
         {
             RegMethodDelegate();
@@ -176,7 +177,7 @@ namespace LitEngine
                 });
             });
 
-            #region 多参
+#region 多参
             mApp.DelegateManager.RegisterDelegateConvertor<UnityEngine.Events.UnityAction<object, object>>((act) =>
             {
                 return new UnityEngine.Events.UnityAction<object, object>((arg0, arg1) =>
@@ -200,22 +201,22 @@ namespace LitEngine
                     ((Action<object, object, object, object>)act)(arg0, arg1, arg2, arg3);
                 });
             });
-            #endregion
+#endregion
 
         }
         protected void RegBindingAdaptor()
         {
             mApp.RegisterCrossBindingAdaptor(new IEnumeratorAdaptor());
         }
-        #endregion
+#endregion
 
         override protected void DisposeNoGcCode()
         {
             mApp = null;
         }
-        #endregion
+#endregion
 
-        #region 类型判断
+#region 类型判断
         override public IType GetLType(string _name)
         {
             return mApp.GetType(_name);
@@ -240,8 +241,8 @@ namespace LitEngine
         {
             return _type.GenericArguments[0].Value;
         }
-        #endregion
-        #region 方法
+#endregion
+#region 方法
         override public MethodBase GetLMethod(IType _type, string _funname, int _pamcount)
         {
 
@@ -260,9 +261,9 @@ namespace LitEngine
             MethodBase tmethod = GetLMethod(ttype, _name, tpramcount);
             return CallMethod(tmethod, _this, _params);
         }
-        #endregion
-        #region 属性
-        #region 获取
+#endregion
+#region 属性
+#region 获取
         override public object GetTargetMemberByKey(string _key, object _target)
         {
             if (_target == null) return null;
@@ -303,9 +304,9 @@ namespace LitEngine
             ILTypeInstance tilobj = _target as ILTypeInstance;
             return tilobj[_index];
         }
-        #endregion
+#endregion
 
-        #region 设置
+#region 设置
         override public void SetMember(IType _type, int _index, object _object, object _target)
         {
             if (_type == null)
@@ -330,10 +331,10 @@ namespace LitEngine
             IType ttype = tilobj.Type.GetField(_key, out tindex);
             tilobj[tindex] = _object;
         }
-        #endregion
+#endregion
 
-        #endregion
-        #region 对象获取
+#endregion
+#region 对象获取
         override public object GetCSLEObjectParmasByType(IType _type, params object[] _parmas)
         {
             if (_type == null) throw new NullReferenceException("LS GetCSLEObjectParmasByType _type = null");
@@ -352,8 +353,8 @@ namespace LitEngine
             return null;
         }
 
-        #endregion
-        #region 委托
+#endregion
+#region 委托
         override public UpdateBase GetUpdateObjectAction(string _Function, string _classname, object _target)
         {
             ILType ttype = (ILType)GetLType(_classname);
@@ -453,7 +454,7 @@ namespace LitEngine
                 ret = tdelapt.Delegate;
             return (K)ret;
         }
-        #endregion
+#endregion
     }
 
     public class Method_LS : MethodBase
@@ -471,4 +472,5 @@ namespace LitEngine
         }
     }
 }
+#endif
 

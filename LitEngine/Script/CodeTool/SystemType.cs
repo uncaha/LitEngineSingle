@@ -1,9 +1,69 @@
 ﻿using System;
 using System.Collections.Generic;
+#if NOILRUNTIME
 using ILRuntime.CLR.Method;
+#endif
 using System.Reflection;
 namespace ILRuntime.CLR.TypeSystem
 {
+#if NOILRUNTIME
+
+#else
+    public interface IType
+    {
+        bool IsGenericInstance { get; }
+        KeyValuePair<string, IType>[] GenericArguments { get; }
+        Type TypeForCLR { get; }
+        Type ReflectionType { get; }
+
+        IType BaseType { get; }
+
+        IType[] Implements { get; }
+
+        IType ByRefType { get; }
+
+        IType ArrayType { get; }
+
+        string FullName { get; }
+
+        string Name { get; }
+
+        bool IsArray { get; }
+
+        int ArrayRank { get; }
+
+        bool IsValueType { get; }
+
+        bool IsDelegate { get; }
+
+        bool IsPrimitive { get; }
+
+        bool IsByRef { get; }
+
+        bool IsInterface { get; }
+
+        IType ElementType { get; }
+
+        bool HasGenericParameter { get; }
+
+        bool IsGenericParameter { get; }
+
+
+        int GetFieldIndex(object token);
+
+
+        bool CanAssignTo(IType type);
+
+        IType MakeGenericInstance(KeyValuePair<string, IType>[] genericArguments);
+
+        IType MakeByRefType();
+
+        IType MakeArrayType(int rank);
+        IType FindGenericArgument(string key);
+
+        IType ResolveGenericType(IType contextType);
+    }
+#endif
     public class SystemType : IType
     {
         public SystemType(Type _clrtype)
@@ -70,36 +130,8 @@ namespace ILRuntime.CLR.TypeSystem
         public IType ElementType { get; set; }
 
         public bool IsGenericParameter { get; set; }
-
+#if NOILRUNTIME
         public ILRuntime.Runtime.Enviorment.AppDomain AppDomain { get; set; }
-
-        /// <summary>
-        /// Get a specified Method in this type
-        /// </summary>
-        /// <param name="name">Name of the Type</param>
-        /// <param name="paramCount">Parameter count</param>
-        /// <param name="declaredOnly">True to search the methods decleared in this type only, false to search base types.</param>
-        /// <returns></returns>
-        public IMethod GetMethod(string name, int paramCount, bool declaredOnly = false)
-        {
-            return null;
-        }
-
-
-        public IType MakeArrayType(int rank)
-        {
-            return new SystemType(clrType.MakeArrayType());
-        }
-
-        /// <summary>
-        ///  Get a specified Method in this type
-        /// </summary>
-        /// <param name="name">Name of the Type</param>
-        /// <param name="param">List of parameter's types</param>
-        /// <param name="genericArguments">List of Generic Arguments</param>
-        /// <param name="returnType">Return Type</param>
-        /// <param name="declaredOnly">True to search the methods decleared in this type only, false to search base types.</param>
-        /// <returns></returns>
         public IMethod GetMethod(string name, List<IType> param, IType[] genericArguments, IType returnType = null, bool declaredOnly = false)
         {
             return null;
@@ -113,15 +145,26 @@ namespace ILRuntime.CLR.TypeSystem
         {
             return null;
         }
+       public IMethod GetMethod(string name, int paramCount, bool declaredOnly = false)
+        {
+            return null;
+        }
+        public IMethod GetConstructor(List<IType> param)
+        {
+            return null;
+        }
+
+
+#endif
+
+        public IType MakeArrayType(int rank)
+        {
+            return new SystemType(clrType.MakeArrayType());
+        }
 
         public int GetFieldIndex(object token)
         {
             return 0;
-        }
-
-        public IMethod GetConstructor(List<IType> param)
-        {
-            return null;
         }
 
         public bool CanAssignTo(IType type)
