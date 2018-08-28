@@ -61,7 +61,9 @@
     <Compile Include="Script\CodeTool\CodeTool_LS.cs" />
     <Compile Include="Script\CodeTool\CodeTool_SYS.cs" />
     <Compile Include="Script\CodeTool\ILRuntimePartialClass.cs" />
+    <Compile Include="Script\Data\DataAttribute.cs" />
     <Compile Include="Script\Data\DataBase.cs" />
+    <Compile Include="Script\Data\DataBaseElement.cs" />
     <Compile Include="Script\Data\DataField.cs" />
     <Compile Include="Script\Data\DataRow.cs" />
     <Compile Include="Script\Data\DataTable.cs" />

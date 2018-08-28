@@ -1,192 +1,114 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-namespace LitEngine
+namespace LitEngine.Data
 {
-    namespace Data
+    public class DataBase
     {
-        public abstract class DataBaseElement
+        private const string cDatafile = "GameData.bytes";
+        public static DataBase Data { get { if (dataInstance == null) dataInstance = new DataBase(); return dataInstance; } }
+        private static DataBase dataInstance = null;
+
+        public Dictionary<string, DataTable>.ValueCollection Tables { get { return tableMap.Values; } }
+        public Dictionary<string, DataTable>.KeyCollection Keys { get { return tableMap.Keys; } }
+
+        private Dictionary<string, DataTable> tableMap = new Dictionary<string, DataTable>();
+        private DataBase()
         {
-            public class DataAttribute
-            {
-                private Dictionary<string, DataField> attributes = null;
-                public object this[string keyParameter]
-                {
-                    get
-                    {
-                        if (attributes == null || !attributes.ContainsKey(keyParameter)) return null;
-                        return attributes[keyParameter].Value;
-                    }
-                    set
-                    {
-                        if(attributes == null) attributes = new Dictionary<string, DataField>();
-                        if (attributes.ContainsKey(keyParameter))
-                        {
-                            if (value == null)
-                                attributes.Remove(keyParameter);
-                            else
-                                attributes[keyParameter].Value = value;
-                        }
-                        else 
-                        {
-                            if(value != null)
-                                attributes.Add(keyParameter, new DataField(keyParameter,value));
-                        }
-                    }
-                }
-
-                public void Load(IO.AESReader _loader)
-                {
-                    int tattcount = _loader.ReadInt32();
-                    if (tattcount > 0)
-                    {
-                        attributes = new Dictionary<string, DataField>();
-                        for (int i = 0; i < tattcount; i++)
-                        {
-                            DataField tfield = new DataField(null, null);
-                            tfield.Load(_loader);
-                            attributes.Add(tfield.Key, tfield);
-                        }
-                    }
-                }
-
-                public void Save(IO.AESWriter _writer)
-                {
-                    int tattcount = attributes == null ? 0 : attributes.Count;
-                    _writer.WriteInt(tattcount);
-                    if (tattcount > 0)
-                    {
-                        foreach(KeyValuePair<string, DataField>  pair in attributes)
-                        {
-                            pair.Value.Save(_writer);
-                        }
-                    }
-                }
-            }
-            public abstract void Load(LitEngine.IO.AESReader _loader);
-            public abstract void Save(LitEngine.IO.AESWriter _writer);
-            public DataAttribute Attribut { get; private set; }
-
-            public DataBaseElement()
-            {
-                Attribut = new DataAttribute();
-            }
-
-            public T TryGetAttribute<T>(string keyParameter, object _defaultValue = null)
-            {
-                try
-                {
-                    object obj = Attribut[keyParameter];
-                    checked
-                    {
-                        return obj != null ? (T)obj : _defaultValue == null ? default(T) : (T)_defaultValue;
-                    }
-                }
-                catch (System.Exception erro)
-                {
-                    DLog.LogError(erro.ToString());
-                }
-                return _defaultValue == null ? default(T) : (T)_defaultValue;
-            }
+            Load();
         }
 
-        public class DataBase
+        public DataTable AddTable(string _tableName)
         {
-            private const string cDatafile = "GameData.bytes";
-            public static DataBase Data { get { if (dataInstance == null) dataInstance = new DataBase(); return dataInstance; } }
-            private static DataBase dataInstance = null;
+            if (!tableMap.ContainsKey(_tableName))
+                tableMap.Add(_tableName, new DataTable(_tableName));
+            return tableMap[_tableName];
+        }
 
-            public Dictionary<string, DataTable>.ValueCollection Tables { get { return tableMap.Values; } }
-            public Dictionary<string, DataTable>.KeyCollection Keys { get { return tableMap.Keys; } }
+        public void AddFromTable(DataTable _table)
+        {
+            if (!tableMap.ContainsKey(_table.TableName))
+                tableMap.Add(_table.TableName, _table);
+        }
 
-            private Dictionary<string, DataTable> tableMap = new Dictionary<string, DataTable>();
-            private DataBase()
+        public DataTable this[string _tableName]
+        {
+            get
             {
-                Load();
-            }
-
-            public DataTable AddTable(string _tableName)
-            {
-                if (!tableMap.ContainsKey(_tableName))
-                    tableMap.Add(_tableName, new DataTable(_tableName));
+                if (!tableMap.ContainsKey(_tableName)) return null;
                 return tableMap[_tableName];
             }
-
-            public DataTable this[string _tableName]
+            set
             {
-                get
+                if (!tableMap.ContainsKey(_tableName))
                 {
-                    if (!tableMap.ContainsKey(_tableName)) return null;
-                    return tableMap[_tableName];
+                    tableMap.Add(_tableName, value);
                 }
-                set
+                else
                 {
-                    if (!tableMap.ContainsKey(_tableName))
-                    {
-                        tableMap.Add(_tableName, value);
-                    }
+                    if (value != null)
+                        tableMap[_tableName] = value;
                     else
-                    {
-                        if (value != null)
-                            tableMap[_tableName] = value;
-                        else
-                            tableMap.Remove(_tableName);
-                    }
+                        tableMap.Remove(_tableName);
                 }
             }
-            #region getdata
-            public DataRow SearchDataRow(string _table, string _rowkey)
-            {
-                DataTable ttable = this[_table];
-                return ttable != null ? ttable[_rowkey] : null;
-            }
-
-            public DataField SearchField(string _table, string _rowkey, string _fieldkey)
-            {
-                DataRow trow = SearchDataRow(_table, _rowkey);
-                return trow != null ? trow.SearchField(_fieldkey) : null;
-            }
-
-            public T TryGetValue<T>(string _table, string _rowkey, string _fieldkey, object _defaultValue = null)
-            {
-                DataField tfield = SearchField(_table, _rowkey, _fieldkey);
-                return tfield != null ? tfield.TryGetValue<T>(_defaultValue) : _defaultValue == null ? default(T) : (T)_defaultValue;
-            }
-            #endregion
-
-            #region load,save
-            public void Load()
-            {
-                string tfullname = GameCore.AppPersistentAssetsPath + cDatafile;
-                if (!File.Exists(tfullname)) return;
-
-                LitEngine.IO.AESReader tloader = new LitEngine.IO.AESReader(tfullname);
-
-                int ttableCount = tloader.ReadInt32();
-                for (int i = 0; i < ttableCount; i++)
-                {
-                    DataTable ttable = new DataTable();
-                    ttable.Load(tloader);
-                    tableMap.Add(ttable.TableName, ttable);
-                }
-                tloader.Close();
-            }
-            public void Save()
-            {
-                string tfullname = GameCore.AppPersistentAssetsPath + cDatafile;
-                LitEngine.IO.AESWriter twriter = new LitEngine.IO.AESWriter(tfullname);
-
-                List<DataTable> ttableValues = new List<DataTable>(tableMap.Values);
-                int ttableCount = ttableValues.Count;
-                twriter.WriteInt(ttableCount);
-                for (int i = 0; i < ttableCount; i++)
-                {
-                    DataTable ttable = ttableValues[i];
-                    ttable.Save(twriter);
-                }
-                twriter.Flush();
-                twriter.Close();
-            }
-            #endregion
         }
+        #region getdata
+        public DataRow SearchDataRow(string _table, string _rowkey)
+        {
+            DataTable ttable = this[_table];
+            return ttable != null ? ttable[_rowkey] : null;
+        }
+
+        public DataField SearchField(string _table, string _rowkey, string _fieldkey)
+        {
+            DataRow trow = SearchDataRow(_table, _rowkey);
+            return trow != null ? trow.SearchField(_fieldkey) : null;
+        }
+
+        public T TryGetValue<T>(string _table, string _rowkey, string _fieldkey, object _defaultValue = null)
+        {
+            DataField tfield = SearchField(_table, _rowkey, _fieldkey);
+            return tfield != null ? tfield.TryGetValue<T>(_defaultValue) : _defaultValue == null ? default(T) : (T)_defaultValue;
+        }
+        #endregion
+
+        #region load,save
+        public void Clear()
+        {
+            tableMap.Clear();
+        }
+        public void Load()
+        {
+            string tfullname = GameCore.AppPersistentAssetsPath + cDatafile;
+            if (!File.Exists(tfullname)) return;
+
+            LitEngine.IO.AESReader tloader = new LitEngine.IO.AESReader(tfullname);
+
+            int ttableCount = tloader.ReadInt32();
+            for (int i = 0; i < ttableCount; i++)
+            {
+                DataTable ttable = new DataTable();
+                ttable.Load(tloader);
+                tableMap.Add(ttable.TableName, ttable);
+            }
+            tloader.Close();
+        }
+        public void Save()
+        {
+            string tfullname = GameCore.AppPersistentAssetsPath + cDatafile;
+            LitEngine.IO.AESWriter twriter = new LitEngine.IO.AESWriter(tfullname);
+
+            List<DataTable> ttableValues = new List<DataTable>(tableMap.Values);
+            int ttableCount = ttableValues.Count;
+            twriter.WriteInt(ttableCount);
+            for (int i = 0; i < ttableCount; i++)
+            {
+                DataTable ttable = ttableValues[i];
+                ttable.Save(twriter);
+            }
+            twriter.Flush();
+            twriter.Close();
+        }
+        #endregion
     }
 }
