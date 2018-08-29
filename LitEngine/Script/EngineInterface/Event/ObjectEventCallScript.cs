@@ -3,7 +3,7 @@ namespace LitEngine.ScriptInterface.Event
 {
     public class ObjectEventCallScript : ObjectEventBase
     {
-        public string[] paramStrs;
+        public string paramStrs;
         protected override void Awake()
         {
             base.Awake();
