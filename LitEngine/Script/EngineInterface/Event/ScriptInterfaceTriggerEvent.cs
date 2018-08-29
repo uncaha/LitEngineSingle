@@ -9,6 +9,7 @@ namespace LitEngine.ScriptInterface
             selfTrigger = 1,
             allTrigger,
             manualCall,
+            selfSceneTrigger,
         }
         public TriggerTargetType targetType = TriggerTargetType.manualCall;
         public ObjectEvents Events;
