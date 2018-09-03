@@ -137,24 +137,28 @@ namespace LitEngine
             return Instance.audioSources.Contains(targetAudio);
         }
 
-        static public void PlayMixerSound(AudioClip _clip)
+        static public AudioSource PlayMixerSound(AudioClip _clip)
         {
             if (Instance.mMixerIndex == Instance.mMaxSoundCount) Instance.mMixerIndex = 0;
-            Instance.mAudioMixerSounds[Instance.mMixerIndex].Stop();
-            Instance.mAudioMixerSounds[Instance.mMixerIndex].clip = _clip;
-            Instance.mAudioMixerSounds[Instance.mMixerIndex].loop = false;
-            Instance.mAudioMixerSounds[Instance.mMixerIndex].Play();
+            AudioSource ret = Instance.mAudioMixerSounds[Instance.mMixerIndex];
+            ret.Stop();
+            ret.clip = _clip;
+            ret.loop = false;
+            ret.Play();
             Instance.mMixerIndex++;
+            return ret;
         }
 
-        static public void PlaySound(AudioClip _clip)
+        static public AudioSource PlaySound(AudioClip _clip)
         {
             if (Instance.mIndex == Instance.mMaxSoundCount) Instance.mIndex = 0;
-            Instance.mAudioSounds[Instance.mIndex].Stop();
-            Instance.mAudioSounds[Instance.mIndex].clip = _clip;
-            Instance.mAudioSounds[Instance.mIndex].loop = false;
-            Instance.mAudioSounds[Instance.mIndex].Play();
+            AudioSource ret = Instance.mAudioSounds[Instance.mIndex];
+            ret.Stop();
+            ret.clip = _clip;
+            ret.loop = false;
+            ret.Play();
             Instance.mIndex++;
+            return ret;
         }
 
         static public void PlayMusic(AudioClip _clip)
