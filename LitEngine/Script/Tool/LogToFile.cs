@@ -5,12 +5,15 @@ using System.Text;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using LitEngine;
 public class LogToFile
 {
     private static string sFilePath = "";
     private static bool sIsInit = false;
     private static Dictionary<UnityEngine.LogType, string> sStackLogTypeList = new Dictionary<LogType, string>();
     private static Dictionary<UnityEngine.LogType, string> sSaveToFileLogTypeList = new Dictionary<LogType, string>();
+
+    private static LogWindow logDiagle = null;
     public static void InitLogCallback()
     {
         if (sIsInit) return;
@@ -35,6 +38,16 @@ public class LogToFile
             Directory.CreateDirectory(sFilePath);
         string filename = GetNowLogName();
         SaveFile(filename, GetTitleStr(), System.Text.Encoding.UTF8);
+    }
+
+    public static void InitLogWindow()
+    {
+        if(logDiagle == null)
+        {
+            GameObject tobj = new GameObject("LogWindow");
+            GameObject.DontDestroyOnLoad(tobj);
+            logDiagle = tobj.AddComponent<LogWindow>();
+        }
     }
 
     public static void AddSaveToFileLogType(UnityEngine.LogType _type)
@@ -103,7 +116,9 @@ public class LogToFile
     public static void logCallback(string log, string stackTrace, UnityEngine.LogType _type)
     {
         if (!sSaveToFileLogTypeList.ContainsKey(_type)) return;
-        SaveToFile(_type.ToString(), log, stackTrace, _type);
+        string logstr =  SaveToFile(_type.ToString(), log, stackTrace, _type);
+        if (logDiagle != null)
+            logDiagle.AddLog(logstr);
     }
 
     public static string GetNowLogName()
@@ -117,7 +132,7 @@ public class LogToFile
         return string.Format("{0}/log_{1}_{2}_{3}.log", sFilePath, _Year, _Month, _Day);
     }
 
-    static void SaveToFile(string prefix, string content, string callstack, UnityEngine.LogType _type)
+    static string SaveToFile(string prefix, string content, string callstack, UnityEngine.LogType _type)
     {
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
         sb.Append("[");
@@ -128,15 +143,14 @@ public class LogToFile
 
         if(sStackLogTypeList.ContainsKey(_type))
         {
-            sb.AppendLine("*******************堆栈*******************");
-            if (callstack.Length > 2)
-                sb.AppendLine(callstack);
-            else
-                sb.AppendLine(GetStackTrace());
-            sb.AppendLine("******************************************");    
+            sb.AppendLine("         *******************堆栈*******************");
+            sb.Append(GetStackTrace());
+            sb.AppendLine("         ******************************************");    
         }
 
-        SaveFile(GetNowLogName(), sb.ToString(), System.Text.Encoding.UTF8);
+        string ret = sb.ToString();
+        SaveFile(GetNowLogName(), ret, System.Text.Encoding.UTF8);
+        return ret;
     }
 
     #region 堆栈信息
@@ -151,7 +165,7 @@ public class LogToFile
             for (int i = 0; i < stackFrame.Length; i++)
             {
                 StackFrame tframe = stackFrame[i];
-                MethodBase tmethod = tframe.GetMethod();
+                System.Reflection.MethodBase tmethod = tframe.GetMethod();
                 if (tmethod.DeclaringType == typeof(LogToFile)
                     || tmethod.DeclaringType == typeof(DLog)
                     #if NOILRUNTIME
@@ -171,7 +185,7 @@ public class LogToFile
                         tparamsstr.Append(",");
                 }
                 string tmsg = string.Format("{0}:{1}({2})(line:{3})", tmethod.DeclaringType.ToString(), tmethod.Name, tparamsstr.ToString(), tframe.GetFileLineNumber());
-                tstacktracebuilder.AppendLine(tmsg);
+                tstacktracebuilder.AppendLine("         *" + tmsg);
             }
         }
 
