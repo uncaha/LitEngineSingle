@@ -1,4 +1,4 @@
-﻿#if NOILRUNTIME
+﻿#if USEILRUNTIME
 using UnityEngine;
 using System.Collections.Generic;
 using ILRuntime.Other;

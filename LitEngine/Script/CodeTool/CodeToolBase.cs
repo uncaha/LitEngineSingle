@@ -61,7 +61,7 @@ namespace LitEngine
         virtual public IType[] GetFieldTypes(IType _type)
         {
             if (_type == null) throw new NullReferenceException("Base GetFieldType _type =" + _type);
-#if NOILRUNTIME
+#if USEILRUNTIME
             if (typeof(ILType) == _type.GetType())
                 return ((ILType)_type).FieldTypes;
             else if (typeof(CLRType) == _type.GetType())

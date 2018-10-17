@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-#if NOILRUNTIME
+#if USEILRUNTIME
 using ILRuntime.CLR.Method;
 #endif
 using System.Reflection;
 namespace ILRuntime.CLR.TypeSystem
 {
-#if NOILRUNTIME
+#if USEILRUNTIME
 
 #else
     public interface IType
@@ -130,7 +130,7 @@ namespace ILRuntime.CLR.TypeSystem
         public IType ElementType { get; set; }
 
         public bool IsGenericParameter { get; set; }
-#if NOILRUNTIME
+#if USEILRUNTIME
         public ILRuntime.Runtime.Enviorment.AppDomain AppDomain { get; set; }
         public IMethod GetMethod(string name, List<IType> param, IType[] genericArguments, IType returnType = null, bool declaredOnly = false)
         {

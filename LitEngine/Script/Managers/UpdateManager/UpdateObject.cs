@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-#if NOILRUNTIME
+#if USEILRUNTIME
 using ILRuntime.CLR.Method;
 #endif
 namespace LitEngine
@@ -127,7 +127,7 @@ namespace LitEngine
             }
 
         }
-#if NOILRUNTIME
+#if USEILRUNTIME
         public class UpdateILObject : UpdateBase
         {
             private IMethod mMethod;

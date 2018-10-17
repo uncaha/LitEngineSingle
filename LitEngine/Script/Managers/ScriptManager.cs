@@ -16,7 +16,7 @@ namespace LitEngine
     }
     public class ScriptManager: ManagerInterface
     {
-#if NOILRUNTIME
+#if USEILRUNTIME
         public ILRuntime.Runtime.Enviorment.AppDomain Env
         {
             get;
@@ -44,7 +44,7 @@ namespace LitEngine
             switch (mUseSystemAssm)
             {
                 case UseScriptType.UseScriptType_LS:
-                    #if NOILRUNTIME
+                    #if USEILRUNTIME
                     Env = new ILRuntime.Runtime.Enviorment.AppDomain();
                     mCodeTool = new CodeTool_LS(Env);
                     #endif
@@ -145,7 +145,7 @@ namespace LitEngine
                 {
                     case UseScriptType.UseScriptType_LS:
                         {
-                            #if NOILRUNTIME
+                            #if USEILRUNTIME
                             System.IO.MemoryStream msDll = new System.IO.MemoryStream(_dll);
                             System.IO.MemoryStream msPdb = new System.IO.MemoryStream(_pdb);
                             Env.LoadAssembly(msDll, msPdb, new Mono.Cecil.Pdb.PdbReaderProvider());

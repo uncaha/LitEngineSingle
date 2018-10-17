@@ -1,4 +1,4 @@
-﻿#if NOILRUNTIME
+﻿#if USEILRUNTIME
 using ILRuntime.CLR.Method;
 namespace ILRuntime.Runtime.Enviorment
 {

@@ -1,4 +1,4 @@
-﻿#if NOILRUNTIME
+﻿#if USEILRUNTIME
 using System;
 using ILRuntime.CLR.TypeSystem;
 using ILRuntime.Runtime.Intepreter;

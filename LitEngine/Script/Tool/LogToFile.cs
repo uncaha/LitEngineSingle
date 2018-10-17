@@ -168,7 +168,7 @@ public class LogToFile
                 System.Reflection.MethodBase tmethod = tframe.GetMethod();
                 if (tmethod.DeclaringType == typeof(LogToFile)
                     || tmethod.DeclaringType == typeof(DLog)
-                    #if NOILRUNTIME
+                    #if USEILRUNTIME
                     || tmethod.DeclaringType == typeof(LitEngine.CodeTool_LS)
                     #endif
                     || tmethod.DeclaringType == typeof(Logger)
