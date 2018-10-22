@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;USEILRUNTIME</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -362,8 +362,6 @@
     <Compile Include="Script\IL\Mono.Cecil.Pdb\pdb\Mono.Cecil.Pdb\SymWriter.cs" />
     <Compile Include="Script\Loader\Bundle\AssetsBundleHaveDependencie.cs" />
     <Compile Include="Script\Loader\Bundle\AssetsBundleHaveDependencieAsync.cs" />
-    <Compile Include="Script\Loader\Bundle\ResourcesBundle.cs" />
-    <Compile Include="Script\Loader\Bundle\ResourcesBundleAsync.cs" />
     <Compile Include="Script\Loader\LoadTaskVector.cs" />
     <Compile Include="Script\Loader\WaitingList.cs" />
     <Compile Include="Script\Managers\MonoManagerBase.cs" />

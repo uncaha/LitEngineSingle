@@ -264,11 +264,6 @@ namespace LitEngine
         #endregion
 
         #region 同步
-        static public Object sLoadResources(string _AssetsName)
-        {
-            return Instance.LoadResources(_AssetsName.ToLowerInvariant());
-        }
-
         static public UnityEngine.Object LoadAsset(string _AssetsName)
         {
             return (UnityEngine.Object)Instance.LoadAssetRetain(_AssetsName.ToLowerInvariant()).Retain();
@@ -276,12 +271,6 @@ namespace LitEngine
         #endregion
 
         #region 异步
-        
-        static public void LoadResourcesAsync(string _key, string _AssetsName, System.Action<string, object> _callback)
-        {
-            Instance.LoadResourcesAsync_(_key, _AssetsName.ToLowerInvariant(), _callback);
-        }
-
         static public void LoadAssetAsync(string _key, string _AssetsName, System.Action<string, object> _callback)
         {
             Instance.LoadAssetAsyncRetain(_key, _AssetsName.ToLowerInvariant(), _callback, true);
@@ -297,26 +286,6 @@ namespace LitEngine
         #endregion
 
         #region 同步载入
-        #region Res资源
-        /// <summary>
-        /// 载入Resources资源
-        /// </summary>
-        /// <param name="_AssetsName">_curPathname 是相对于path/Date/下的路径 例如目录结构Assets/Resources/Date/ +_curPathname</param>
-        /// <returns></returns>
-        private Object LoadResources(string _AssetsName)
-        {
-            if (_AssetsName == null || _AssetsName.Equals("")) return null;
-            if (mBundleList.Contains(_AssetsName))
-            {
-                return (Object)mBundleList[_AssetsName].Retain();
-            }
-
-            ResourcesBundle tbundle = new ResourcesBundle(_AssetsName);
-            AddCache(tbundle);
-            tbundle.Load();
-            return (Object)tbundle.Retain();
-        }
-        #endregion
         private BaseBundle LoadAssetRetain(string _AssetsName)
         {
             if (string.IsNullOrEmpty(_AssetsName)) return null;
@@ -338,43 +307,6 @@ namespace LitEngine
             AddmWaitLoadList(_bundle);
             CreatTaskAndStart(_key, _bundle, _callback, _retain);
             ActiveLoader(true);
-        }
-
-        protected void LoadResourcesAsync_(string _key, string _AssetsName, System.Action<string, object> _callback)
-        {
-            if (_AssetsName.Length == 0)
-            {
-                DLog.LogError("LoadResourcesAsync_ -- _AssetsName 的长度不能为空");
-                if (_callback != null)
-                    _callback(_key, null);
-                return;
-            }
-            if (_callback == null)
-            {
-                DLog.LogError("LoadResourcesAsync_ -- CallBack Fun can not be null");
-                return;
-            }
-            if (mBundleList.Contains(_AssetsName))
-            {
-                if (mBundleList[_AssetsName].Loaded)
-                {
-                    if (mBundleList[_AssetsName].Asset == null)
-                        DLog.LogError("LoadResourcesAsync_-erro in vector。文件载入失败,请检查文件名:" + _AssetsName);
-
-                    mBundleList[_AssetsName].Retain();
-                    _callback(_key, mBundleList[_AssetsName].Asset);
-                }
-                else
-                {
-                    CreatTaskAndStart(_key, mBundleList[_AssetsName], _callback, true);
-                    ActiveLoader(true);
-                }
-
-            }
-            else
-            {
-                LoadBundleAsync(new ResourcesBundleAsync(_AssetsName), _key, _callback, true);
-            }
         }
 
         private BaseBundle LoadAssetAsyncRetain(string _key, string _AssetsName, System.Action<string, object> _callback, bool _retain)
