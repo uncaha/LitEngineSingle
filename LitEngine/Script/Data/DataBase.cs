@@ -79,35 +79,51 @@ namespace LitEngine.Data
         }
         public void Load()
         {
-            string tfullname = GameCore.AppPersistentAssetsPath + cDatafile;
-            if (!File.Exists(tfullname)) return;
-
-            LitEngine.IO.AESReader tloader = new LitEngine.IO.AESReader(tfullname);
-
-            int ttableCount = tloader.ReadInt32();
-            for (int i = 0; i < ttableCount; i++)
+            try
             {
-                DataTable ttable = new DataTable();
-                ttable.Load(tloader);
-                tableMap.Add(ttable.TableName, ttable);
+                string tfullname = GameCore.AppPersistentAssetsPath + cDatafile;
+                if (!File.Exists(tfullname)) return;
+
+                LitEngine.IO.AESReader tloader = new LitEngine.IO.AESReader(tfullname);
+
+                int ttableCount = tloader.ReadInt32();
+                for (int i = 0; i < ttableCount; i++)
+                {
+                    DataTable ttable = new DataTable();
+                    ttable.Load(tloader);
+                    tableMap.Add(ttable.TableName, ttable);
+                }
+                tloader.Close();
             }
-            tloader.Close();
+            catch (System.Exception _e)
+            {
+                DLog.LogError(_e.ToString());
+            }
+
         }
         public void Save()
         {
-            string tfullname = GameCore.AppPersistentAssetsPath + cDatafile;
-            LitEngine.IO.AESWriter twriter = new LitEngine.IO.AESWriter(tfullname);
-
-            List<DataTable> ttableValues = new List<DataTable>(tableMap.Values);
-            int ttableCount = ttableValues.Count;
-            twriter.WriteInt(ttableCount);
-            for (int i = 0; i < ttableCount; i++)
+            try
             {
-                DataTable ttable = ttableValues[i];
-                ttable.Save(twriter);
+                string tfullname = GameCore.AppPersistentAssetsPath + cDatafile;
+                LitEngine.IO.AESWriter twriter = new LitEngine.IO.AESWriter(tfullname);
+
+                List<DataTable> ttableValues = new List<DataTable>(tableMap.Values);
+                int ttableCount = ttableValues.Count;
+                twriter.WriteInt(ttableCount);
+                for (int i = 0; i < ttableCount; i++)
+                {
+                    DataTable ttable = ttableValues[i];
+                    ttable.Save(twriter);
+                }
+                twriter.Flush();
+                twriter.Close();
             }
-            twriter.Flush();
-            twriter.Close();
+            catch (System.Exception _e )
+            {
+                DLog.LogError(_e.ToString());
+            }
+           
         }
         #endregion
     }
