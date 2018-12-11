@@ -21,7 +21,7 @@ namespace LitEngine
                 }
             }
         }
-        public AudioGroup(GameObject _object, int _count)
+        public AudioGroup(GameObject _object, int _count, bool _useMixer = false)
         {
             Index = 0;
             gameObject = _object;
@@ -29,6 +29,8 @@ namespace LitEngine
             for (int i = 0; i < _count; i++)
             {
                 AudioSource tsour = gameObject.AddComponent<AudioSource>();
+                if (_useMixer)
+                    tsour.outputAudioMixerGroup = PlayAudioManager.SoundMixer;
                 AudioList.Add(tsour);
             }
         }
@@ -142,7 +144,7 @@ namespace LitEngine
             }
         }
 
-        private int mMaxSoundCount = 5;
+        private int mMaxSoundCount = 3;
 
         private AudioSource mBackMusic;
         private AudioSource[] mAudioMixerSounds;
@@ -210,12 +212,12 @@ namespace LitEngine
             Instance.audioSources.Remove(_audioSource);
         }
 
-        static public void AddAudioSoundGroup(string _key)
+        static public void AddAudioSoundGroup(string _key, bool _useMixer = false)
         {
             if (Instance.audioGroup.ContainsKey(_key)) return;
             GameObject tkeyobj = new GameObject(_key + "-Object");
             tkeyobj.transform.SetParent(Instance.groupAudioSoundObject.transform);
-            AudioGroup tlist = new AudioGroup(tkeyobj, Instance.mMaxSoundCount);
+            AudioGroup tlist = new AudioGroup(tkeyobj, Instance.mMaxSoundCount, _useMixer);
             tlist.Volume = SoundVolume;
             Instance.audioGroup.Add(_key, tlist);
             Instance.audioSources.AddRange(tlist.AudioList);
