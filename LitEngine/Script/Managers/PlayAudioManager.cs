@@ -3,6 +3,54 @@ using UnityEngine.Audio;
 using System.Collections.Generic;
 namespace LitEngine
 {
+    public class AudioGroup
+    {
+        public List<AudioSource> AudioList { get; private set; }
+        public GameObject gameObject { get; private set; }
+        public int Index { get; private set; }
+        private float _Volume = 1;
+        public float Volume
+        {
+            get { return _Volume; }
+            set
+            {
+                _Volume = Mathf.Clamp01(value);
+                for (int i = 0; i < AudioList.Count; i++)
+                {
+                    AudioList[i].volume = _Volume;
+                }
+            }
+        }
+        public AudioGroup(GameObject _object, int _count)
+        {
+            Index = 0;
+            gameObject = _object;
+            AudioList = new List<AudioSource>();
+            for (int i = 0; i < _count; i++)
+            {
+                AudioSource tsour = gameObject.AddComponent<AudioSource>();
+                AudioList.Add(tsour);
+            }
+        }
+
+        public AudioSource Play(AudioClip _clip)
+        {
+            if (_clip == null) return null;
+            if (Index >= AudioList.Count) Index = 0;
+            AudioSource ret = AudioList[Index];
+            ret.Stop();
+            ret.clip = _clip;
+            ret.loop = false;
+            ret.Play();
+            Index++;
+            return ret;
+        }
+
+        public bool Contains(AudioSource _audio)
+        {
+            return AudioList.Contains(_audio);
+        }
+    }
     public class PlayAudioManager : MonoManagerBase
     {
         private static PlayAudioManager sInstance = null;
@@ -86,30 +134,25 @@ namespace LitEngine
             {
                 mSoundVolume = Mathf.Clamp01(value);
                 mSoundRealVolume = Volume * mSoundVolume;
-                for (int i = 0; i < Instance.mMaxSoundCount; i++)
-                {
-                    Instance.mAudioSounds[i].volume = mSoundRealVolume;
-                }
 
-                for (int i = 0; i < Instance.mMaxSoundCount; i++)
+                for (int i = 0; i < Instance.audioSources.Count; i++)
                 {
-                    Instance.mAudioMixerSounds[i].volume = mSoundRealVolume;
-                }
-
-                for (int i = 0; i < Instance.outSideAudioSounds.Count; i++)
-                {
-                    Instance.outSideAudioSounds[i].volume = mSoundRealVolume;
+                    Instance.audioSources[i].volume = mSoundRealVolume;
                 }
             }
         }
 
-        private int mMaxSoundCount = 3;
+        private int mMaxSoundCount = 5;
 
         private AudioSource mBackMusic;
         private AudioSource[] mAudioMixerSounds;
         private AudioSource[] mAudioSounds;
 
-        private List<AudioSource> outSideAudioSounds = new List<AudioSource>();
+        private Dictionary<string, AudioGroup> audioGroup = new Dictionary<string, AudioGroup>();
+
+        private GameObject mixerSoundsObject;
+        private GameObject soundsObject;
+        private GameObject groupAudioSoundObject;
 
         private int mIndex = 0;
         private int mMixerIndex = 0;
@@ -119,19 +162,25 @@ namespace LitEngine
         {
             mBackMusic = gameObject.AddComponent<AudioSource>();
 
+            mixerSoundsObject = new GameObject("mixerSoundsObject");
+            mixerSoundsObject.transform.SetParent(transform);
+            soundsObject = new GameObject("soundsObject");
+            soundsObject.transform.SetParent(transform);
+            groupAudioSoundObject = new GameObject("groupAudioSoundObject");
+            groupAudioSoundObject.transform.SetParent(transform);
+
             mAudioMixerSounds = new AudioSource[mMaxSoundCount];
             for (int i = 0; i < mMaxSoundCount; i++)
             {
-                mAudioMixerSounds[i] = gameObject.AddComponent<AudioSource>();
+                mAudioMixerSounds[i] = mixerSoundsObject.AddComponent<AudioSource>();
             }
 
             mAudioSounds = new AudioSource[mMaxSoundCount];
             for (int i = 0; i < mMaxSoundCount; i++)
             {
-                mAudioSounds[i] = gameObject.AddComponent<AudioSource>();
+                mAudioSounds[i] = soundsObject.AddComponent<AudioSource>();
             }
 
-            audioSources.Add(mBackMusic);
             audioSources.AddRange(mAudioMixerSounds);
             audioSources.AddRange(mAudioSounds);
         }
@@ -143,28 +192,46 @@ namespace LitEngine
 
         static public bool IsChild(AudioSource targetAudio)
         {
-            return Instance.audioSources.Contains(targetAudio);
-        }
-
-        static public bool IsInOutSideList(AudioSource targetAudio)
-        {
-            return Instance.outSideAudioSounds.Contains(targetAudio);
+            return Instance.mBackMusic.Equals(targetAudio) && Instance.audioSources.Contains(targetAudio);
         }
 
         static public void AddOutSideAudioSource(AudioSource _audioSource)
         {
-            if (!Instance.outSideAudioSounds.Contains(_audioSource))
-                Instance.outSideAudioSounds.Add(_audioSource);
+            if (_audioSource == null) return;
+            if (Instance.audioSources.Contains(_audioSource)) return;
+            Instance.audioSources.Add(_audioSource);
+            _audioSource.volume = SoundVolume;
         }
 
         static public void RemoveOutSideAudioSource(AudioSource _audioSource)
         {
-            if (Instance.outSideAudioSounds.Contains(_audioSource))
-                Instance.outSideAudioSounds.Remove(_audioSource);
+            if (_audioSource == null) return;
+            if (!Instance.audioSources.Contains(_audioSource)) return;
+            Instance.audioSources.Remove(_audioSource);
+        }
+
+        static public void AddAudioSoundGroup(string _key)
+        {
+            if (Instance.audioGroup.ContainsKey(_key)) return;
+            GameObject tkeyobj = new GameObject(_key + "-Object");
+            tkeyobj.transform.SetParent(Instance.groupAudioSoundObject.transform);
+            AudioGroup tlist = new AudioGroup(tkeyobj, Instance.mMaxSoundCount);
+            tlist.Volume = SoundVolume;
+            Instance.audioGroup.Add(_key, tlist);
+            Instance.audioSources.AddRange(tlist.AudioList);
+        }
+
+        static public void RemoveSoundGroup(string _key)
+        {
+            if (!Instance.audioGroup.ContainsKey(_key)) return;
+            AudioGroup tg = Instance.audioGroup[_key];
+            GameObject.Destroy(tg.gameObject);
+            ClearDestoryedSound();
         }
 
         static public AudioSource PlayMixerSound(AudioClip _clip)
         {
+            if (_clip == null) return null;
             if (Instance.mMixerIndex == Instance.mMaxSoundCount) Instance.mMixerIndex = 0;
             AudioSource ret = Instance.mAudioMixerSounds[Instance.mMixerIndex];
             ret.Stop();
@@ -177,6 +244,7 @@ namespace LitEngine
 
         static public AudioSource PlaySound(AudioClip _clip)
         {
+            if (_clip == null) return null;
             if (Instance.mIndex == Instance.mMaxSoundCount) Instance.mIndex = 0;
             AudioSource ret = Instance.mAudioSounds[Instance.mIndex];
             ret.Stop();
@@ -185,6 +253,12 @@ namespace LitEngine
             ret.Play();
             Instance.mIndex++;
             return ret;
+        }
+
+        static public AudioSource PlaySoundByGroup(string _key, AudioClip _clip)
+        {
+            if (!Instance.audioGroup.ContainsKey(_key)) return null;
+            return Instance.audioGroup[_key].Play(_clip);
         }
 
         static public void PlayMusic(AudioClip _clip)
@@ -214,55 +288,25 @@ namespace LitEngine
 
         static public void StopSound()
         {
-            for (int i = 0; i < Instance.mMaxSoundCount; i++)
+            for (int i = 0; i < Instance.audioSources.Count; i++)
             {
-                Instance.mAudioSounds[i].Stop();
-            }
-
-            for (int i = 0; i < Instance.mMaxSoundCount; i++)
-            {
-                Instance.mAudioMixerSounds[i].Stop();
-            }
-
-            for (int i = 0; i < Instance.outSideAudioSounds.Count; i++)
-            {
-                Instance.outSideAudioSounds[i].Stop();
+                Instance.audioSources[i].Stop();
             }
         }
 
         static public void PauseSound()
         {
-            for (int i = 0; i < Instance.mMaxSoundCount; i++)
+            for (int i = 0; i < Instance.audioSources.Count; i++)
             {
-                Instance.mAudioSounds[i].Pause();
-            }
-
-            for (int i = 0; i < Instance.mMaxSoundCount; i++)
-            {
-                Instance.mAudioMixerSounds[i].Pause();
-            }
-
-            for (int i = 0; i < Instance.outSideAudioSounds.Count; i++)
-            {
-                Instance.outSideAudioSounds[i].Pause();
+                Instance.audioSources[i].Pause();
             }
         }
 
         static public void UnPauseSound()
         {
-            for (int i = 0; i < Instance.mMaxSoundCount; i++)
+            for (int i = 0; i < Instance.audioSources.Count; i++)
             {
-                Instance.mAudioSounds[i].UnPause();
-            }
-
-            for (int i = 0; i < Instance.mMaxSoundCount; i++)
-            {
-                Instance.mAudioMixerSounds[i].UnPause();
-            }
-
-            for (int i = 0; i < Instance.outSideAudioSounds.Count; i++)
-            {
-                Instance.outSideAudioSounds[i].UnPause();
+                Instance.audioSources[i].UnPause();
             }
         }
 
@@ -272,7 +316,7 @@ namespace LitEngine
             int tlen = tevents.Length;
             for (int i = 0; i < tlen; i++)
             {
-                if (!IsChild(tevents[i]) && !IsInOutSideList(tevents[i]))
+                if (!IsChild(tevents[i]))
                     tevents[i].Pause();
             }
             PauseMusic();
@@ -283,18 +327,18 @@ namespace LitEngine
             int tlen = tevents.Length;
             for (int i = 0; i < tlen; i++)
             {
-                if (!IsChild(tevents[i]) && !IsInOutSideList(tevents[i]))
+                if (!IsChild(tevents[i]))
                     tevents[i].UnPause();
             }
             UnPauseMusic();
         }
         #endregion
-        static public void ClearUnUsedOutSideAudioSource()
+        static public void ClearDestoryedSound()
         {
-            for (int i = Instance.outSideAudioSounds.Count - 1; i >= 0; i--)
+            for (int i = Instance.audioSources.Count - 1; i >= 0; i--)
             {
-                if (Instance.outSideAudioSounds[i] == null)
-                    Instance.outSideAudioSounds.RemoveAt(i);
+                if (Instance.audioSources[i] == null)
+                    Instance.audioSources.RemoveAt(i);
             }
         }
 
@@ -302,16 +346,10 @@ namespace LitEngine
         {
             Instance.mBackMusic.Stop();
             Instance.mBackMusic.clip = null;
-            for (int i = 0; i < Instance.mMaxSoundCount; i++)
+            for (int i = 0; i < Instance.audioSources.Count; i++)
             {
-                Instance.mAudioSounds[i].Stop();
-                Instance.mAudioSounds[i].clip = null;
-            }
-
-            for (int i = 0; i < Instance.mMaxSoundCount; i++)
-            {
-                Instance.mAudioMixerSounds[i].Stop();
-                Instance.mAudioMixerSounds[i].clip = null;
+                Instance.audioSources[i].Stop();
+                Instance.audioSources[i].clip = null;
             }
         }
     }
