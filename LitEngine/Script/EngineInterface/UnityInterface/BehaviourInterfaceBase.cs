@@ -163,6 +163,11 @@ namespace LitEngine
             }
             #endregion
             #region 调用脚本函数
+            virtual public void MethodCall(string _key)
+            {
+                CallScriptFunctionByNameParams("MethodCall", _key);
+            }
+
             virtual public void CallFunVoidStringPams(string _FunNameAndStrPams)
             {
                 string[] tstrs = _FunNameAndStrPams.Split('|');
