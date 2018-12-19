@@ -88,10 +88,6 @@ namespace LitEngine.ScriptInterface.Event
             Groups = new List<EventsGroup>(tgroups.Values);
             Groups.Sort((a, b) => { return a.GroupId.CompareTo(b.GroupId); });
 
-            for (int i = 0; i < Groups.Count; i++)
-            {
-                Groups[i].Events.Sort((a, b) => { return a.Index.CompareTo(b.Index); });
-            }
             #endregion
         }
         #region queue
