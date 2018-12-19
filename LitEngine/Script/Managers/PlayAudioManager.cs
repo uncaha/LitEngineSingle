@@ -8,6 +8,7 @@ namespace LitEngine
         public List<AudioSource> AudioList { get; private set; }
         public GameObject gameObject { get; private set; }
         public int Index { get; private set; }
+        private bool useMixer = false;
         private float _Volume = 1;
         public float Volume
         {
@@ -25,12 +26,11 @@ namespace LitEngine
         {
             Index = 0;
             gameObject = _object;
+            useMixer = _useMixer;
             AudioList = new List<AudioSource>();
             for (int i = 0; i < _count; i++)
             {
                 AudioSource tsour = gameObject.AddComponent<AudioSource>();
-                if (_useMixer)
-                    tsour.outputAudioMixerGroup = PlayAudioManager.SoundMixer;
                 AudioList.Add(tsour);
             }
         }
@@ -41,11 +41,46 @@ namespace LitEngine
             if (Index >= AudioList.Count) Index = 0;
             AudioSource ret = AudioList[Index];
             ret.Stop();
+            if (useMixer && ret.outputAudioMixerGroup != PlayAudioManager.SoundMixer)
+                ret.outputAudioMixerGroup = PlayAudioManager.SoundMixer;
             ret.clip = _clip;
             ret.loop = false;
             ret.Play();
             Index++;
             return ret;
+        }
+
+        public void Pause()
+        {
+            for (int i = 0; i < AudioList.Count; i++)
+            {
+                AudioList[i].Pause();
+            }
+        }
+
+        public void UnPause()
+        {
+            for (int i = 0; i < AudioList.Count; i++)
+            {
+                AudioList[i].UnPause();
+            }
+        }
+
+        public void Stop()
+        {
+            for (int i = 0; i < AudioList.Count; i++)
+            {
+                AudioList[i].Stop();
+            }
+        }
+
+        public void Clear()
+        {
+            for (int i = 0; i < AudioList.Count; i++)
+            {
+                AudioList[i].Stop();
+                AudioList[i].clip = null;
+            }
         }
 
         public bool Contains(AudioSource _audio)
@@ -65,6 +100,7 @@ namespace LitEngine
                     GameObject tobj = new GameObject("PlayAudioManager");
                     GameObject.DontDestroyOnLoad(tobj);
                     sInstance = tobj.AddComponent<PlayAudioManager>();
+                    sInstance.Init();
                 }
                 return sInstance;
             }
@@ -96,10 +132,6 @@ namespace LitEngine
             set
             {
                 Instance._SoundMixer = value;
-                for (int i = 0; i < Instance.mMaxSoundCount; i++)
-                {
-                    Instance.mAudioMixerSounds[i].outputAudioMixerGroup = value;
-                }
             }
         }
 
@@ -147,8 +179,8 @@ namespace LitEngine
         private int mMaxSoundCount = 3;
 
         private AudioSource mBackMusic;
-        private AudioSource[] mAudioMixerSounds;
-        private AudioSource[] mAudioSounds;
+        private AudioGroup mAudioMixerSounds;
+        private AudioGroup mAudioSounds;
 
         private Dictionary<string, AudioGroup> audioGroup = new Dictionary<string, AudioGroup>();
 
@@ -160,8 +192,16 @@ namespace LitEngine
         private int mMixerIndex = 0;
 
         private List<AudioSource> audioSources = new List<AudioSource>();
+        private bool isInit = false;
         private void Awake()
         {
+
+        }
+        private void Init()
+        {
+            if (isInit) return;
+            isInit = true;
+
             mBackMusic = gameObject.AddComponent<AudioSource>();
 
             mixerSoundsObject = new GameObject("mixerSoundsObject");
@@ -171,20 +211,11 @@ namespace LitEngine
             groupAudioSoundObject = new GameObject("groupAudioSoundObject");
             groupAudioSoundObject.transform.SetParent(transform);
 
-            mAudioMixerSounds = new AudioSource[mMaxSoundCount];
-            for (int i = 0; i < mMaxSoundCount; i++)
-            {
-                mAudioMixerSounds[i] = mixerSoundsObject.AddComponent<AudioSource>();
-            }
+            mAudioMixerSounds = new AudioGroup(mixerSoundsObject, mMaxSoundCount, true);
+            mAudioSounds = new AudioGroup(soundsObject, mMaxSoundCount, false);
 
-            mAudioSounds = new AudioSource[mMaxSoundCount];
-            for (int i = 0; i < mMaxSoundCount; i++)
-            {
-                mAudioSounds[i] = soundsObject.AddComponent<AudioSource>();
-            }
-
-            audioSources.AddRange(mAudioMixerSounds);
-            audioSources.AddRange(mAudioSounds);
+            audioSources.AddRange(mAudioMixerSounds.AudioList);
+            audioSources.AddRange(mAudioSounds.AudioList);
         }
         override protected void OnDestroy()
         {
@@ -233,28 +264,12 @@ namespace LitEngine
 
         static public AudioSource PlayMixerSound(AudioClip _clip)
         {
-            if (_clip == null) return null;
-            if (Instance.mMixerIndex == Instance.mMaxSoundCount) Instance.mMixerIndex = 0;
-            AudioSource ret = Instance.mAudioMixerSounds[Instance.mMixerIndex];
-            ret.Stop();
-            ret.clip = _clip;
-            ret.loop = false;
-            ret.Play();
-            Instance.mMixerIndex++;
-            return ret;
+            return Instance.mAudioMixerSounds.Play(_clip);
         }
 
         static public AudioSource PlaySound(AudioClip _clip)
         {
-            if (_clip == null) return null;
-            if (Instance.mIndex == Instance.mMaxSoundCount) Instance.mIndex = 0;
-            AudioSource ret = Instance.mAudioSounds[Instance.mIndex];
-            ret.Stop();
-            ret.clip = _clip;
-            ret.loop = false;
-            ret.Play();
-            Instance.mIndex++;
-            return ret;
+            return Instance.mAudioSounds.Play(_clip);
         }
 
         static public AudioSource PlaySoundByGroup(string _key, AudioClip _clip)
