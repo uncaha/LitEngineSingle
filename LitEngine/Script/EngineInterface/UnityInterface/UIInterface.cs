@@ -113,6 +113,20 @@ namespace LitEngine.ScriptInterface
             if (mState != UISate.Normal) return null;
             return base.CallScriptFunctionByNameParams(_FunctionName, _prams);
         }
+        virtual public void BtnCall(string _key)
+        {
+            CallScriptFunctionByNameParams("BtnCall", _key);
+        }
+
+        virtual public void BtnPressDown(string _key)
+        {
+            CallScriptFunctionByNameParams("BtnPressDown", _key);
+        }
+
+        virtual public void BtnPressUP(string _key)
+        {
+            CallScriptFunctionByNameParams("BtnPressUP", _key);
+        }
         #endregion
         #region Call
 
