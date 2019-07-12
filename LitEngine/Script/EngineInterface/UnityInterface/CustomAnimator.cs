@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using LitEngine.UpdateSpace;
+using LitEngine.Method;
 namespace LitEngine.ScriptInterface
 {
     public class CustomAnimator : MonoBehaviour
@@ -38,7 +39,7 @@ namespace LitEngine.ScriptInterface
             GetCanPlay();
             enabled = false;
 
-            lateUpdateobject = new UpdateObject("CustomAnimator", AniUpdate);
+            lateUpdateobject = new UpdateObject("CustomAnimator", new Method_Action(AniUpdate),this);
             lateUpdateobject.MaxTime = 0;
             lateUpdateobject.Owner = GameUpdateManager.Instance.LateUpdateList;
         }

@@ -266,9 +266,6 @@ public class LogToFile
                 System.Reflection.MethodBase tmethod = tframe.GetMethod();
                 if (tmethod.DeclaringType == typeof(LogToFile)
                     || tmethod.DeclaringType == typeof(DLog)
-#if USEILRUNTIME
-                    || tmethod.DeclaringType == typeof(LitEngine.CodeTool_LS)
-#endif
                     || tmethod.DeclaringType == typeof(Logger)
                     || tmethod.DeclaringType == typeof(Application)
                     || tmethod.DeclaringType.ToString().Contains("DebugLogHandler")

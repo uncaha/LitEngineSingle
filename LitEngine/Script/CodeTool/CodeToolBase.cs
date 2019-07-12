@@ -1,9 +1,9 @@
 ﻿using System;
-using ILRuntime.CLR.TypeSystem;
-namespace LitEngine
+using LitEngine.Method;
+namespace LitEngine.CodeTool
 {
     using UpdateSpace;
-    public abstract class CodeToolBase :IDisposable
+    public abstract class CodeToolBase : IDisposable
     {
         public CodeToolBase()
         {
@@ -36,12 +36,15 @@ namespace LitEngine
         {
             Dispose(false);
         }
+        #region 写入类型
+        public abstract void AddAssemblyType(byte[] _dll, byte[] _pdb);
+        #endregion
         #region 类型判断
-        virtual public IType GetLType(string _name)
+        virtual public IBaseType GetLType(string _name)
         {
             return null;
         }
-        virtual public IType GetObjectType(object _obj)
+        virtual public IBaseType GetObjectType(object _obj)
         {
             if (_obj == null)
             {
@@ -53,29 +56,18 @@ namespace LitEngine
         {
             return false;
         }
-        virtual public IType GetListChildType(IType _type)
+        virtual public IBaseType GetListChildType(IBaseType _type)
         {
             return null;
         }
 
-        virtual public IType[] GetFieldTypes(IType _type)
+        virtual public IBaseType[] GetFieldTypes(IBaseType _type)
         {
-            if (_type == null) throw new NullReferenceException("Base GetFieldType _type =" + _type);
-#if USEILRUNTIME
-            if (typeof(ILType) == _type.GetType())
-                return ((ILType)_type).FieldTypes;
-            else if (typeof(CLRType) == _type.GetType())
-                return ((CLRType)_type).OrderedFieldTypes;
-            else 
-#endif 
-            if (typeof(SystemType) == _type.GetType())
-                return ((SystemType)_type).FieldTypes;
-            else
-                return null;
+            return null;
         }
-#endregion
-#region 方法
-        virtual public MethodBase GetLMethod(IType _type, string _funname, int _pamcount)
+        #endregion
+        #region 方法
+        virtual public MethodBase GetLMethod(IBaseType _type, string _funname, int _pamcount)
         {
             return null;
         }
@@ -102,8 +94,8 @@ namespace LitEngine
 
             return null;
         }
-#endregion
-#region 属性
+        #endregion
+        #region 属性
         virtual public object GetTargetMemberByKey(string _key, object _target)
         {
             return null;
@@ -113,38 +105,38 @@ namespace LitEngine
         {
             return null;
         }
-        virtual public object GetMemberByKey(IType _type, string _key, object _object)
+        virtual public object GetMemberByKey(IBaseType _type, string _key, object _object)
         {
             return null;
         }
 
-        virtual public object GetMemberByIndex(IType _type, int _index, object _object)
+        virtual public object GetMemberByIndex(IBaseType _type, int _index, object _object)
         {
             return null;
         }
 
         virtual public void SetTargetMember(object _target, int _index, object _object)
         {
-            IType ttype = GetObjectType(_target);
+            IBaseType ttype = GetObjectType(_target);
             SetMember(ttype, _index, _object, _target);
         }
 
         virtual public void SetTargetMember(object _target, string _key, object _object)
         {
-            IType ttype = GetObjectType(_target);
+            IBaseType ttype = GetObjectType(_target);
             SetMember(ttype, _key, _object, _target);
         }
-        virtual public void SetMember(IType _type, int _index, object _object, object _target)
-        {
-           
-        }
-        virtual public void SetMember(IType _type, string _key, object _object, object _target)
+        virtual public void SetMember(IBaseType _type, int _index, object _object, object _target)
         {
 
         }
-#endregion
-#region 对象获取
-        virtual public object GetCSLEObjectParmasByType(IType _type, params object[] _parmas)
+        virtual public void SetMember(IBaseType _type, string _key, object _object, object _target)
+        {
+
+        }
+        #endregion
+        #region 对象获取
+        virtual public object GetCSLEObjectParmasByType(IBaseType _type, params object[] _parmas)
         {
             return null;
         }
@@ -153,50 +145,39 @@ namespace LitEngine
             if (_classname == null || _classname.Length == 0) return null;
             return GetCSLEObjectParmasByType(GetLType(_classname), _parmas);
         }
-#endregion
+        #endregion
 
-#region 委托
+        #region 委托
         virtual public UpdateBase GetUpdateObjectAction(string _Function, string _classname, object _target)
         {
 
             return null;
         }
 
-        virtual public K GetCSLEDelegate<K>(string _Function, IType _classtype, object _target)
+        virtual public K GetCSLEDelegate<K>(string _Function, IBaseType _classtype, object _target)
         {
             return default(K);
         }
 
-        virtual public K GetCSLEDelegate<K, T1>(string _Function, IType _classtype, object _target)
+        virtual public K GetCSLEDelegate<K, T1>(string _Function, IBaseType _classtype, object _target)
         {
             return default(K);
         }
 
-        virtual public K GetCSLEDelegate<K, T1, T2>(string _Function, IType _classtype, object _target)
+        virtual public K GetCSLEDelegate<K, T1, T2>(string _Function, IBaseType _classtype, object _target)
         {
             return default(K);
         }
 
-        virtual public K GetCSLEDelegate<K, T1, T2, T3>(string _Function, IType _classtype, object _target)
+        virtual public K GetCSLEDelegate<K, T1, T2, T3>(string _Function, IBaseType _classtype, object _target)
         {
             return default(K);
         }
-        virtual public K GetCSLEDelegate<K, T1, T2, T3, T4>(string _Function, IType _classtype, object _target)
+        virtual public K GetCSLEDelegate<K, T1, T2, T3, T4>(string _Function, IBaseType _classtype, object _target)
         {
             return default(K);
         }
-#endregion
-    }
-
-    public abstract class MethodBase
-    {
-        public MethodBase()
-        {
-            
-        }
-
-        public abstract object Invoke(object obj, object[] parameters);
-
+        #endregion
     }
 }
 

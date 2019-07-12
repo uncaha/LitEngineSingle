@@ -1,9 +1,9 @@
 ﻿using System;
 using UnityEngine;
 using System.Text;
+using LitEngine.CodeTool;
 namespace LitEngine
 {
-    using ProtoCSLS;
     namespace NetTool
     {
         public class SendData
@@ -83,8 +83,6 @@ namespace LitEngine
             #region　添加数据
             public void AddCSLEObject(CodeToolBase _codetool, object _object)
             {
-                ProtoBufferWriterBuilderCSLS twbuilder = new ProtoBufferWriterBuilderCSLS(_codetool,_object);
-                AddBytes(twbuilder.GetBuffer());
             }
 
             private void ChoseDataLen(short _len)

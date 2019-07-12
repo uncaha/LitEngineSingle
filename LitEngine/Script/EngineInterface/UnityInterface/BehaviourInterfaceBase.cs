@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
-using ILRuntime.CLR.TypeSystem;
 using System;
 using System.Collections.Generic;
+using LitEngine.Method;
+using LitEngine.CodeTool;
 namespace LitEngine
 {
     using UpdateSpace;
@@ -16,7 +17,7 @@ namespace LitEngine
             protected CodeToolBase mCodeTool = null;
 
             public string mScriptClass = "";
-            protected IType mScriptType;
+            protected IBaseType mScriptType;
             protected object mObject = null;
 
             private Dictionary<string, MethodBase> mMethodCache = new Dictionary<string, MethodBase>();

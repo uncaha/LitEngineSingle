@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-#if USEILRUNTIME
-using ILRuntime.CLR.Method;
-#endif
+using LitEngine.Method;
 namespace LitEngine
 {
     namespace UpdateSpace
@@ -14,7 +12,8 @@ namespace LitEngine
             public bool Dead { get; set; }
             public UpdateObjectVector Owner { get;set; }
             public bool IsRegToOwner { get; protected set; }
-            protected Action mZeroDelegate = null;
+            protected MethodBase method = null;
+            protected object target = null;
             protected float mMaxTime = 0.1f;
             protected float mTimer = 0;
             protected bool mIsUseTimer = true;
@@ -41,10 +40,11 @@ namespace LitEngine
             }
 #region 构造.释放
 
-            public UpdateBase(string _key, Action _delegate)
+            public UpdateBase(string _key, MethodBase _method,object _target)
             {
                 Key = _key != null ? _key:"";
-                mZeroDelegate = _delegate;
+                method = _method;
+                target = _target;
                 IsRegToOwner = false;
                 Dead = false;
             }
@@ -78,7 +78,7 @@ namespace LitEngine
             {
                 UnRegToOwner();
                 Owner = null;
-                mZeroDelegate = null;
+                method = null;
                 Dead = true;
             }
 #endregion
@@ -107,8 +107,8 @@ namespace LitEngine
 
             virtual public void CallMethod()
             {
-                if (mZeroDelegate != null)
-                    mZeroDelegate();
+                if (method != null)
+                    method.Invoke(target);
             }
 
             virtual public bool IsTimeOut()
@@ -122,39 +122,26 @@ namespace LitEngine
 
         public class UpdateObject : UpdateBase
         {
-            public UpdateObject(string _key, Action _delegate) : base(_key, _delegate)
+            public UpdateObject(string _key, MethodBase _method, object _target):base(_key, _method, _target)
             {
             }
-
         }
-#if USEILRUNTIME
+
         public class UpdateILObject : UpdateBase
         {
-            private IMethod mMethod;
-            private ILRuntime.Runtime.Enviorment.AppDomain mApp;
-            private object mTarget;
-            public UpdateILObject(string _key, ILRuntime.Runtime.Enviorment.AppDomain _app, IMethod _method, object _target) : base(_key, null)
+            public UpdateILObject(string _key, MethodBase _method, object _target) : base(_key, _method, _target)
             {
-                mApp = _app;
-                mMethod = _method;
-                mTarget = _target;
-                if (mMethod.ParameterCount > 0) throw new System.IndexOutOfRangeException(_method.Name + "-Method.ParamterCount > 0");
-            }
-
-            override public void CallMethod()
-            {
-                if (mApp == null || mMethod == null) return;
-                mApp.Invoke(mMethod, mTarget, null);
             }
         }
-#endif
+
         public class UpdateNeedDisObject : UpdateBase
         {
             private Action mDisposable = null;
-            public UpdateNeedDisObject(string _key, Action _delegate, Action _disposable) : base(_key, _delegate)
+            public UpdateNeedDisObject(string _key, Action _delegate, Action _disposable) : base(_key, null,null)
             {
                 if (_disposable == null) throw new NullReferenceException("释放委托不可为NULL. _disposable = null");
                 mDisposable = _disposable;
+                method = new Method_Action(_delegate);
             }
 
             override protected void DisposeObj()

@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Reflection;
-using ILRuntime.CLR.TypeSystem;
-namespace LitEngine
+using LitEngine.Method;
+namespace LitEngine.CodeTool
 {
     using UpdateSpace;
     public class CodeTool_SYS : CodeToolBase
     {
-
         private SafeMap<string, Type> mAssembType = new SafeMap<string, Type>();
-        private SafeMap<string, IType> mMapType = new SafeMap<string, IType>();
+        private SafeMap<string, IBaseType> mMapType = new SafeMap<string, IBaseType>();
         private System.Reflection.Assembly mAssembly;
         private AppDomain mApp = null;
         public CodeTool_SYS() : base()
@@ -23,10 +22,10 @@ namespace LitEngine
             if (mApp != null)
                 AppDomain.Unload(mApp);
             mApp = null;
-           // DLog.LogError( "Assembly 无法直接卸载.如有卸载需求请使用IL模式.");
+            // DLog.LogError( "Assembly 无法直接卸载.如有卸载需求请使用IL模式.");
         }
         #region Sys类型缓存
-        public void AddAssemblyType(byte[] _dll,byte[] _pdb)
+        override public void AddAssemblyType(byte[] _dll, byte[] _pdb)
         {
             if (_dll == null) throw new System.NullReferenceException("AddAssemblyType bytes 不可为null");
 #if !L2CPP
@@ -54,15 +53,15 @@ namespace LitEngine
             if (mAssembType.ContainsKey(_name)) return mAssembType[_name];
             return null;
         }
-        public IType GetICLRTypeAss(Type _type)
+        public IBaseType GetICLRTypeAss(Type _type)
         {
             if (mMapType.ContainsKey(_type.FullName)) return mMapType[_type.FullName];
             mMapType.Add(_type.FullName, new SystemType(_type));
             return mMapType[_type.FullName];
         }
-#endregion
-            #region 类型判断
-        override public IType GetLType(string _name)
+        #endregion
+        #region 类型判断
+        override public IBaseType GetLType(string _name)
         {
             Type ttype = GetAssType(_name);
 
@@ -73,7 +72,7 @@ namespace LitEngine
             return null;
         }
 
-        override public IType GetObjectType(object _obj)
+        override public IBaseType GetObjectType(object _obj)
         {
             if (_obj == null) throw new NullReferenceException("SYS GetObjectType _obj = null");
             return GetICLRTypeAss(_obj.GetType());
@@ -84,9 +83,9 @@ namespace LitEngine
                 return true;
             return false;
         }
-        override public IType GetListChildType(IType _type)
+        override public IBaseType GetListChildType(IBaseType _type)
         {
-            IType ret = null;
+            IBaseType ret = null;
             if (_type.TypeForCLR.IsGenericType)
             {
                 Type[] genericArgTypes = _type.TypeForCLR.GetGenericArguments();
@@ -95,7 +94,7 @@ namespace LitEngine
 
                     ret = GetICLRTypeAss(genericArgTypes[0]);
                     if (ret == null)
-                        DLog.LogError( genericArgTypes[0].Name);
+                        DLog.LogError(genericArgTypes[0].Name);
                 }
                 else
                 {
@@ -104,9 +103,18 @@ namespace LitEngine
             }
             return ret;
         }
-            #endregion
-            #region 方法
-        override public MethodBase GetLMethod(IType _type, string _funname, int _pamcount)
+
+        override public IBaseType[] GetFieldTypes(IBaseType _type)
+        {
+            if (_type == null) throw new NullReferenceException("Base GetFieldType _type =" + _type);
+            if (typeof(SystemType) == _type.GetType())
+                return ((SystemType)_type).FieldTypes;
+            else
+                return null;
+        }
+        #endregion
+        #region 方法
+        override public LitEngine.Method.MethodBase GetLMethod(IBaseType _type, string _funname, int _pamcount)
         {
             MethodInfo tmethod = _type.TypeForCLR.GetMethod(_funname, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
             return tmethod != null ? new Method_CS(tmethod) : null;
@@ -118,28 +126,28 @@ namespace LitEngine
             if (_this == null || !IsLSType(_this.GetType())) return null;
             int tpramcount = _params != null ? _params.Length : 0;
 
-            IType ttype = GetICLRTypeAss(_this.GetType());
-            MethodBase tmethod = GetLMethod(ttype, _name, tpramcount);
+            IBaseType ttype = GetICLRTypeAss(_this.GetType());
+            LitEngine.Method.MethodBase tmethod = GetLMethod(ttype, _name, tpramcount);
             return CallMethod(tmethod, _this, _params);
         }
-            #endregion
-            #region 属性
-            #region 获取
+        #endregion
+        #region 属性
+        #region 获取
         override public object GetTargetMemberByKey(string _key, object _target)
         {
             if (_target == null) return null;
-            IType ttype = GetObjectType(_target);
+            IBaseType ttype = GetObjectType(_target);
             return GetMemberByKey(ttype, _key, _target);
         }
 
         override public object GetTargetMemberByIndex(int _index, object _target)
         {
             if (_target == null) return null;
-            IType ttype = GetObjectType(_target);
+            IBaseType ttype = GetObjectType(_target);
             return GetMemberByIndex(ttype, _index, _target);
         }
 
-        override public object GetMemberByKey(IType _type, string _key, object _object)
+        override public object GetMemberByKey(IBaseType _type, string _key, object _object)
         {
             if (_type == null)
                 throw new NullReferenceException("Base GetMember _type = null");
@@ -149,7 +157,7 @@ namespace LitEngine
             return pi.GetValue(_object);
         }
 
-        override public object GetMemberByIndex(IType _type, int _index, object _object)
+        override public object GetMemberByIndex(IBaseType _type, int _index, object _object)
         {
             if (_type == null)
                 throw new NullReferenceException("Base GetMember _type = null");
@@ -161,9 +169,9 @@ namespace LitEngine
                 throw new NullReferenceException("Base GetMember FieldInfo pi = null");
             return pi.GetValue(_object);
         }
-            #endregion
-            #region 设置
-        override public void SetMember(IType _type, int _index, object _object, object _target)
+        #endregion
+        #region 设置
+        override public void SetMember(IBaseType _type, int _index, object _object, object _target)
         {
             if (_type == null) return;
             FieldInfo[] infos = _type.TypeForCLR.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
@@ -174,7 +182,7 @@ namespace LitEngine
                 throw new NullReferenceException("SYS SetMember pi = null ,_index = " + _index);
             pi.SetValue(_target, _object);
         }
-        override public void SetMember(IType _type, string _key, object _object, object _target)
+        override public void SetMember(IBaseType _type, string _key, object _object, object _target)
         {
             if (_type == null) return;
             FieldInfo pi = _type.TypeForCLR.GetField(_key, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
@@ -182,30 +190,30 @@ namespace LitEngine
                 throw new NullReferenceException("SYS SetMember pi = null ,_key = " + _key);
             pi.SetValue(_target, _object);
         }
-            #endregion
-            #endregion
-            #region 对象获取
-        override public object GetCSLEObjectParmasByType(IType _type, params object[] _parmas)
+        #endregion
+        #endregion
+        #region 对象获取
+        override public object GetCSLEObjectParmasByType(IBaseType _type, params object[] _parmas)
         {
             if (_type == null) throw new NullReferenceException("SYS GetCSLEObjectParmasByType _type = null");
-            return Activator.CreateInstance(_type.TypeForCLR, _parmas); 
+            return Activator.CreateInstance(_type.TypeForCLR, _parmas);
         }
 
-            #endregion
-            #region 委托
+        #endregion
+        #region 委托
         override public UpdateBase GetUpdateObjectAction(string _Function, string _classname, object _target)
         {
-            IType ttype = GetLType(_classname);
+            IBaseType ttype = GetLType(_classname);
             if (ttype == null) return null;
             Action tact = GetCSLEDelegate<Action>(_Function, ttype, _target);
             if (tact == null) return null;
-            return new UpdateObject(string.Format("{0}->{1}", _classname, _Function), tact);
+            return new UpdateObject(string.Format("{0}->{1}", _classname, _Function), new Method_Action(tact), _target);
         }
-        override public K GetCSLEDelegate<K>(string _Function, IType _classtype, object _target)
+        override public K GetCSLEDelegate<K>(string _Function, IBaseType _classtype, object _target)
         {
             if (_classtype == null || _target == null) return default(K);
             object ret = null;
-            Method_CS methodctor =(Method_CS) GetLMethod(_classtype, _Function, 0);
+            Method_CS methodctor = (Method_CS)GetLMethod(_classtype, _Function, 0);
             if (methodctor == null) return default(K);
 
             try
@@ -219,43 +227,31 @@ namespace LitEngine
                 return default(K);
             }
 
-            
+
         }
 
-        override public K GetCSLEDelegate<K, T1>(string _Function, IType _classtype, object _target)
-        {
-            return GetCSLEDelegate<K>(_Function, _classtype, _target);
-        }
-
-        override public K GetCSLEDelegate<K, T1, T2>(string _Function, IType _classtype, object _target)
+        override public K GetCSLEDelegate<K, T1>(string _Function, IBaseType _classtype, object _target)
         {
             return GetCSLEDelegate<K>(_Function, _classtype, _target);
         }
 
-        override public K GetCSLEDelegate<K, T1, T2, T3>(string _Function, IType _classtype, object _target)
+        override public K GetCSLEDelegate<K, T1, T2>(string _Function, IBaseType _classtype, object _target)
         {
             return GetCSLEDelegate<K>(_Function, _classtype, _target);
         }
-        override public K GetCSLEDelegate<K, T1, T2, T3, T4>(string _Function, IType _classtype, object _target)
+
+        override public K GetCSLEDelegate<K, T1, T2, T3>(string _Function, IBaseType _classtype, object _target)
         {
             return GetCSLEDelegate<K>(_Function, _classtype, _target);
         }
-            #endregion
+        override public K GetCSLEDelegate<K, T1, T2, T3, T4>(string _Function, IBaseType _classtype, object _target)
+        {
+            return GetCSLEDelegate<K>(_Function, _classtype, _target);
+        }
+        #endregion
     }
-    public class Method_CS : MethodBase
-    {
-        public MethodInfo SMethod { get; private set; }
-        public Method_CS(MethodInfo _method)
-        {
-            SMethod = _method;
-        }
-        override public object Invoke(object obj, object[] parameters)
-        {
-            return SMethod.Invoke(obj, parameters);
-        }
-        }
 
-    }
+}
 
 
 

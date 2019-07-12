@@ -1,9 +1,9 @@
 ﻿using System;
 using UnityEngine;
 using System.Text;
+using LitEngine.CodeTool;
 namespace LitEngine
 {
-    using ProtoCSLS;
     namespace NetTool
     {
         public class ReceiveData
@@ -75,11 +75,7 @@ namespace LitEngine
 
             public object GetCSLEObject(CodeToolBase _codetool,string _classname)
             {
-                if (mCSLEObject == null)
-                {
-                    mCSLEObject = ProtoBufferReaderBuilderCSLS.GetCSLEObject(_codetool, mData, mLen, _classname);
-                }
-                return mCSLEObject;
+                return null;
             }
 
             #region 读取

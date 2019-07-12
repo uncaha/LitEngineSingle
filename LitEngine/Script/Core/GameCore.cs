@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using LitEngine.CodeTool;
 namespace LitEngine
 {
     using Loader;
@@ -137,7 +138,7 @@ namespace LitEngine
         {
             SetPath();
         }
-        static public void InitGameCore(UseScriptType _scripttype,string _filename)
+        static public void InitGameCore(CodeToolBase _codeTool)
         {
             if(Core.mIsInited)
             {
@@ -145,8 +146,7 @@ namespace LitEngine
                 return;
             }
 
-            Core.mScriptManager = new ScriptManager(_scripttype);
-            Core.mScriptManager.LoadScriptFile(_filename);
+            Core.mScriptManager = new ScriptManager(_codeTool);
             Core.mIsInited = true;
         }
 
@@ -180,7 +180,7 @@ namespace LitEngine
             return GameCore.CodeTool.CallMethodByName(_name, _this, _params);
         }
 
-        static public object GetCSLEObjectParmasByType(ILRuntime.CLR.TypeSystem.IType _type,object _object, params object[] _parmas)
+        static public object GetCSLEObjectParmasByType(IBaseType _type,object _object, params object[] _parmas)
         {
             return GameCore.CodeTool.GetCSLEObjectParmasByType(_type, _object);
         }
