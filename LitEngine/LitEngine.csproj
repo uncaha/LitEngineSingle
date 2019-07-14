@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;LITDEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -28,7 +28,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;LITDEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -71,6 +71,12 @@
     <Compile Include="Script\Data\DataRow.cs" />
     <Compile Include="Script\Data\DataTable.cs" />
     <Compile Include="Script\EngineInterface\Event\ObjectEventCallScript.cs" />
+    <Compile Include="Script\TemPlate\Event\EventDispatch.cs" />
+    <Compile Include="Script\TemPlate\Event\EventGroup.cs" />
+    <Compile Include="Script\TemPlate\Event\EventObject.cs" />
+    <Compile Include="Script\TemPlate\Event\EventStaticClass.cs" />
+    <Compile Include="Script\TemPlate\UI\UIBase.cs" />
+    <Compile Include="Script\TemPlate\UI\UIManager.cs" />
     <Compile Include="Script\Tool\LogWIndow.cs" />
     <Compile Include="Script\ValueType\LValueTypeBase.cs" />
     <Compile Include="Script\EngineInterface\Event\ObjectEventAnimator.cs" />

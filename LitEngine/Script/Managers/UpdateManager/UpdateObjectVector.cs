@@ -68,6 +68,7 @@ namespace LitEngine
 
             private void RunUpdate(UpdateBase _runobj)
             {
+#if LITDEBUG
                 try
                 {
                     _runobj.RunDelgete();
@@ -77,6 +78,10 @@ namespace LitEngine
                     DLog.LogError( string.Format("[{0}] [{1}]{2}", mUpdateType.ToString(), _runobj.Key, _erro.ToString()));
                     _runobj.UnRegToOwner();
                 }
+#else
+                _runobj.RunDelgete();
+#endif
+
             }
 
             public void Update()

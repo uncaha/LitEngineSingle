@@ -11,19 +11,26 @@ namespace LitEngine
     {
         static public string ManifestName = "AppManifest";
         private static bool IsDispose = false;
+        private static object lockobj = new object();
         private static LoaderManager sInstance = null;
         private static LoaderManager Instance
         {
             get
             {
-                
                 if (sInstance == null)
                 {
-                    IsDispose = false;
-                    GameObject tobj = new GameObject("LoaderManager");
-                    GameObject.DontDestroyOnLoad(tobj);
-                    sInstance = tobj.AddComponent<LoaderManager>();
-                    sInstance.Init();
+                    lock (lockobj)
+                    {
+
+                        if (sInstance == null)
+                        {
+                            IsDispose = false;
+                            GameObject tobj = new GameObject("LoaderManager");
+                            GameObject.DontDestroyOnLoad(tobj);
+                            sInstance = tobj.AddComponent<LoaderManager>();
+                            sInstance.Init();
+                        }
+                    }
                 }
                 return sInstance;
             }
@@ -182,7 +189,7 @@ namespace LitEngine
                 {
                     tbundle.Release();
                 }
-                   
+
             }
         }
 
@@ -216,14 +223,14 @@ namespace LitEngine
                 return false;
             }
             _scenename = BaseBundle.DeleteSuffixName(_scenename);
-            string tusname = _scenename.EndsWith(".unity") ? _scenename.Replace(".unity", "") : _scenename;          
+            string tusname = _scenename.EndsWith(".unity") ? _scenename.Replace(".unity", "") : _scenename;
             if (SceneManager.GetActiveScene().name.Equals(tusname))
                 return false;
             LoaderManager.LoadAsset(_scenename);
             SceneManager.LoadScene(tusname, LoadSceneMode.Single);
             return true;
         }
-        
+
         static public bool LoadSceneAsync(string _scenename, System.Action _FinishdCall)
         {
             if (IsSceneLoading)
@@ -244,7 +251,7 @@ namespace LitEngine
             return true;
         }
 
-        
+
         static private void LoadedStartScene(string _key, object _object)
         {
             SceneManager.sceneLoaded += LoadSceneCall;
@@ -415,7 +422,7 @@ namespace LitEngine
             {
                 tfullname = GameCore.ResourcesConfigDataPath + _filename;
                 TextAsset tasset = (TextAsset)Resources.Load(BaseBundle.DeleteSuffixName(tfullname));
-                if(tasset != null)
+                if (tasset != null)
                     ret = tasset.bytes;
             }
             if (ret == null)

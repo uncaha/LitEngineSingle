@@ -5,7 +5,7 @@ namespace LitEngine
     public interface ManagerInterface : IDisposable
     {
     }
-    public class MonoManagerBase : MonoBehaviour
+    public abstract class MonoManagerBase : MonoBehaviour
     {
         virtual protected void OnDestroy()
         {

@@ -5,6 +5,7 @@ namespace LitEngine
     using UpdateSpace;
     public class GameUpdateManager : MonoManagerBase
     {
+        private static object lockobj = new object();
         private static GameUpdateManager sInstance = null;
         public static GameUpdateManager Instance
         {
@@ -12,10 +13,17 @@ namespace LitEngine
             {
                 if (sInstance == null)
                 {
-                    GameObject tobj = new GameObject("GameUpdateManager");
-                    GameObject.DontDestroyOnLoad(tobj);
-                    sInstance = tobj.AddComponent<GameUpdateManager>();
+                    lock (lockobj)
+                    {
+                        if (sInstance == null)
+                        {
+                            GameObject tobj = new GameObject("GameUpdateManager");
+                            GameObject.DontDestroyOnLoad(tobj);
+                            sInstance = tobj.AddComponent<GameUpdateManager>();
+                        }
+                    }
                 }
+
                 return sInstance;
             }
         }
