@@ -77,6 +77,12 @@
     <Compile Include="Script\TemPlate\Event\EventStaticClass.cs" />
     <Compile Include="Script\TemPlate\State\StateBase.cs" />
     <Compile Include="Script\TemPlate\State\StateManager.cs" />
+    <Compile Include="Script\TemPlate\Task\TaskBase.cs" />
+    <Compile Include="Script\TemPlate\Task\TaskCallBack.cs" />
+    <Compile Include="Script\TemPlate\Task\TaskManager.cs" />
+    <Compile Include="Script\TemPlate\Task\TaskQueue.cs" />
+    <Compile Include="Script\TemPlate\Task\TaskWaitCall.cs" />
+    <Compile Include="Script\TemPlate\Task\TaskWaitCallNoTimeScale.cs" />
     <Compile Include="Script\TemPlate\UI\UIBase.cs" />
     <Compile Include="Script\TemPlate\UI\UIManager.cs" />
     <Compile Include="Script\Tool\Helper.cs" />
