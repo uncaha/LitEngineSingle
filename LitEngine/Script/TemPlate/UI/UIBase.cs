@@ -62,13 +62,16 @@ namespace LitEngine.TemPlate.UI
         {
         }
         #endregion
-
         virtual public void PlayAudio(AudioClip _clip)
         {
-            LitEngine.PlayAudioManager.PlaySound(_clip);
+            PlayAudioManager.PlaySound(_clip);
         }
 
         virtual public void BtnCall(string _key)
+        {
+        }
+
+        virtual public void BtnCallSender(Object _object)
         {
         }
 

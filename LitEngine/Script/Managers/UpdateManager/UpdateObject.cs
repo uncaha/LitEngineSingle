@@ -14,9 +14,9 @@ namespace LitEngine
             public bool IsRegToOwner { get; protected set; }
             protected MethodBase method = null;
             protected object target = null;
-            protected float mMaxTime = 0.1f;
+            protected float mMaxTime = 0.0f;
             protected float mTimer = 0;
-            protected bool mIsUseTimer = true;
+            protected bool mIsUseTimer = false;
             public float UpdateTimer
             {
                 get { return mTimer; }

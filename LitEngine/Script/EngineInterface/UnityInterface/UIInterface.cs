@@ -150,7 +150,7 @@ namespace LitEngine.ScriptInterface
             mCurAni.Play(_state);
         }
 
-        protected bool PlayUIAni(UIAniType _type)
+        virtual protected bool PlayUIAni(UIAniType _type)
         {
             if (mAniMap == null) return false;
             if (!mAniMap.ContainsKey(_type)) return false;
@@ -186,26 +186,26 @@ namespace LitEngine.ScriptInterface
             }
         }
 
-        protected void OnShowAnimationEnd(string senderKey)
+        virtual protected void OnShowAnimationEnd(string senderKey)
         {
             PlayUIAni(UIAniType.Normal);
             mState = UISate.Normal;
             CallScriptFunctionByNameParams("OnShowAnimationEnd");
         }
 
-        protected void OnHideAnimationEnd(string senderKey)
+        virtual protected void OnHideAnimationEnd(string senderKey)
         {
             mState = UISate.Normal;
             base.SetActive(false);
             CallScriptFunctionByNameParams("OnHideAnimationEnd");
         }
 
-        protected void OnNormalAnimationEnd(string senderKey)
+        virtual protected void OnNormalAnimationEnd(string senderKey)
         {
             CallScriptFunctionByNameParams("OnNormalAnimationEnd");
         }
 
-        protected void OnCustomAnimationEnd(string senderKey)
+        virtual protected void OnCustomAnimationEnd(string senderKey)
         {
             CallScriptFunctionByNameParams("OnCustomAnimationEnd");
         }

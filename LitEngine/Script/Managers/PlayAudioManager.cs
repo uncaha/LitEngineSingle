@@ -90,6 +90,7 @@ namespace LitEngine
     }
     public class PlayAudioManager : MonoManagerBase
     {
+        private static object lockobj = new object();
         private static PlayAudioManager sInstance = null;
         private static PlayAudioManager Instance
         {
@@ -97,14 +98,22 @@ namespace LitEngine
             {
                 if (sInstance == null)
                 {
-                    GameObject tobj = new GameObject("PlayAudioManager");
-                    GameObject.DontDestroyOnLoad(tobj);
-                    sInstance = tobj.AddComponent<PlayAudioManager>();
-                    sInstance.Init();
+                    lock (lockobj)
+                    {
+                        if (sInstance == null)
+                        {
+                            GameObject tobj = new GameObject("PlayAudioManager");
+                            GameObject.DontDestroyOnLoad(tobj);
+                            sInstance = tobj.AddComponent<PlayAudioManager>();
+                            sInstance.Init();
+                        }
+                    }
                 }
+
                 return sInstance;
             }
         }
+        private PlayAudioManager() { }
 
         private AudioMixerGroup _BackMusicMixer = null;
         public static AudioMixerGroup BackMusicMixer
@@ -187,10 +196,6 @@ namespace LitEngine
         private GameObject mixerSoundsObject;
         private GameObject soundsObject;
         private GameObject groupAudioSoundObject;
-
-        private int mIndex = 0;
-        private int mMixerIndex = 0;
-
         private List<AudioSource> audioSources = new List<AudioSource>();
         private bool isInit = false;
         private void Awake()
@@ -264,23 +269,25 @@ namespace LitEngine
 
         static public AudioSource PlayMixerSound(AudioClip _clip)
         {
+            if (_clip == null) return null;
             return Instance.mAudioMixerSounds.Play(_clip);
         }
 
         static public AudioSource PlaySound(AudioClip _clip)
         {
+            if (_clip == null) return null;
             return Instance.mAudioSounds.Play(_clip);
         }
 
         static public AudioSource PlaySoundByGroup(string _key, AudioClip _clip)
         {
-            if (!Instance.audioGroup.ContainsKey(_key)) return null;
+            if (_clip == null || !Instance.audioGroup.ContainsKey(_key)) return null;
             return Instance.audioGroup[_key].Play(_clip);
         }
 
         static public void PlayMusic(AudioClip _clip)
         {
-            if (Instance.mBackMusic.clip != null && Instance.mBackMusic.clip.Equals(_clip)) return;
+            if (_clip == null || (Instance.mBackMusic.clip != null && Instance.mBackMusic.clip.Equals(_clip))) return;
             Instance.mBackMusic.Stop();
             Instance.mBackMusic.clip = _clip;
             Instance.mBackMusic.loop = true;

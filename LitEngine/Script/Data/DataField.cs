@@ -20,7 +20,7 @@ namespace LitEngine
                     dvalue = null;
                     if (ValueType != FieldType.Null)
                         dvalue = value;
-                    
+
                 }
             }
             private object dvalue;
@@ -36,7 +36,7 @@ namespace LitEngine
                 {
                     checked
                     {
-                       return Value != null ? (T)Value : _defaultValue == null ? default(T) : (T)_defaultValue;
+                        return Value != null ? (T)Value : _defaultValue == null ? default(T) : (T)_defaultValue;
                     }
                 }
                 catch (System.Exception erro)
@@ -66,7 +66,7 @@ namespace LitEngine
                 {
                     return FieldType.Null;
                 }
-                
+
             }
             #endregion
 
@@ -187,7 +187,7 @@ namespace LitEngine
                         _writer.WriteChar((char)dvalue);
                         break;
                     default:
-                        DLog.LogWarning($"暂不支持的类型,无法存储对应的数据.Key = {Key} , Type ={ValueType}");
+                        DLog.LogWarningFormat("暂不支持的类型,无法存储对应的数据.Key = {0} , Type ={1}", Key, ValueType);
                         break;
                 }
             }
