@@ -83,7 +83,7 @@ namespace LitEngine.Data
             {
                 string tfullname = GameCore.AppPersistentAssetsPath + cDatafile;
                 if (!File.Exists(tfullname)) return;
-
+                Clear();
                 LitEngine.IO.AESReader tloader = new LitEngine.IO.AESReader(tfullname);
 
                 int ttableCount = tloader.ReadInt32();
