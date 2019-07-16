@@ -3,7 +3,7 @@ namespace LitEngine
 {
     using IO;
     using Loader;
-   /* public class RootScript : MonoBehaviour
+   /* public class RootScript : MonoBehaviour1
     {
         public string APPNAME = "";
         public string ScriptFileName = "";
