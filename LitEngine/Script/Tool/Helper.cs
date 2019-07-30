@@ -54,19 +54,25 @@ namespace LitEngine.Tool
             return ret;
         }
 
-        static public string GetNumberKM(float _number, string _format = "f0", bool _useStr = true)
+        static public string GetNumberKM(double _number,out int _powIndex ,string _format = "f0",int _min = 1000, int _max = 10)
         {
-            int num = 1000; //byte
+            int num = _min; //byte
+            _powIndex = 0;
+            string ret = null;
 
-            if (_number < num)
-                return _number.ToString();
-            else if (_number < System.Math.Pow(num, 2))
-                return (_number / num).ToString(_format) + (_useStr ? "K" : ""); //kb
-            else if (_number < System.Math.Pow(num, 3))
-                return (_number / System.Math.Pow(num, 2)).ToString(_format) + (_useStr ? "M" : ""); //M
-            else if (_number < System.Math.Pow(num, 4))
-                return (_number / System.Math.Pow(num, 3)).ToString(_format) + (_useStr ? "G" : ""); //G
-            return (_number / System.Math.Pow(num, 4)).ToString(_format) + (_useStr ? "T" : ""); //T
+            for (int i = 1; i < _max; i++)
+            {
+                if (_number < System.Math.Pow(num, i))
+                {
+                    _powIndex = i - 1;
+                    ret = (_number / System.Math.Pow(num, i - 1)).ToString(_format);
+                    break;
+                }
+            }
+
+            return ret;
+
+
         }
 
         static public long GetUnixTime()
