@@ -54,21 +54,29 @@ namespace LitEngine.Tool
             return ret;
         }
 
-        static public string GetNumberKM(double _number,out int _powIndex ,string _format = "f0",int _min = 1000, int _max = 10)
+        static public string GetNumberKM(ulong _number,out int _powIndex, string _format = "f0",ulong _min = 1000, uint _step = 1000, uint _max = 64)
         {
-            int num = _min; //byte
-            _powIndex = 0;
+            uint num = _step; //byte
+            _powIndex = -1;
             string ret = null;
 
-            for (int i = 1; i < _max; i++)
+            if(_number < _min)
             {
-                if (_number < System.Math.Pow(num, i))
+                ret = _number.ToString();
+            }
+            else
+            {
+                for (int i = 1; i < _max; i++)
                 {
-                    _powIndex = i - 1;
-                    ret = (_number / System.Math.Pow(num, i - 1)).ToString(_format);
-                    break;
+                    if (_number < System.Math.Pow(num, i))
+                    {
+                        _powIndex = i - 1;
+                        ret = (_number / System.Math.Pow(num, i - 1)).ToString(_format);
+                        break;
+                    }
                 }
             }
+
 
             return ret;
 
