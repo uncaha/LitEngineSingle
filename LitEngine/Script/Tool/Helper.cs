@@ -1,6 +1,11 @@
 ﻿using UnityEngine;
 namespace LitEngine.Tool
 {
+    public class NumberTextValue
+    {
+        public string text = "";
+        public int powIndex = 0;
+    }
     public class Helper
     {
         static public void SetLayer(Transform _trans, int _layer)
@@ -54,33 +59,24 @@ namespace LitEngine.Tool
             return ret;
         }
 
-        static public string GetNumberKM(ulong _number,out int _powIndex, string _format = "f0",ulong _min = 1000, uint _step = 1000, uint _max = 64)
+        static public NumberTextValue GetNumberKM(System.Numerics.BigInteger _number, string _format = "f2", int _min = 1000,int _step = 1000, uint _max = 1000)
         {
-            uint num = _step; //byte
-            _powIndex = -1;
-            string ret = null;
-
-            if(_number < _min)
+            NumberTextValue ret = new NumberTextValue();
+            if (_number < _min)
             {
-                ret = _number.ToString();
+                _format = "f0";
             }
-            else
+
+            for (int i = 1; i < _max; i++)
             {
-                for (int i = 1; i < _max; i++)
+                if (_number < (int)System.Math.Pow(_step, i))
                 {
-                    if (_number < System.Math.Pow(num, i))
-                    {
-                        _powIndex = i - 1;
-                        ret = (_number / System.Math.Pow(num, i - 1)).ToString(_format);
-                        break;
-                    }
+                    ret.powIndex = i - 1;
+                    ret.text = (_number / (int)System.Math.Pow(_step, ret.powIndex)).ToString(_format);
+                    break;
                 }
             }
-
-
             return ret;
-
-
         }
 
         static public long GetUnixTime()
