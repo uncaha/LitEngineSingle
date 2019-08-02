@@ -59,7 +59,25 @@ namespace LitEngine.Tool
             return ret;
         }
 
-        static public NumberTextValue GetNumberKM(System.Numerics.BigInteger _number, string _format = "f2", int _min = 1000,int _step = 1000, uint _max = 1000)
+        static public NumberTextValue GetNumberTextBigInteger(System.Numerics.BigInteger _number,int _minlen = 3, int _decimalLen = 2, int _step = 3)
+        {
+            NumberTextValue ret = new NumberTextValue();
+            _minlen = _minlen < _step ? _step : _minlen;
+            string tstr = _number.ToString();
+            if (tstr.Length <= _minlen)
+            {
+                ret.text = tstr;
+                return ret;
+            }
+
+            int tcount = (tstr.Length - 1) / _step;
+            ret.powIndex = tcount;
+            string trtext = tstr.Substring(0, tstr.Length - ret.powIndex * _step + _decimalLen);
+            ret.text = trtext.Insert(trtext.Length - _decimalLen, ".");
+            return ret;
+        }
+
+        static public NumberTextValue GetNumberText(ulong _number,ulong _min = 1000, string _format = "f2", int _step = 1000, uint _max = 1000)
         {
             NumberTextValue ret = new NumberTextValue();
             if (_number < _min)
@@ -69,10 +87,10 @@ namespace LitEngine.Tool
 
             for (int i = 1; i < _max; i++)
             {
-                if (_number < (int)System.Math.Pow(_step, i))
+                if (_number < System.Math.Pow(_step, i))
                 {
                     ret.powIndex = i - 1;
-                    ret.text = (_number / (int)System.Math.Pow(_step, ret.powIndex)).ToString(_format);
+                    ret.text = (_number / System.Math.Pow(_step, ret.powIndex)).ToString(_format);
                     break;
                 }
             }
