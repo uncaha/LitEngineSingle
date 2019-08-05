@@ -6,12 +6,12 @@ namespace LitEngine
 {
     using Loader;
     using IO;
-    public class GameCore
+    public sealed class GameCore
     {
-        public const string DataPath = "/Data/";//App总数据目录
-        public const string ResDataPath = "/ResData/";//App资源目录
-        public const string ConfigDataPath = "/ConfigData/";//App配置文件目录
-        public const string ScriptDataPath = "/LogicDll/";//App脚本
+        private static string DataPath = "/Data/";//App总数据目录
+        private static string ResDataPath = "/ResData/";//App资源目录
+        private static string ConfigDataPath = "/ConfigData/";//App配置文件目录
+        private static string ScriptDataPath = "/LogicDll/";//App脚本
 
         private static GameCore sInstance = null;
         public static GameCore Core
@@ -134,11 +134,11 @@ namespace LitEngine
         static public CodeToolBase CodeTool { get { return Core.mScriptManager.CodeTool; } }
 
         #region 初始化
-        protected GameCore()
+        private GameCore()
         {
             SetPath();
         }
-        static public void InitGameCore(CodeToolBase _codeTool)
+        static public void InitGameCore(CodeToolBase _codeTool, string DataPath = "/Data/", string ResDataPath = "/ResData/", string ConfigDataPath = "/ConfigData/", string ScriptDataPath = "/LogicDll/")
         {
             if(Core.mIsInited)
             {
