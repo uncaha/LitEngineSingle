@@ -67,24 +67,6 @@ namespace LitEngine.TemPlate.UI
             PlayAudioManager.PlaySound(_clip);
         }
 
-        virtual public void BtnCall(string _key)
-        {
-        }
-
-        virtual public void BtnCallSender(Object _object)
-        {
-        }
-
-        virtual public void BtnPressDown(string _key)
-        {
-
-        }
-
-        virtual public void BtnPressUP(string _key)
-        {
-
-        }
-
         virtual public void UpdateUI(float dt)
         {
 
