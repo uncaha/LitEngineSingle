@@ -8,10 +8,10 @@ namespace LitEngine
     using IO;
     public sealed class GameCore
     {
-        private static string DataPath = "/Data/";//App总数据目录
-        private static string ResDataPath = "/ResData/";//App资源目录
-        private static string ConfigDataPath = "/ConfigData/";//App配置文件目录
-        private static string ScriptDataPath = "/LogicDll/";//App脚本
+        private static string DataPath = "Data";//App总数据目录
+        private static string ResDataPath = "ResData";//App资源目录
+        private static string ConfigDataPath = "ConfigData";//App配置文件目录
+        private static string ScriptDataPath = "LogicDll";//App脚本
 
         private static GameCore sInstance = null;
         public static GameCore Core
@@ -49,22 +49,21 @@ namespace LitEngine
         }
 
         static public string PersistentDataPath { get { return Core.mPersistentDataPath; } }
-        static public string StreamingAssetsDataPath { get { return Core.mStreamingAssetsDataPath; } }
-        static public string ResourcesDataPath { get { return Core.mResourcesDataPath; } }
-
         static public string PersistentResDataPath { get { return Core.mPersistentResDataPath; } }
-        static public string StreamingAssetsResDataPath { get { return Core.mStreamingAssetsResDataPath; } }
-        static public string ResourcesResDataPath { get { return Core.mResourcesResDataPath; } }
-
         static public string PersistentConfigDataPath { get { return Core.mPersistentConfigDataPath; } }
-        static public string StreamingAssetsConfigDataPath { get { return Core.mStreamingAssetsConfigDataPath; } }
-        static public string ResourcesConfigDataPath { get { return Core.mResourcesConfigDataPath; } }
-
         static public string PersistentScriptDataPath { get { return Core.mPersistentScriptDataPath; } }
+
+        static public string StreamingAssetsDataPath { get { return Core.mStreamingAssetsDataPath; } }
+        static public string StreamingAssetsResDataPath { get { return Core.mStreamingAssetsResDataPath; } }
+        static public string StreamingAssetsConfigDataPath { get { return Core.mStreamingAssetsConfigDataPath; } }
         static public string StreamingAssetsScriptDataPath { get { return Core.mStreamingAssetsScriptDataPath; } }
+
+        static public string ResourcesDataPath { get { return Core.mResourcesDataPath; } }
+        static public string ResourcesResDataPath { get { return Core.mResourcesResDataPath; } }
+        static public string ResourcesConfigDataPath { get { return Core.mResourcesConfigDataPath; } }
         static public string ResourcesScriptDataPath { get { return Core.mResourcesScriptDataPath; } }
 
-        static public string CombinePath(params object[] _params)
+        static public string CombinePath(params string[] _params)
         {
             System.Text.StringBuilder tformatbuilder = new System.Text.StringBuilder();
             char[] tdes = { '/' };
@@ -80,7 +79,7 @@ namespace LitEngine
             return tformatbuilder.ToString();
         }
 
-        static public string CombineFilePath(params object[] _params)
+        static public string CombineFilePath(params string[] _params)
         {
             System.Text.StringBuilder tformatbuilder = new System.Text.StringBuilder();
             char[] tdes = {'/'};
@@ -111,24 +110,24 @@ namespace LitEngine
 
         #endregion
         #region 类变量
-        protected bool mIsInited = false;
+        private bool mIsInited = false;
 
-        protected string mPersistentDataPath;
-        protected string mStreamingAssetsDataPath;
-        protected string mResourcesDataPath;
+        private string mPersistentDataPath;
+        private string mPersistentResDataPath;
+        private string mPersistentConfigDataPath;
+        private string mPersistentScriptDataPath;
 
-        protected string mPersistentResDataPath;
-        protected string mStreamingAssetsResDataPath;
-        protected string mResourcesResDataPath;
+        private string mStreamingAssetsDataPath;
+        private string mStreamingAssetsResDataPath;
+        private string mStreamingAssetsConfigDataPath;
+        private string mStreamingAssetsScriptDataPath;
 
-        protected string mPersistentConfigDataPath;
-        protected string mStreamingAssetsConfigDataPath;
-        protected string mResourcesConfigDataPath;
+        private string mResourcesDataPath;
+        private string mResourcesResDataPath;
+        private string mResourcesConfigDataPath;
+        private string mResourcesScriptDataPath;
 
-        protected string mPersistentScriptDataPath;
-        protected string mStreamingAssetsScriptDataPath;
-        protected string mResourcesScriptDataPath;
-        protected ScriptManager mScriptManager;
+        private ScriptManager mScriptManager;
         #endregion
 
         static public CodeToolBase CodeTool { get { return Core.mScriptManager.CodeTool; } }
@@ -138,13 +137,19 @@ namespace LitEngine
         {
             SetPath();
         }
-        static public void InitGameCore(CodeToolBase _codeTool, string DataPath = "/Data/", string ResDataPath = "/ResData/", string ConfigDataPath = "/ConfigData/", string ScriptDataPath = "/LogicDll/")
+        static public void InitGameCore(CodeToolBase _codeTool, string pDataPath = "Data", string pResDataPath = "ResData", string pConfigDataPath = "ConfigData", string pScriptDataPath = "LogicDll")
         {
             if(Core.mIsInited)
             {
                 DLog.LogError( "不允许重复初始化GameCore,请检查代码");
                 return;
             }
+            DataPath = pDataPath;
+            ResDataPath = pResDataPath;
+            ConfigDataPath = pConfigDataPath;
+            ScriptDataPath = pScriptDataPath;
+
+            Core.SetPath();
 
             Core.mScriptManager = new ScriptManager(_codeTool);
             Core.mIsInited = true;
