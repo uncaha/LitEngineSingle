@@ -22,5 +22,7 @@ namespace LitEngine.LType
         Char,
         Decimal,
         String,
+        BigInteger,
+        Bytes,
     }
 }

@@ -60,7 +60,14 @@ namespace LitEngine
                     return FieldType.Null;
                 try
                 {
-                    return !string.IsNullOrEmpty(_str) ? (FieldType)System.Enum.Parse(typeof(FieldType), _str) : FieldType.Null;
+                    if(_str.Equals("Byte[]"))
+                    {
+                        return FieldType.Bytes;
+                    }
+                    else
+                    {
+                        return !string.IsNullOrEmpty(_str) ? (FieldType)System.Enum.Parse(typeof(FieldType), _str) : FieldType.Null;
+                    }  
                 }
                 catch (System.Exception)
                 {
@@ -124,6 +131,19 @@ namespace LitEngine
                     case FieldType.Char:
                         dvalue = _loader.ReadChar();
                         break;
+                    case FieldType.BigInteger:
+                        {
+                            int tlen =  _loader.ReadInt32();
+                            byte[] tbytes = _loader.ReadBytes(tlen);
+                            dvalue = new System.Numerics.BigInteger(tbytes);
+                        }
+                        break;
+                    case FieldType.Bytes:
+                        {
+                            int tlen = _loader.ReadInt32();
+                            dvalue = _loader.ReadBytes(tlen);
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -185,6 +205,20 @@ namespace LitEngine
                         break;
                     case FieldType.Char:
                         _writer.WriteChar((char)dvalue);
+                        break;
+                    case FieldType.BigInteger:
+                        {
+                            byte[] tbytes = ((System.Numerics.BigInteger)dvalue).ToByteArray();
+                            _writer.WriteInt(tbytes.Length);
+                            _writer.WriteBytes(tbytes);
+                        }
+                        break;
+                    case FieldType.Bytes:
+                        {
+                            byte[] tbytes = (byte[])dvalue;
+                            _writer.WriteInt(tbytes.Length);
+                            _writer.WriteBytes(tbytes);
+                        }
                         break;
                     default:
                         DLog.LogWarningFormat("暂不支持的类型,无法存储对应的数据.Key = {0} , Type ={1}", Key, ValueType);

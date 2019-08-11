@@ -4,6 +4,7 @@ namespace LitEngine.Data
 {
     public class DataBase
     {
+        public string Error { get; private set; }
         private const string cDatafile = "GameData.bytes";
         public static DataBase Data { get { if (dataInstance == null) dataInstance = new DataBase(); return dataInstance; } }
         private static DataBase dataInstance = null;
@@ -94,9 +95,12 @@ namespace LitEngine.Data
                     tableMap.Add(ttable.TableName, ttable);
                 }
                 tloader.Close();
+                Error = null;
             }
             catch (System.Exception _e)
             {
+                Error = _e.ToString();
+                Clear();
                 DLog.LogError(_e.ToString());
             }
 
