@@ -5,30 +5,44 @@ namespace LitEngine.TemPlate.Event
     public class EventGroup
     {
         public System.Enum Key { get; private set; }
-        public List<System.Action<object>> Delgates { get; private set; }
+        public Dictionary<object,System.Action<object>> Delgates { get; private set; }
+
+        protected List<object> Keys;
         public EventGroup(System.Enum _key)
         {
             Key = _key;
-            Delgates = new List<System.Action<object>>();
+            Delgates = new Dictionary<object, System.Action<object>>();
         }
 
-        public void Add(System.Action<object> _delgate)
+        public void Add(object target, System.Action<object> _delgate)
         {
-            if(!Delgates.Contains(_delgate))
-                Delgates.Add(_delgate);
+            if(!Delgates.ContainsKey(_delgate))
+            {
+                Delgates.Add(target, _delgate);
+                Keys = new List<object>(Delgates.Keys);
+            }
         }
 
-        public void Remove(System.Action<object> _delgate)
+        public void Remove(object target)
         {
-            if (Delgates.Contains(_delgate))
-                Delgates.Remove(_delgate);
+            if (Delgates.ContainsKey(target))
+                Delgates.Remove(target);
+            Keys = new List<object>(Delgates.Keys);
         }
 
         public void Call(object _obj)
         {
-            for (int i = Delgates.Count - 1; i >= 0 ; i--)
+            for (int i = 0; i < Keys.Count; i++)
             {
-                CallDelgate(Delgates[i], _obj);
+                object tkey = Keys[i];
+                var tact = Delgates[tkey];
+
+                if (tact == null || (tact.Target == null && !tact.Method.IsStatic))
+                {
+                    Delgates.Remove(tkey);
+                    continue;
+                }
+                CallDelgate(tact, _obj);
             }
         }
         private void CallDelgate(System.Action<object> _action,object _obj)

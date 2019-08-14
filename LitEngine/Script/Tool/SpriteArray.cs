@@ -37,6 +37,7 @@ public class SpriteArray : MonoBehaviour
 
     private void OnDestroy()
     {
-        spdic.Clear();
+        if(spdic != null)
+            spdic.Clear();
     }
 }

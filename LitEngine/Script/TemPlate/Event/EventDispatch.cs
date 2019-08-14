@@ -26,20 +26,30 @@ namespace LitEngine.TemPlate.Event
         private Dictionary<Enum, EventGroup> mReceiver = new Dictionary<Enum, EventGroup>();
         private EventDispatch() { }
 
-        static public void Reg(Enum _def, Action<object> _receiver)
+        static public void Reg(object pTarget, Enum _def, Action<object> pReceiver)
         {
-            if (_receiver == null) return;
+            if (pReceiver == null) return;
             if (!Eventdp.mReceiver.ContainsKey(_def))
                 Eventdp.mReceiver.Add(_def, new EventGroup(_def));
 
-            Eventdp.mReceiver[_def].Add(_receiver);
+            Eventdp.mReceiver[_def].Add(pTarget, pReceiver);
         }
 
-        static public void UnReg(Enum _def, Action<object> _receiver)
+        static public void UnReg(object pTarget, Enum _def)
         {
-            if (_receiver == null) return;
+            if (pTarget == null) return;
             if (!Eventdp.mReceiver.ContainsKey(_def)) return;
-            Eventdp.mReceiver[_def].Remove(_receiver);
+            Eventdp.mReceiver[_def].Remove(pTarget);
+        }
+
+        static public void UnRegByTarget(object pTarget)
+        {
+            if (pTarget == null) return;
+            var tlist = Eventdp.mReceiver;
+            foreach (var item in tlist)
+            {
+                item.Value.Remove(pTarget);
+            }
         }
 
         static public void Send(Enum _def, object _sendObject = null)

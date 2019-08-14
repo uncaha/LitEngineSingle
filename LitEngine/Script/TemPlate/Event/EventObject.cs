@@ -5,16 +5,27 @@ namespace LitEngine.TemPlate.Event
     public class EventObject
     {
         public object Target { get; private set; }
-        public string methodName;
-        public Dictionary<string,System.Action<object>> Delgates{ get; private set; }
-        public EventObject(object _tar)
+        public System.Action<object> EventDelgate { get; private set;}
+        public EventObject(object pTar, System.Action<object> pDel)
         {
-            Target = _tar;
+            Target = pTar;
+            EventDelgate = pDel;
         }
 
-        public System.Action<object> GetDelgate()
+        public void Call(object pObject)
         {
-            return null;
+#if LITDEBUG
+            try
+            {
+                EventDelgate(pObject);
+            }
+            catch (System.Exception _e)
+            {
+                DLog.LogError(_e.ToString());
+            }
+#else
+            _action(_obj);
+#endif
         }
 
     }
