@@ -9,10 +9,11 @@ namespace LitEngine.Data
         public static DataBase Data { get { if (dataInstance == null) dataInstance = new DataBase(); return dataInstance; } }
         private static DataBase dataInstance = null;
 
-        public Dictionary<string, DataTable>.ValueCollection Tables { get { return tableMap.Values; } }
         public Dictionary<string, DataTable>.KeyCollection Keys { get { return tableMap.Keys; } }
+        public int TableCount { get { return tableList.Count; } }
 
         private Dictionary<string, DataTable> tableMap = new Dictionary<string, DataTable>();
+        private List<DataTable> tableList = new List<DataTable>();
         private DataBase()
         {
             Load();
@@ -21,14 +22,40 @@ namespace LitEngine.Data
         public DataTable AddTable(string _tableName)
         {
             if (!tableMap.ContainsKey(_tableName))
-                tableMap.Add(_tableName, new DataTable(_tableName));
+            {
+                DataTable newtable = new DataTable(_tableName);
+                AddFromTable(newtable);
+            }
+                
             return tableMap[_tableName];
         }
 
         public void AddFromTable(DataTable _table)
         {
             if (!tableMap.ContainsKey(_table.TableName))
+            {
                 tableMap.Add(_table.TableName, _table);
+                tableList.Add(_table);
+            }
+                
+        }
+
+        public void RemoveTable(string _tableName)
+        {
+            if (tableMap.ContainsKey(_tableName))
+            {
+                DataTable ttable = tableMap[_tableName];
+                tableMap.Remove(_tableName);
+                tableList.Remove(ttable);
+            }
+        }
+
+        public DataTable this[int pIndex]
+        {
+            get
+            {
+                return tableList[pIndex];
+            }
         }
 
         public DataTable this[string _tableName]
@@ -38,45 +65,13 @@ namespace LitEngine.Data
                 if (!tableMap.ContainsKey(_tableName)) return null;
                 return tableMap[_tableName];
             }
-            set
-            {
-                if (!tableMap.ContainsKey(_tableName))
-                {
-                    tableMap.Add(_tableName, value);
-                }
-                else
-                {
-                    if (value != null)
-                        tableMap[_tableName] = value;
-                    else
-                        tableMap.Remove(_tableName);
-                }
-            }
         }
-        #region getdata
-        public DataRow SearchDataRow(string _table, string _rowkey)
-        {
-            DataTable ttable = this[_table];
-            return ttable != null ? ttable[_rowkey] : null;
-        }
-
-        public DataField SearchField(string _table, string _rowkey, string _fieldkey)
-        {
-            DataRow trow = SearchDataRow(_table, _rowkey);
-            return trow != null ? trow.SearchField(_fieldkey) : null;
-        }
-
-        public T TryGetValue<T>(string _table, string _rowkey, string _fieldkey, object _defaultValue = null)
-        {
-            DataField tfield = SearchField(_table, _rowkey, _fieldkey);
-            return tfield != null ? tfield.TryGetValue<T>(_defaultValue) : _defaultValue == null ? default(T) : (T)_defaultValue;
-        }
-        #endregion
 
         #region load,save
         public void Clear()
         {
             tableMap.Clear();
+            tableList.Clear();
         }
         public void Load()
         {
@@ -92,7 +87,7 @@ namespace LitEngine.Data
                 {
                     DataTable ttable = new DataTable();
                     ttable.Load(tloader);
-                    tableMap.Add(ttable.TableName, ttable);
+                    AddFromTable(ttable);
                 }
                 tloader.Close();
                 Error = null;
@@ -111,13 +106,11 @@ namespace LitEngine.Data
             {
                 string tfullname = GameCore.AppPersistentAssetsPath + cDatafile;
                 LitEngine.IO.AESWriter twriter = new LitEngine.IO.AESWriter(tfullname);
-
-                List<DataTable> ttableValues = new List<DataTable>(tableMap.Values);
-                int ttableCount = ttableValues.Count;
+                int ttableCount = tableList.Count;
                 twriter.WriteInt(ttableCount);
                 for (int i = 0; i < ttableCount; i++)
                 {
-                    DataTable ttable = ttableValues[i];
+                    DataTable ttable = tableList[i];
                     ttable.Save(twriter);
                 }
                 twriter.Flush();

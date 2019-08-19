@@ -6,27 +6,55 @@ namespace LitEngine
         public sealed class DataRow : DataBaseElement
         {
             private Dictionary<string, DataField> fieldMap = new Dictionary<string, DataField>();
-            public Dictionary<string, DataField>.ValueCollection Fields { get { return fieldMap.Values; } }
+            private List<DataField> fieldList = new List<DataField>();
+            public int Count { get { return fieldList.Count; } }
             public Dictionary<string, DataField>.KeyCollection Keys { get { return fieldMap.Keys; } }
             public string Key { get; private set; }
-            public int Count { get { return fieldMap.Count; } }
+            
             public DataRow(string _key = null)
             {
                 Key = _key;
             }
 
-            public DataField AddField(string _fieldName)
+            public DataField AddField(string pFieldName,object pValue = null)
             {
-                if (!fieldMap.ContainsKey(_fieldName))
-                    fieldMap.Add(_fieldName, new DataField(_fieldName, null));
-                return fieldMap[_fieldName];
+                if (!fieldMap.ContainsKey(pFieldName))
+                {
+                    AddFromField(new DataField(pFieldName, pValue));
+                }
+                DataField ret = fieldMap[pFieldName];
+                ret.Value = pValue;
+                return ret;
             }
 
-            public void RemoveField(string _fieldName)
+            public void AddFromField(DataField pField)
             {
-                if (fieldMap.ContainsKey(_fieldName))
-                    fieldMap.Remove(_fieldName);
+                if (!fieldMap.ContainsKey(pField.Key))
+                {
+                    fieldMap.Add(pField.Key, pField);
+                    fieldList.Add(pField);
+                }       
             }
+
+            public void RemoveField(string pFieldName)
+            {
+                if (fieldMap.ContainsKey(pFieldName))
+                {
+                    DataField tfield = fieldMap[pFieldName];
+                    fieldMap.Remove(pFieldName);
+                    fieldList.Remove(tfield);
+                }
+                    
+            }
+
+            public object this[int pIndex]
+            {
+                get
+                {
+                    return fieldList[pIndex].Value;
+                }
+            }
+
 
             public object this[string _fieldKey]
             {
@@ -38,25 +66,17 @@ namespace LitEngine
 
                 set
                 {
-                    if (!fieldMap.ContainsKey(_fieldKey))
-                    {
-                        if (value != null)
-                            fieldMap.Add(_fieldKey, new DataField(_fieldKey, value));
-                    }
+                    if (value != null)
+                        AddField(_fieldKey).Value = value;
                     else
-                    {
-                        if (value != null)
-                            fieldMap[_fieldKey].Value = value;
-                        else
-                            fieldMap.Remove(_fieldKey);
-                    }
+                        RemoveField(_fieldKey);
                 }
             }
 
-            public T TryGetValue<T>(string _fieldkey, object _defaultValue = null)
+            public T GetValue<T>(string _fieldkey, object _defaultValue = null)
             {
                 if (!fieldMap.ContainsKey(_fieldkey)) return _defaultValue == null ? default(T) : (T)_defaultValue;
-                return fieldMap[_fieldkey].TryGetValue<T>(_defaultValue);
+                return fieldMap[_fieldkey].GetValue<T>(_defaultValue);
             }
 
             public DataField SearchField(string _fieldkey)
@@ -74,19 +94,18 @@ namespace LitEngine
                 {
                     DataField tfield = new DataField(null, null);
                     tfield.Load(_loader);
-                    fieldMap.Add(tfield.Key, tfield);
+                    AddFromField(tfield);
                 }
             }
             override public void Save(LitEngine.IO.AESWriter _writer)
             {
                 _writer.WriteString(Key);
                 Attribut.Save(_writer);
-                List<DataField> tfields = new List<DataField>(fieldMap.Values);
-                int tfieldCount = tfields.Count;
+                int tfieldCount = fieldList.Count;
                 _writer.WriteInt(tfieldCount);
                 for (int i = 0; i < tfieldCount; i++)
                 {
-                    DataField tfield = tfields[i];
+                    DataField tfield = fieldList[i];
                     tfield.Save(_writer);
                 }
             }

@@ -8,9 +8,9 @@ namespace LitEngine
             private Dictionary<string, DataRow> rowMap = new Dictionary<string, DataRow>();
 
             public string TableName { get; private set; }
-            public int RowCount { get { return rowMap.Count; } }
-            public Dictionary<string, DataRow>.ValueCollection Rows { get { return rowMap.Values; } }
+            public int RowCount { get { return rowList.Count; } }
             public Dictionary<string, DataRow>.KeyCollection Keys { get { return rowMap.Keys; } }
+            private List<DataRow> rowList = new List<DataRow>();
             public DataTable(string _tableName = null)
             {
                 TableName = _tableName;
@@ -19,13 +19,36 @@ namespace LitEngine
             public DataRow AddRow(string _rowName)
             {
                 if (!rowMap.ContainsKey(_rowName))
-                    rowMap.Add(_rowName, new DataRow(_rowName));
+                {
+                    AddFromRow(new DataRow(_rowName));
+                }
+                
                 return rowMap[_rowName];
+            }
+            public void AddFromRow(DataRow pRow)
+            {
+                if (!rowMap.ContainsKey(pRow.Key))
+                {
+                    rowMap.Add(pRow.Key, pRow);
+                    rowList.Add(pRow);
+                }
             }
             public void RemoveRow(string _rowName)
             {
                 if (rowMap.ContainsKey(_rowName))
+                {
+                    DataRow trow = rowMap[_rowName];
                     rowMap.Remove(_rowName);
+                    rowList.Remove(trow);
+                }
+                    
+            }
+            public DataRow this[int pIndex]
+            {
+                get
+                {
+                    return rowList[pIndex];
+                }
             }
 
             public DataRow this[string _rowKey]
@@ -35,28 +58,6 @@ namespace LitEngine
                     if (!rowMap.ContainsKey(_rowKey)) return null;
                     return rowMap[_rowKey];
                 }
-
-                set
-                {
-                    if (!rowMap.ContainsKey(_rowKey))
-                    {
-                        if(value != null)
-                            rowMap.Add(_rowKey, value);
-                    }
-                    else
-                    {
-                        if (value != null)
-                            rowMap[_rowKey] = value;
-                        else
-                            rowMap.Remove(_rowKey);
-                    }
-                }
-            }
-
-            public T TryGetValue<T>(string _rowkey, string _fieldkey,object _defaultValue = null)
-            {
-                DataRow trow = this[_rowkey];
-                return trow != null ? trow.TryGetValue<T>(_fieldkey, _defaultValue) : _defaultValue == null ? default(T) : (T)_defaultValue;
             }
 
             override public void Load(LitEngine.IO.AESReader _loader)
@@ -68,19 +69,19 @@ namespace LitEngine
                 {
                     DataRow trow = new DataRow();
                     trow.Load(_loader);
-                    rowMap.Add(trow.Key, trow);
+                    AddFromRow(trow);
                 }
             }
             override public void Save(LitEngine.IO.AESWriter _writer)
             {
                 _writer.WriteString(TableName);
                 Attribut.Save(_writer);
-                List<DataRow> trowValues = new List<DataRow>(rowMap.Values);
-                int trowCount = trowValues.Count;
+                
+                int trowCount = rowList.Count;
                 _writer.WriteInt(trowCount);
                 for (int i = 0; i < trowCount; i++)
                 {
-                    DataRow trow = trowValues[i];
+                    DataRow trow = rowList[i];
                     trow.Save(_writer);
                 }
             }

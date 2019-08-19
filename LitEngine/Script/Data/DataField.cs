@@ -30,7 +30,7 @@ namespace LitEngine
                 Value = _value;
             }
 
-            public T TryGetValue<T>(object _defaultValue = null)
+            public T GetValue<T>(object _defaultValue = null)
             {
                 try
                 {
