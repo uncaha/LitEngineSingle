@@ -32,7 +32,7 @@ namespace LitEngine
             {
                 if (sAppPersistentAssetsPath == null)
                 {
-                    if (UnityEngine.Application.platform != UnityEngine.RuntimePlatform.WindowsEditor && UnityEngine.Application.platform != UnityEngine.RuntimePlatform.WindowsPlayer)
+                    if (UnityEngine.Application.platform != UnityEngine.RuntimePlatform.OSXEditor && UnityEngine.Application.platform != UnityEngine.RuntimePlatform.WindowsEditor && UnityEngine.Application.platform != UnityEngine.RuntimePlatform.LinuxEditor)
                         sAppPersistentAssetsPath = string.Format("{0}/", UnityEngine.Application.persistentDataPath).Replace("//", "/");
                     else
                         sAppPersistentAssetsPath = string.Format("{0}", UnityEngine.Application.dataPath + "/../").Replace("//", "/");
