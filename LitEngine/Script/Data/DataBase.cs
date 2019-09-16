@@ -105,6 +105,7 @@ namespace LitEngine.Data
             try
             {
                 string tfullname = GameCore.AppPersistentAssetsPath + cDatafile;
+                string tempfile = tfullname + ".temp";
                 LitEngine.IO.AESWriter twriter = new LitEngine.IO.AESWriter(tfullname);
                 int ttableCount = tableList.Count;
                 twriter.WriteInt(ttableCount);
@@ -115,6 +116,12 @@ namespace LitEngine.Data
                 }
                 twriter.Flush();
                 twriter.Close();
+
+                if(File.Exists(tfullname))
+                {
+                    File.Delete(tfullname);
+                }
+                File.Copy(tempfile,tfullname);
             }
             catch (System.Exception _e )
             {
