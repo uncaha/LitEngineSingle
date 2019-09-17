@@ -75,12 +75,13 @@ namespace LitEngine.Data
         }
         public void Load()
         {
+            LitEngine.IO.AESReader tloader = null;
             try
             {
                 string tfullname = GameCore.AppPersistentAssetsPath + cDatafile;
                 if (!File.Exists(tfullname)) return;
                 Clear();
-                LitEngine.IO.AESReader tloader = new LitEngine.IO.AESReader(tfullname);
+                tloader = new LitEngine.IO.AESReader(tfullname);
 
                 int ttableCount = tloader.ReadInt32();
                 for (int i = 0; i < ttableCount; i++)
@@ -90,6 +91,7 @@ namespace LitEngine.Data
                     AddFromTable(ttable);
                 }
                 tloader.Close();
+                tloader = null;
                 Error = null;
             }
             catch (System.Exception _e)
@@ -99,14 +101,20 @@ namespace LitEngine.Data
                 DLog.LogError(_e.ToString());
             }
 
+            if(tloader != null)
+            {
+                tloader.Close();
+            }
+
         }
         public void Save()
         {
+            LitEngine.IO.AESWriter twriter = null;
             try
             {
                 string tfullname = GameCore.AppPersistentAssetsPath + cDatafile;
                 string tempfile = tfullname + ".temp";
-                LitEngine.IO.AESWriter twriter = new LitEngine.IO.AESWriter(tfullname);
+                twriter = new LitEngine.IO.AESWriter(tempfile);
                 int ttableCount = tableList.Count;
                 twriter.WriteInt(ttableCount);
                 for (int i = 0; i < ttableCount; i++)
@@ -116,8 +124,8 @@ namespace LitEngine.Data
                 }
                 twriter.Flush();
                 twriter.Close();
-
-                if(File.Exists(tfullname))
+                twriter = null;
+                if (File.Exists(tfullname))
                 {
                     File.Delete(tfullname);
                 }
@@ -127,7 +135,9 @@ namespace LitEngine.Data
             {
                 DLog.LogError(_e.ToString());
             }
-           
+            if(twriter != null)
+                twriter.Close();
+
         }
         #endregion
     }

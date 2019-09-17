@@ -216,7 +216,11 @@
     <Compile Include="Script\UnZip\Zip\Zip\ZipInputStream.cs" />
     <Compile Include="Script\UnZip\Zip\Zip\ZipNameTransform.cs" />
     <Compile Include="Script\UnZip\Zip\Zip\ZipOutputStream.cs" />
+    <Compile Include="Script\Data\CustomData\DataObject.cs" />
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Script\Data\CustomData\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

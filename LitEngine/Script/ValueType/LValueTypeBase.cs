@@ -24,5 +24,6 @@ namespace LitEngine.LType
         String,
         BigInteger,
         Bytes,
+        Object,
     }
 }
