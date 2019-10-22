@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>LitEngine</RootNamespace>
     <AssemblyName>LitEngine</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -217,6 +217,7 @@
     <Compile Include="Script\UnZip\Zip\Zip\ZipNameTransform.cs" />
     <Compile Include="Script\UnZip\Zip\Zip\ZipOutputStream.cs" />
     <Compile Include="Script\Data\CustomData\DataObject.cs" />
+    <Compile Include="Script\Data\DataUtil.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
