@@ -122,6 +122,7 @@ namespace LitEngine.Data
         static private void SaveList(LitEngine.IO.AESWriter pWriter, NeedSaveAttribute pAtt, object pTarget)
         {
             ArrayList tlist = new ArrayList((ICollection)pTarget);
+            pWriter.WriteString(pTarget.GetType().FullName);
             pWriter.WriteInt(tlist.Count);
             for (int i = 0; i < tlist.Count; i++)
             {
