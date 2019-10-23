@@ -206,6 +206,10 @@ namespace LitEngine.Data
             {
                 FieldInfo tinfo = pParent.GetType().GetField(tFieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                 pValue = tinfo.GetValue(pParent);
+                if(pValue == null)
+                {
+                    pValue = GetObjectByType(tinfo.FieldType, true);
+                }
             }
             object ret = pValue;
             switch (ttype)
