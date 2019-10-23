@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Collections.Generic;
 using LitEngine.LType;
+using LitEngine;
 namespace LitEngine.Data
 {
     public enum DataType
@@ -12,17 +13,27 @@ namespace LitEngine.Data
         List,
         Dictionary,
     }
-    public class NeedSaveAttribute : System.Attribute
+    public class NeedToSave : System.Attribute
     {
 
-        public string FieldName { get; private set; }
+        public string FieldName { get; set; }
         public DataType dataType { get; private set; }
         public DataType childType { get; private set; }
-        public NeedSaveAttribute(string pName, DataType pDataType, DataType pChildType = DataType.baseType)
+        public DataType keyType { get; private set; }
+        public NeedToSave(string pName, DataType pDataType, DataType pChildType = DataType.baseType, DataType pKeyType = DataType.baseType)
         {
             FieldName = pName;
             dataType = pDataType;
             childType = pChildType;
+            keyType = pKeyType;
+        }
+        public NeedToSave(DataType pDataType, DataType pChildType = DataType.baseType, DataType pKeyType = DataType.baseType) : this("", pDataType, pChildType, pKeyType)
+        {
+        }
+
+        public NeedToSave() : this("", DataType.baseType, DataType.baseType)
+        {
+
         }
     }
     public class DataUtil
@@ -40,7 +51,7 @@ namespace LitEngine.Data
             {
                 twriter = new LitEngine.IO.AESWriter(tempfile);
 
-                SaveByField(twriter, new NeedSaveAttribute(pTarget.GetType().FullName, DataType.DataObject), pTarget);
+                SaveByField(twriter, new NeedToSave(pTarget.GetType().FullName, DataType.DataObject), pTarget);
 
                 twriter.Flush();
                 twriter.Close();
@@ -61,33 +72,7 @@ namespace LitEngine.Data
 
         }
 
-        static private void SaveDataObject(LitEngine.IO.AESWriter pWriter, NeedSaveAttribute pAtt, object pTarget)
-        {
-            if (pTarget == null) return;
-            System.Type ttype = pTarget.GetType();
-            List<FieldInfo> tfieldlist = new List<FieldInfo>(ttype.GetFields());
-            for (int i = tfieldlist.Count - 1; i >= 0; i--)
-            {
-                NeedSaveAttribute tetst = (NeedSaveAttribute)tfieldlist[i].GetCustomAttribute(typeof(NeedSaveAttribute));
-                if (tetst == null)
-                {
-                    tfieldlist.RemoveAt(i);
-                }
-            }
-            pWriter.WriteString(ttype.FullName);
-            pWriter.WriteInt(tfieldlist.Count);
-
-            for (int i = 0; i < tfieldlist.Count; i++)
-            {
-                FieldInfo tinfo = tfieldlist[i];
-                NeedSaveAttribute tetst = (NeedSaveAttribute)tinfo.GetCustomAttribute(typeof(NeedSaveAttribute));
-                object tvalue = tinfo.GetValue(pTarget);
-                SaveByField(pWriter, tetst, tvalue);
-            }
-
-        }
-
-        static private void SaveByField(LitEngine.IO.AESWriter pWriter, NeedSaveAttribute pAtt, object pTarget)
+        static private void SaveByField(LitEngine.IO.AESWriter pWriter, NeedToSave pAtt, object pTarget)
         {
             pWriter.WriteInt((int)pAtt.dataType);
             pWriter.WriteString(pAtt.FieldName);
@@ -104,12 +89,41 @@ namespace LitEngine.Data
                     SaveList(pWriter, pAtt, pTarget);
                     break;
                 case DataType.Dictionary:
-                    //SaveDictionary(pWriter, pAtt, pTarget);
+                    SaveDictionary(pWriter, pAtt, pTarget);
                     break;
             }
         }
 
-        static private void SaveBaseObject(LitEngine.IO.AESWriter pWriter, NeedSaveAttribute pAtt, object pTarget)
+        static private void SaveDataObject(LitEngine.IO.AESWriter pWriter, NeedToSave pAtt, object pTarget)
+        {
+            pWriter.WriteBool(pTarget != null);
+            if (pTarget == null) return;
+            System.Type ttype = pTarget.GetType();
+            List<FieldInfo> tfieldlist = new List<FieldInfo>(ttype.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public));
+            for (int i = tfieldlist.Count - 1; i >= 0; i--)
+            {
+                FieldInfo tinfo = tfieldlist[i];
+                NeedToSave tetst = (NeedToSave)tinfo.GetCustomAttribute(typeof(NeedToSave));
+
+                if (tetst == null)
+                {
+                    tfieldlist.RemoveAt(i);
+                }
+            }
+            pWriter.WriteString(ttype.FullName);
+            pWriter.WriteInt(tfieldlist.Count);
+
+            for (int i = 0; i < tfieldlist.Count; i++)
+            {
+                FieldInfo tinfo = tfieldlist[i];
+                object tvalue = tinfo.GetValue(pTarget);
+                NeedToSave tatt = DataUtil.GetSaveAttribute(tvalue, tinfo.Name);
+                SaveByField(pWriter, tatt, tvalue);
+            }
+
+        }
+
+        static private void SaveBaseObject(LitEngine.IO.AESWriter pWriter, NeedToSave pAtt, object pTarget)
         {
             FieldType ttype = GetValueType(pTarget);
             if (ttype == FieldType.Null)
@@ -119,16 +133,40 @@ namespace LitEngine.Data
 
             SaveByType(pWriter, ttype, pTarget);
         }
-        static private void SaveList(LitEngine.IO.AESWriter pWriter, NeedSaveAttribute pAtt, object pTarget)
+        static private void SaveList(LitEngine.IO.AESWriter pWriter, NeedToSave pAtt, object pTarget)
         {
+            pWriter.WriteBool(pTarget != null);
+            if (pTarget == null) return;
             ArrayList tlist = new ArrayList((ICollection)pTarget);
             pWriter.WriteString(pTarget.GetType().FullName);
             pWriter.WriteInt(tlist.Count);
             for (int i = 0; i < tlist.Count; i++)
             {
                 var item = tlist[i];
-                SaveByField(pWriter, new NeedSaveAttribute(i.ToString(), pAtt.childType), item);
+                SaveByField(pWriter, new NeedToSave(i.ToString(), pAtt.childType), item);
             }
+        }
+        static private void SaveDictionary(LitEngine.IO.AESWriter pWriter, NeedToSave pAtt, object pTarget)
+        {
+            pWriter.WriteBool(pTarget != null);
+            if (pTarget == null) return;
+            System.Type tarType = pTarget.GetType();
+            MethodInfo tm = tarType.GetMethod("get_Item", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+
+            PropertyInfo tcinfo = tarType.GetProperty("Keys");
+            ArrayList tlist = new ArrayList((ICollection)tcinfo.GetValue(pTarget));
+
+            pWriter.WriteString(pTarget.GetType().FullName);
+            pWriter.WriteInt(tlist.Count);
+            for (int i = 0; i < tlist.Count; i++)
+            {
+                var tkey = tlist[i];
+                object tvalue = tm.Invoke(pTarget, new object[] { tkey });
+                string tname = i.ToString();
+                SaveByField(pWriter, new NeedToSave(tname, pAtt.keyType), tkey);
+                SaveByField(pWriter, new NeedToSave(tname, pAtt.childType), tvalue);
+            }
+
         }
         #endregion
 
@@ -163,6 +201,12 @@ namespace LitEngine.Data
         {
             DataType ttype = (DataType)pReader.ReadInt32();
             string tFieldName = pReader.ReadString();
+
+            if (pValue == null && pParent != null)
+            {
+                FieldInfo tinfo = pParent.GetType().GetField(tFieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                pValue = tinfo.GetValue(pParent);
+            }
             object ret = pValue;
             switch (ttype)
             {
@@ -176,12 +220,12 @@ namespace LitEngine.Data
                     ret = ReadList(pReader, pValue);
                     break;
                 case DataType.Dictionary:
-                    //SaveDictionary(pWriter, pAtt, pTarget);
+                    ret = ReadDictionary(pReader, pValue);
                     break;
             }
             if (pParent != null)
             {
-                FieldInfo tinfo = pParent.GetType().GetField(tFieldName);
+                FieldInfo tinfo = pParent.GetType().GetField(tFieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                 tinfo.SetValue(pParent, ret);
             }
 
@@ -189,21 +233,16 @@ namespace LitEngine.Data
         }
         static private object ReadDataObject(LitEngine.IO.AESReader pReader, object pTarget)
         {
-            object ret = pTarget;
+            bool thave = pReader.ReadBoolean();
+            if (!thave) return null;
             string tfullname = pReader.ReadString();
-            if (ret == null)
-            {
-                System.Type ttype = System.Type.GetType(tfullname);
-                ret = System.Activator.CreateInstance(ttype, true);
-            }
-
             int tFieldCount = pReader.ReadInt32();
 
             for (int i = 0; i < tFieldCount; i++)
             {
-                ReadField(pReader, null, ret);
+                ReadField(pReader, null, pTarget);
             }
-            return ret;
+            return pTarget;
         }
         static private object ReadBaseType(LitEngine.IO.AESReader pReader)
         {
@@ -212,37 +251,135 @@ namespace LitEngine.Data
 
         static private object ReadList(LitEngine.IO.AESReader pReader, object pTarget)
         {
-            object ret = pTarget;
+            bool thave = pReader.ReadBoolean();
+            if (!thave) return null;
+
             string tfullname = pReader.ReadString();
-            System.Type tselftype = null;
-            if (ret == null)
+            int tcount = pReader.ReadInt32();
+
+            System.Type tselftype = pTarget.GetType();
+
+            MethodInfo tclear = tselftype.GetMethod("Clear");
+            tclear.Invoke(pTarget, null);
+
+            MethodInfo tmethod = tselftype.GetMethod("Add");
+
+            for (int i = 0; i < tcount; i++)
             {
-                tselftype = System.Type.GetType(tfullname);
-                ret = System.Activator.CreateInstance(tselftype, true);
+                object titem = null;
+                System.Type[] genericArgTypes = tselftype.GetGenericArguments();
+                if (genericArgTypes != null && genericArgTypes.Length > 0)
+                {
+                    titem = GetObjectByType(genericArgTypes[0], true);
+                }
+
+                object tobj = ReadField(pReader, titem, null);
+                tmethod.Invoke(pTarget, new object[] { tobj });
+            }
+
+            return pTarget;
+        }
+
+        static private object ReadDictionary(LitEngine.IO.AESReader pReader, object pTarget)
+        {
+            bool thave = pReader.ReadBoolean();
+            if (!thave) return null;
+            string tfullname = pReader.ReadString();
+            int tcount = pReader.ReadInt32();
+            System.Type tselftype = pTarget.GetType();
+
+            MethodInfo tclear = tselftype.GetMethod("Clear");
+            tclear.Invoke(pTarget, null);
+
+            MethodInfo tmethod = tselftype.GetMethod("Add");
+
+            for (int i = 0; i < tcount; i++)
+            {
+                object tkey = null;
+                object titem = null;
+                System.Type[] genericArgTypes = tselftype.GetGenericArguments();
+                if (genericArgTypes != null && genericArgTypes.Length > 0)
+                {
+                    tkey = GetObjectByType(genericArgTypes[0], true);
+                    titem = GetObjectByType(genericArgTypes[1], true);
+                }
+                tkey = ReadField(pReader, tkey, null);
+                titem = ReadField(pReader, titem, null);
+                tmethod.Invoke(pTarget, new object[] { tkey, titem });
+            }
+
+            return pTarget;
+        }
+        #endregion
+
+        static public object GetObjectByType(System.Type pType, bool pNonPublic)
+        {
+            if (typeof(System.String) == pType) return "";
+            object ret = System.Activator.CreateInstance(pType, pNonPublic);
+            return ret;
+        }
+        static public NeedToSave GetSaveAttribute(object pTarget, string pFieldName)
+        {
+            NeedToSave ret = null;
+            System.Type ttype = pTarget.GetType();
+            DataType tselftype = GetDataTypeSysType(ttype);
+            DataType tchildType = DataType.baseType;
+            DataType tkeyType = DataType.baseType;
+            if (ttype.FullName.Contains(".List"))
+            {
+                System.Type[] genericArgTypes = ttype.GetGenericArguments();
+                if (genericArgTypes != null && genericArgTypes.Length > 0)
+                {
+                    tchildType = GetDataTypeSysType(genericArgTypes[0]);
+                }
+            }
+            else if (ttype.FullName.Contains(".Dictionary"))
+            {
+                System.Type[] genericArgTypes = ttype.GetGenericArguments();
+                if (genericArgTypes != null && genericArgTypes.Length > 0)
+                {
+                    tkeyType = GetDataTypeSysType(genericArgTypes[0]);
+                    tchildType = GetDataTypeSysType(genericArgTypes[1]);
+                }
+            }
+
+            ret = new NeedToSave(pFieldName, tselftype, tchildType, tkeyType);
+            return ret;
+        }
+
+        static public DataType GetDataTypeSysType(System.Type pType)
+        {
+            DataType ret = DataType.baseType;
+            if (pType.FullName.Contains(".List"))
+            {
+                ret = DataType.List;
+            }
+            else if (pType.FullName.Contains(".Dictionary"))
+            {
+                ret = DataType.Dictionary;
             }
             else
             {
-                tselftype = ret.GetType();
+                FieldType tftype = GetValueTypeByString(pType.Name);
+                if (tftype == FieldType.Null)
+                {
+                    ret = DataType.DataObject;
+                }
+                else
+                {
+                    ret = DataType.baseType;
+                }
             }
-            MethodInfo tmethod = tselftype.GetMethod("Add");
-            int tcount = pReader.ReadInt32();
-            for (int i = 0; i < tcount; i++)
-            {
-                object tobj = ReadField(pReader, null, null);
-                tmethod.Invoke(ret, new object[] { tobj });
-            }
-
             return ret;
         }
-        #endregion
-        static private FieldType GetValueType(object _obj)
+        static public FieldType GetValueType(object _obj)
         {
             if (_obj == null)
                 return FieldType.Null;
             else
                 return GetValueTypeByString(_obj.GetType().Name);
         }
-        static private FieldType GetValueTypeByString(string _str)
+        static public FieldType GetValueTypeByString(string _str)
         {
             if (string.IsNullOrEmpty(_str) || _str.Equals("null"))
                 return FieldType.Null;
@@ -263,7 +400,7 @@ namespace LitEngine.Data
             }
 
         }
-        static private object LoadByType(LitEngine.IO.AESReader pLoader)
+        static public object LoadByType(LitEngine.IO.AESReader pLoader)
         {
             FieldType ttype = GetValueTypeByString(pLoader.ReadString());
             object ret = null;
@@ -329,7 +466,7 @@ namespace LitEngine.Data
             }
             return ret;
         }
-        static private void SaveByType(LitEngine.IO.AESWriter _writer, FieldType pType, object pObject)
+        static public void SaveByType(LitEngine.IO.AESWriter _writer, FieldType pType, object pObject)
         {
             _writer.WriteString(pType.ToString());
             switch (pType)
