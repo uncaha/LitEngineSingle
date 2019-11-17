@@ -220,8 +220,6 @@
     <Compile Include="Script\Data\DataUtil.cs" />
   </ItemGroup>
   <ItemGroup />
-  <ItemGroup>
-    <Folder Include="Script\Data\CustomData\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
