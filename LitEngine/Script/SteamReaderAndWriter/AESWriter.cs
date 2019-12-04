@@ -54,7 +54,17 @@ namespace LitEngine
             }
             public virtual void WriteString(string value)
             {
-                mWriterStream.Write(value);
+                if (string.IsNullOrEmpty(value))
+                {
+                    WriteInt(0);
+                }
+                else
+                {
+                    byte[] tbytes = System.Text.UTF8Encoding.UTF8.GetBytes(value);
+                    WriteInt(tbytes.Length);
+                    WriteBytes(tbytes);
+                }
+
             }
             public virtual void WriteFloat(float value)
             {

@@ -146,7 +146,16 @@ namespace LitEngine
 
             public virtual string ReadString()
             {
-                return mReaderStream.ReadString();
+                int tlen = ReadInt32();
+                if (tlen == 0)
+                {
+                    return null;
+                }
+                else
+                {
+                    byte[] tbytes = ReadBytes(tlen);
+                    return System.Text.UTF8Encoding.UTF8.GetString(tbytes);
+                }
             }
 
             public virtual ushort ReadUInt16()
