@@ -32,7 +32,7 @@ namespace LitEngine.TemPlate.Event
 
         public void Call(object _obj)
         {
-            for (int i = 0; i < Keys.Count; i++)
+            for (int i = Keys.Count - 1; i >= 0; i--)
             {
                 object tkey = Keys[i];
                 var tact = Delgates[tkey];
