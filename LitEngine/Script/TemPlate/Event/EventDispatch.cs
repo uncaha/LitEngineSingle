@@ -24,31 +24,54 @@ namespace LitEngine.TemPlate.Event
         }
 
         private Dictionary<Enum, EventGroup> mReceiver = new Dictionary<Enum, EventGroup>();
+        private Dictionary<object, ObjectGroupList> objParentlists = new Dictionary<object, ObjectGroupList>();
         private EventDispatch() { }
 
         static public void Reg(object pTarget, Enum _def, Action<object> pReceiver)
         {
             if (pReceiver == null) return;
+            EventGroup tgroup = null;
             if (!Eventdp.mReceiver.ContainsKey(_def))
+            {
                 Eventdp.mReceiver.Add(_def, new EventGroup(_def));
+            }
+            tgroup = Eventdp.mReceiver[_def];
+            tgroup.Add(pTarget, pReceiver);
+            
 
-            Eventdp.mReceiver[_def].Add(pTarget, pReceiver);
+            if(!Eventdp.objParentlists.ContainsKey(pTarget))
+            {
+                Eventdp.objParentlists.Add(pTarget, new ObjectGroupList(pTarget));
+            }
+            Eventdp.objParentlists[pTarget].Add(tgroup);
         }
 
         static public void UnReg(object pTarget, Enum _def)
         {
             if (pTarget == null) return;
-            if (!Eventdp.mReceiver.ContainsKey(_def)) return;
-            Eventdp.mReceiver[_def].Remove(pTarget);
+            if (!Eventdp.objParentlists.ContainsKey(pTarget)) return;
+            if (Eventdp.objParentlists[pTarget].Remove(_def) == 0)
+            {
+                Eventdp.objParentlists.Remove(pTarget);
+            }
         }
 
         static public void UnRegByTarget(object pTarget)
         {
             if (pTarget == null) return;
-            var tlist = Eventdp.mReceiver;
-            foreach (var item in tlist)
+            if (!Eventdp.objParentlists.ContainsKey(pTarget)) return;
+            Eventdp.objParentlists[pTarget].Clear();
+            Eventdp.objParentlists.Remove(pTarget);
+        }
+
+        static public void Refresh()
+        {
+            Dictionary<object, ObjectGroupList> tbackup = Eventdp.objParentlists;
+            Eventdp.objParentlists = new Dictionary<object, ObjectGroupList>();
+            foreach (var item in tbackup)
             {
-                item.Value.Remove(pTarget);
+                if (item.Key == null) continue;
+                Eventdp.objParentlists.Add(item.Key, item.Value);
             }
         }
 

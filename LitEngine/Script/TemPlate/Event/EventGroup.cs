@@ -2,24 +2,22 @@
 using System.Collections.Generic;
 namespace LitEngine.TemPlate.Event
 {
-    public class EventGroup
+    internal class EventGroup
     {
         public System.Enum Key { get; private set; }
-        public Dictionary<object,System.Action<object>> Delgates { get; private set; }
-
-        protected List<object> Keys;
+        public Dictionary<object, EventObject> Delgates { get; private set; }
         public EventGroup(System.Enum _key)
         {
             Key = _key;
-            Delgates = new Dictionary<object, System.Action<object>>();
+            Delgates = new Dictionary<object, EventObject>();
         }
 
         public void Add(object target, System.Action<object> _delgate)
         {
             if(!Delgates.ContainsKey(_delgate))
             {
-                Delgates.Add(target, _delgate);
-                Keys = new List<object>(Delgates.Keys);
+                EventObject titem = new EventObject(target, _delgate);
+                Delgates.Add(target, titem);
             }
         }
 
@@ -27,38 +25,23 @@ namespace LitEngine.TemPlate.Event
         {
             if (Delgates.ContainsKey(target))
                 Delgates.Remove(target);
-            Keys = new List<object>(Delgates.Keys);
         }
 
-        public void Call(object _obj)
+        public void Call(object pObj)
         {
-            for (int i = Keys.Count - 1; i >= 0; i--)
+            List<object> tkeyslist = new List<object>(Delgates.Keys);
+            for (int i = tkeyslist.Count - 1; i >= 0; i--)
             {
-                object tkey = Keys[i];
+                object tkey = tkeyslist[i];
                 var tact = Delgates[tkey];
 
-                if (tact == null || (tact.Target == null && !tact.Method.IsStatic))
+                if (!tact.IsLife)
                 {
                     Delgates.Remove(tkey);
                     continue;
                 }
-                CallDelgate(tact, _obj);
+                tact.Call(pObj);
             }
-        }
-        private void CallDelgate(System.Action<object> _action,object _obj)
-        {
-#if LITDEBUG
-            try
-            {
-                _action(_obj);
-            }
-            catch (System.Exception _e)
-            {
-                DLog.LogError(_e.ToString());
-            }
-#else
-            _action(_obj);
-#endif
         }
     }
 

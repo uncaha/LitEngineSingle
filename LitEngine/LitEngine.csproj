@@ -77,6 +77,7 @@
     <Compile Include="Script\TemPlate\Event\EventGroup.cs" />
     <Compile Include="Script\TemPlate\Event\EventObject.cs" />
     <Compile Include="Script\TemPlate\Event\EventStaticClass.cs" />
+    <Compile Include="Script\TemPlate\Event\ObjectGroupList.cs" />
     <Compile Include="Script\TemPlate\State\StateBase.cs" />
     <Compile Include="Script\TemPlate\State\StateManager.cs" />
     <Compile Include="Script\TemPlate\Task\TaskBase.cs" />

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 namespace LitEngine.TemPlate.Event
 {
-    public class EventObject
+    internal class EventObject
     {
         public object Target { get; private set; }
         public System.Action<object> EventDelgate { get; private set;}
@@ -10,6 +10,14 @@ namespace LitEngine.TemPlate.Event
         {
             Target = pTar;
             EventDelgate = pDel;
+        }
+
+        public bool IsLife
+        {
+            get
+            {
+                return (Target == null && EventDelgate.Method.IsStatic) || (Target != null && !EventDelgate.Method.IsStatic);
+            }
         }
 
         public void Call(object pObject)
