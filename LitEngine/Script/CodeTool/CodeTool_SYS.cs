@@ -25,16 +25,14 @@ namespace LitEngine.CodeTool
             // DLog.LogError( "Assembly 无法直接卸载.如有卸载需求请使用IL模式.");
         }
         #region Sys类型缓存
-        override public void AddAssemblyType(byte[] _dll, byte[] _pdb)
+        public void InitByBytes(byte[] _dll, byte[] _pdb)
         {
             if (_dll == null) throw new System.NullReferenceException("AddAssemblyType bytes 不可为null");
-#if !L2CPP
             mAssembly = System.AppDomain.CurrentDomain.Load(_dll, _pdb);
-#endif
-            AddAssembly(mAssembly);
+            InitByAssembly(mAssembly);
         }
 
-        public void AddAssembly(Assembly _assembly)
+        public void InitByAssembly(Assembly _assembly)
         {
             if (_assembly == null) return;
             mAssembly = _assembly;
@@ -77,59 +75,15 @@ namespace LitEngine.CodeTool
             if (_obj == null) throw new NullReferenceException("SYS GetObjectType _obj = null");
             return GetICLRTypeAss(_obj.GetType());
         }
-        override public bool IsLSType(Type _type)
-        {
-            if (GetAssType(_type.FullName) != null)
-                return true;
-            return false;
-        }
-        override public IBaseType GetListChildType(IBaseType _type)
-        {
-            IBaseType ret = null;
-            if (_type.TypeForCLR.IsGenericType)
-            {
-                Type[] genericArgTypes = _type.TypeForCLR.GetGenericArguments();
-                if (genericArgTypes != null && genericArgTypes.Length > 0)
-                {
 
-                    ret = GetICLRTypeAss(genericArgTypes[0]);
-                    if (ret == null)
-                        DLog.LogError(genericArgTypes[0].Name);
-                }
-                else
-                {
-                    DLog.LogError(genericArgTypes);
-                }
-            }
-            return ret;
-        }
-
-        override public IBaseType[] GetFieldTypes(IBaseType _type)
-        {
-            if (_type == null) throw new NullReferenceException("Base GetFieldType _type =" + _type);
-            if (typeof(SystemType) == _type.GetType())
-                return ((SystemType)_type).FieldTypes;
-            else
-                return null;
-        }
         #endregion
         #region 方法
-        override public LitEngine.Method.MethodBase GetLMethod(IBaseType _type, string _funname, int _pamcount)
+        override public LitEngine.Method.MethodBase GetLMethod(IBaseType _type,object pTar, string _funname, int _pamcount)
         {
             MethodInfo tmethod = _type.TypeForCLR.GetMethod(_funname, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
-            return tmethod != null ? new Method_CS(tmethod) : null;
+            return tmethod != null ? new Method_CS(pTar,tmethod) : null;
         }
 
-        override public object CallMethodByName(string _name, object _this, params object[] _params)
-        {
-            if (_name == null || _name.Equals("")) return null;
-            if (_this == null || !IsLSType(_this.GetType())) return null;
-            int tpramcount = _params != null ? _params.Length : 0;
-
-            IBaseType ttype = GetICLRTypeAss(_this.GetType());
-            LitEngine.Method.MethodBase tmethod = GetLMethod(ttype, _name, tpramcount);
-            return CallMethod(tmethod, _this, _params);
-        }
         #endregion
         #region 属性
         #region 获取
@@ -193,7 +147,7 @@ namespace LitEngine.CodeTool
         #endregion
         #endregion
         #region 对象获取
-        override public object GetCSLEObjectParmasByType(IBaseType _type, params object[] _parmas)
+        override public object GetObject(IBaseType _type, params object[] _parmas)
         {
             if (_type == null) throw new NullReferenceException("SYS GetCSLEObjectParmasByType _type = null");
             return Activator.CreateInstance(_type.TypeForCLR, _parmas);
@@ -213,7 +167,7 @@ namespace LitEngine.CodeTool
         {
             if (_classtype == null || _target == null) return default(K);
             object ret = null;
-            Method_CS methodctor = (Method_CS)GetLMethod(_classtype, _Function, 0);
+            Method_CS methodctor = (Method_CS)GetLMethod(_classtype, _target, _Function, 0);
             if (methodctor == null) return default(K);
 
             try

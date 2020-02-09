@@ -4,11 +4,11 @@ namespace LitEngine.Method
     public class Method_Action : MethodBase
     {
         protected Action action;
-        public Method_Action(Action _act)
+        public Method_Action(Action pAct) : base(pAct.Target)
         {
-            action = _act;
+            action = pAct;
         }
-        override public object Invoke(object obj, params object[] parameters)
+        override public object Invoke(params object[] parameters)
         {
             if (action == null) return null;
             action();

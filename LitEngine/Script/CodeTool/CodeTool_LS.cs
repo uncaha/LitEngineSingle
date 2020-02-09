@@ -221,7 +221,7 @@
 //        #endregion
 
 //        #region 写入类型
-//        override public void AddAssemblyType(byte[] _dll, byte[] _pdb)
+//        public void InitByBytes(byte[] _dll, byte[] _pdb)
 //        {
 //            if (_dll == null) throw new System.NullReferenceException("AddAssemblyType bytes 不可为null");
 //            System.IO.MemoryStream msDll = new System.IO.MemoryStream(_dll);
@@ -266,12 +266,12 @@
 //        }
 //        #endregion
 //        #region 方法
-//        override public MethodBase GetLMethod(IBaseType _type, string _funname, int _pamcount)
+//        override public MethodBase GetLMethod(IBaseType _type,object pTar, string _funname, int _pamcount)
 //        {
 
 //            IMethod ret = null;
 //            ret = ((IType)_type).GetMethod(_funname, _pamcount);
-//            return ret != null ? new Method_LS(mApp, ret) : null;
+//            return ret != null ? new Method_LS(mApp,pTar, ret) : null;
 //        }
 
 //        override public object CallMethodByName(string _name, object _this, params object[] _params)
@@ -281,7 +281,7 @@
 //            int tpramcount = _params != null ? _params.Length : 0;
 //            ILTypeInstance tilobj = _this as ILTypeInstance;
 //            IType ttype = tilobj.Type;
-//            MethodBase tmethod = GetLMethod(ttype, _name, tpramcount);
+//            MethodBase tmethod = GetLMethod(ttype, _name,_this, tpramcount);
 //            return CallMethod(tmethod, _this, _params);
 //        }
 //        #endregion
@@ -358,7 +358,7 @@
 
 //        #endregion
 //        #region 对象获取
-//        override public object GetCSLEObjectParmasByType(IBaseType _type, params object[] _parmas)
+//        override public object GetObject(IBaseType _type, params object[] _parmas)
 //        {
 //            if (_type == null) throw new NullReferenceException("LS GetCSLEObjectParmasByType _type = null");
 //            ILType ilType = _type as ILType;
@@ -381,7 +381,7 @@
 //        override public UpdateBase GetUpdateObjectAction(string _Function, string _classname, object _target)
 //        {
 
-//            Method_LS tmethod = GetLMethod(GetLType(_classname), _Function, 0) as Method_LS;
+//            Method_LS tmethod = GetLMethod(GetLType(_classname),_target, _Function, 0) as Method_LS;
 //            if (tmethod != null)
 //                return new UpdateILObject(string.Format("{0}->{1}", _classname, _Function),tmethod, _target);
 //            return null;
@@ -391,7 +391,7 @@
 //        {
 //            _isNeedReg = false;
 //            if (_classtype == null || _target == null) return null;
-//            Method_LS methodctor = GetLMethod(_classtype, _Function, _pramcount) as Method_LS;
+//            Method_LS methodctor = GetLMethod(_classtype,_target, _Function, _pramcount) as Method_LS;
 //            if (methodctor == null) return null;
 //            if (!typeof(ILTypeInstance).IsInstanceOfType(_target)) return null;
 //            ILTypeInstance tclrobj = _target as ILTypeInstance;

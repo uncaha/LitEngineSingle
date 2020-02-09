@@ -5,14 +5,14 @@ namespace LitEngine.Method
     //{
     //    private ILRuntime.Runtime.Enviorment.AppDomain mApp;
     //    public IMethod mMethod;
-    //    public Method_LS(ILRuntime.Runtime.Enviorment.AppDomain _app, IMethod _method)
+    //    public Method_LS(ILRuntime.Runtime.Enviorment.AppDomain _app, object pTar,IMethod _method):base(pTar)
     //    {
     //        mApp = _app;
     //        mMethod = _method;
     //    }
-    //    override public object Invoke(object obj, params object[] parameters)
+    //    override public object Invoke(params object[] parameters)
     //    {
-    //        return mApp.Invoke(mMethod, obj, parameters);
+    //        return mApp.Invoke(mMethod, target, parameters);
     //    }
     //}
 }

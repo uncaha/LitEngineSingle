@@ -37,7 +37,6 @@ namespace LitEngine.CodeTool
             Dispose(false);
         }
         #region 写入类型
-        public abstract void AddAssemblyType(byte[] _dll, byte[] _pdb);
         #endregion
         #region 类型判断
         virtual public IBaseType GetLType(string _name)
@@ -52,34 +51,21 @@ namespace LitEngine.CodeTool
             }
             return null;
         }
-        virtual public bool IsLSType(Type _type)
-        {
-            return false;
-        }
-        virtual public IBaseType GetListChildType(IBaseType _type)
-        {
-            return null;
-        }
-
-        virtual public IBaseType[] GetFieldTypes(IBaseType _type)
-        {
-            return null;
-        }
         #endregion
         #region 方法
-        virtual public MethodBase GetLMethod(IBaseType _type, string _funname, int _pamcount)
+        virtual public MethodBase GetLMethod(IBaseType _type, object pTar, string _funname, int _pamcount)
         {
             return null;
         }
-        virtual public object CallMethodNoTry(MethodBase method, object _this, params object[] _params)
+        virtual public object CallMethodNoTry(MethodBase method,params object[] _params)
         {
-            return method.Invoke(_this, _params);
+            return method.Invoke(_params);
         }
-        virtual public object CallMethod(MethodBase method, object _this, params object[] _params)
+        virtual public object CallMethod(MethodBase method, params object[] _params)
         {
             try
             {
-                return CallMethodNoTry(method, _this, _params);
+                return CallMethodNoTry(method, _params);
             }
             catch (Exception _erro)
             {
@@ -88,12 +74,6 @@ namespace LitEngine.CodeTool
             return null;
         }
 
-        virtual public object CallMethodByName(string _name, object _this, params object[] _params)
-        {
-            if (_name == null || _name.Equals("")) throw new NullReferenceException("CallMethodByName _name = null");
-
-            return null;
-        }
         #endregion
         #region 属性
         virtual public object GetTargetMemberByKey(string _key, object _target)
@@ -136,14 +116,14 @@ namespace LitEngine.CodeTool
         }
         #endregion
         #region 对象获取
-        virtual public object GetCSLEObjectParmasByType(IBaseType _type, params object[] _parmas)
+        virtual public object GetObject(IBaseType _type, params object[] _parmas)
         {
             return null;
         }
-        virtual public object GetCSLEObjectParmas(string _classname, params object[] _parmas)
+        virtual public object GetObject(string _classname, params object[] _parmas)
         {
             if (_classname == null || _classname.Length == 0) return null;
-            return GetCSLEObjectParmasByType(GetLType(_classname), _parmas);
+            return GetObject(GetLType(_classname), _parmas);
         }
         #endregion
 

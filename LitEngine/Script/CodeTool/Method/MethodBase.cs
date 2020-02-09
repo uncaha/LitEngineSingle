@@ -3,12 +3,13 @@ namespace LitEngine.Method
 {
     public abstract class MethodBase
     {
-        public MethodBase()
+        protected object target;
+        public MethodBase(object pTar)
         {
-
+            target = pTar;
         }
 
-        public abstract object Invoke(object obj, params object[] parameters);
+        public abstract object Invoke(params object[] parameters);
 
     }
 }

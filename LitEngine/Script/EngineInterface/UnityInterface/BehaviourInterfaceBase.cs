@@ -147,7 +147,7 @@ namespace LitEngine
                 {
                     mCodeTool = GameCore.CodeTool;
                     mScriptType = mCodeTool.GetLType(mScriptClass);
-                    mObject = mCodeTool.GetCSLEObjectParmasByType(mScriptType, this);
+                    mObject = mCodeTool.GetObject(mScriptClass, this);
                     InitParamList();
                     InitInterface();
                     mInitScript = true;
@@ -210,14 +210,14 @@ namespace LitEngine
                     MethodBase tmethod = null;
                     if (!mMethodCache.ContainsKey(tkey))
                     {
-                        tmethod = mCodeTool.GetLMethod(mScriptType, _FunctionName, tpramcount);
+                        tmethod = mCodeTool.GetLMethod(mScriptType, mObject, _FunctionName, tpramcount);
                         mMethodCache.Add(tkey, tmethod);
                     }
 
                     tmethod = mMethodCache[tkey];
 
                     if (tmethod == null) return null;
-                    return mCodeTool.CallMethodNoTry(tmethod, mObject, _prams);
+                    return mCodeTool.CallMethodNoTry(tmethod, _prams);
                 }
                 catch (Exception _erro)
                 {

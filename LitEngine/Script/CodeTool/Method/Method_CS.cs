@@ -4,13 +4,13 @@ namespace LitEngine.Method
     public class Method_CS : MethodBase
     {
         public MethodInfo SMethod { get; private set; }
-        public Method_CS(MethodInfo _method)
+        public Method_CS(object pTar,MethodInfo pMethod):base(pTar)
         {
-            SMethod = _method;
+            SMethod = pMethod;
         }
-        override public object Invoke(object obj, params object[] parameters)
+        override public object Invoke(params object[] parameters)
         {
-            return SMethod.Invoke(obj, parameters);
+            return SMethod.Invoke(target, parameters);
         }
     }
 }

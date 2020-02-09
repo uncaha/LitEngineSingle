@@ -32,10 +32,22 @@ namespace LitEngine
             {
                 if (sAppPersistentAssetsPath == null)
                 {
-                    if (UnityEngine.Application.platform != UnityEngine.RuntimePlatform.OSXEditor && UnityEngine.Application.platform != UnityEngine.RuntimePlatform.WindowsEditor && UnityEngine.Application.platform != UnityEngine.RuntimePlatform.LinuxEditor)
-                        sAppPersistentAssetsPath = string.Format("{0}/", UnityEngine.Application.persistentDataPath).Replace("//", "/");
-                    else
-                        sAppPersistentAssetsPath = string.Format("{0}", UnityEngine.Application.dataPath + "/../").Replace("//", "/");
+                    switch (Application.platform)
+                    {
+                        case RuntimePlatform.OSXEditor:
+                        case RuntimePlatform.WindowsEditor:
+                        case RuntimePlatform.LinuxEditor:
+                            sAppPersistentAssetsPath = string.Format("{0}", UnityEngine.Application.dataPath + "/../").Replace("//", "/");
+                            break;
+                        case RuntimePlatform.WindowsPlayer:
+                            sAppPersistentAssetsPath = string.Format("{0}", UnityEngine.Application.dataPath + "/").Replace("//", "/");
+                            break;
+                        default:
+                            sAppPersistentAssetsPath = string.Format("{0}/", UnityEngine.Application.persistentDataPath).Replace("//", "/");
+                            break;
+                    }
+
+                        
                 }
                 return sAppPersistentAssetsPath;
             }
@@ -177,18 +189,9 @@ namespace LitEngine
         }
         static public object GetScriptObject(string _classname, params object[] _parmas)
         {
-            return GameCore.CodeTool.GetCSLEObjectParmas(_classname);
+            return GameCore.CodeTool.GetObject(_classname, _parmas);
         }
 
-        static public object CallMethodByName(string _name, object _this, params object[] _params)
-        {
-            return GameCore.CodeTool.CallMethodByName(_name, _this, _params);
-        }
-
-        static public object GetCSLEObjectParmasByType(IBaseType _type,object _object, params object[] _parmas)
-        {
-            return GameCore.CodeTool.GetCSLEObjectParmasByType(_type, _object);
-        }
         #endregion
     }
 }
