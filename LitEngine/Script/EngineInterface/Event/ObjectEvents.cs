@@ -234,7 +234,7 @@ namespace LitEngine.ScriptInterface.Event
             else
             {
                 if (Parent != null)
-                    Parent.CallScriptFunctionByNameParams("OnGroupEventsEnd");
+                    Parent.CallFunctionVoid("OnGroupEventsEnd");
             }
            
         }
@@ -244,7 +244,7 @@ namespace LitEngine.ScriptInterface.Event
             while (IsPlaying)
                 yield return new WaitForSeconds(0.2f);
             if (Parent != null)
-                Parent.CallScriptFunctionByNameParams("OnGroupEventsEnd");
+                Parent.CallFunctionVoid("OnGroupEventsEnd");
             WaitEndEnumerator = null;
         }
     }

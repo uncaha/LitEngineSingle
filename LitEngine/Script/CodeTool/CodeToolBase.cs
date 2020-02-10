@@ -57,15 +57,23 @@ namespace LitEngine.CodeTool
         {
             return null;
         }
-        virtual public object CallMethodNoTry(MethodBase method,params object[] _params)
-        {
-            return method.Invoke(_params);
-        }
-        virtual public object CallMethod(MethodBase method, params object[] _params)
+        virtual public object CallMethod(MethodBase pMethod)
         {
             try
             {
-                return CallMethodNoTry(method, _params);
+                pMethod.Call();
+            }
+            catch (Exception _erro)
+            {
+                DLog.LogError(_erro);
+            }
+            return null;
+        }
+        virtual public object CallMethod(MethodBase pMethod, params object[] _params)
+        {
+            try
+            {
+                return pMethod.Invoke(_params);
             }
             catch (Exception _erro)
             {

@@ -14,5 +14,9 @@ namespace LitEngine.Method
     //    {
     //        return mApp.Invoke(mMethod, target, parameters);
     //    }
+    //override public void Call()
+    //{
+    //    return mApp.Invoke(mMethod, target);
+    //}
     //}
 }

@@ -10,6 +10,7 @@ namespace LitEngine.Method
         }
 
         public abstract object Invoke(params object[] parameters);
+        public abstract void Call();
 
     }
 }

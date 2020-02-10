@@ -28,11 +28,11 @@ namespace LitEngine
             #region Unity 
             protected void OnBecameInvisible()
             {
-                CallScriptFunctionByName("OnBecameInvisible");
+                CallFunctionVoid("OnBecameInvisible");
             }
             protected void OnBecameVisible()
             {
-                CallScriptFunctionByName("OnBecameVisible");
+                CallFunctionVoid("OnBecameVisible");
             }
 
             override protected void OnDestroy()

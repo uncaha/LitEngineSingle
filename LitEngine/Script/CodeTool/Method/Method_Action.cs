@@ -14,5 +14,10 @@ namespace LitEngine.Method
             action();
             return null;
         }
+        override public void Call()
+        {
+            if (action == null) return;
+            action();
+        }
     }
 }

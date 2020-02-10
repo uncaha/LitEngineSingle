@@ -24,15 +24,15 @@ namespace LitEngine
             #region Unity 
             protected void OnApplicationFocus(bool _hasFocus)
             {
-                CallScriptFunctionByNamePram("OnApplicationFocus", _hasFocus);
+                CallScriptFunctionByNameParams("OnApplicationFocus", _hasFocus);
             }
             protected void OnApplicationPause(bool _pauseStatus)
             {
-                CallScriptFunctionByNamePram("OnApplicationPause", _pauseStatus);
+                CallScriptFunctionByNameParams("OnApplicationPause", _pauseStatus);
             }
             protected void OnApplicationQuit()
             {
-                CallScriptFunctionByName("OnApplicationQuit");
+                CallFunctionVoid("OnApplicationQuit");
             }
             override protected void OnDestroy()
             {

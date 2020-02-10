@@ -108,7 +108,7 @@ namespace LitEngine
             virtual public void CallMethod()
             {
                 if (method != null)
-                    method.Invoke(target);
+                    method.Call();
             }
 
             virtual public bool IsTimeOut()

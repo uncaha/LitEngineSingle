@@ -78,7 +78,7 @@ namespace LitEngine
                 }
                 mIsDestory = true;
 
-                CallScriptFunctionByName("OnDestroy");
+                CallFunctionVoid("OnDestroy");
 
                 if (mOnGUIDelegate != null)
                 {
@@ -135,7 +135,7 @@ namespace LitEngine
                 InitScriptOnAwake();
                 if(gameObject.activeInHierarchy)
                 {
-                    CallScriptFunctionByName("Awake");
+                    CallFunctionVoid("Awake");
                     OnEnable();
                 }
             }
@@ -164,41 +164,25 @@ namespace LitEngine
             }
             #endregion
             #region 调用脚本函数
-            virtual public void MethodCall(string _key)
-            {
-                CallScriptFunctionByNameParams("MethodCall", _key);
-            }
-
             virtual public void CallFunVoidStringPams(string _FunNameAndStrPams)
             {
                 string[] tstrs = _FunNameAndStrPams.Split('|');
                 CallScriptFunctionByNameParams(tstrs[0], tstrs[1]);
             }
 
-            virtual public void CallFunVoid(string _FunName)
+            virtual public void CallFunctionVoid(string _FunctionName)
             {
-                CallScriptFunctionByNameParams(_FunName);
-            }
-
-            virtual public object CallScriptFunctionByNameStringPam(string _FunctionName, string _stringprams)
-            {
-                return CallScriptFunctionByNamePram(_FunctionName, _stringprams);
-            }
-
-            virtual public object CallScriptFunctionByName(string _FunctionName)
-            {
-                return CallScriptFunctionByNameParams(_FunctionName);
-            }
-
-            virtual public object CallScriptFunctionByNameUObject(string _FunctionName, UnityEngine.Object _UObject)
-            {
-                return CallScriptFunctionByNamePram(_FunctionName, _UObject);
-            }
-
-
-            virtual public object CallScriptFunctionByNamePram(string _FunctionName, object _value)
-            {
-                return CallScriptFunctionByNameParams(_FunctionName, _value);
+                try
+                {
+                    if (mObject == null || mScriptType == null || mCodeTool == null) return;
+                    MethodBase tmethod = GetMethod(_FunctionName);
+                    if (tmethod == null) return;
+                    tmethod.Call();
+                }
+                catch (Exception _erro)
+                {
+                    DLog.LogError(string.Format("[{0}->{1}] [GameObject:{2}] Error:{3}", mScriptClass, _FunctionName, gameObject.name, _erro.ToString()));
+                }
             }
 
             virtual public object CallScriptFunctionByNameParams(string _FunctionName, params object[] _prams)
@@ -206,18 +190,9 @@ namespace LitEngine
                 try {
                     if (mObject == null || mScriptType == null || mCodeTool == null) return null;
                     int tpramcount = _prams != null ? _prams.Length : 0;
-                    string tkey = _FunctionName + tpramcount;
-                    MethodBase tmethod = null;
-                    if (!mMethodCache.ContainsKey(tkey))
-                    {
-                        tmethod = mCodeTool.GetLMethod(mScriptType, mObject, _FunctionName, tpramcount);
-                        mMethodCache.Add(tkey, tmethod);
-                    }
-
-                    tmethod = mMethodCache[tkey];
-
+                    MethodBase tmethod = GetMethod(_FunctionName, tpramcount);
                     if (tmethod == null) return null;
-                    return mCodeTool.CallMethodNoTry(tmethod, _prams);
+                    return tmethod.Invoke(_prams);
                 }
                 catch (Exception _erro)
                 {
@@ -225,6 +200,21 @@ namespace LitEngine
                 }
                 return null;
             }
+
+            public MethodBase GetMethod(string pFunctionName,int pPramCount = 0)
+            {
+                string tkey = pFunctionName + pPramCount;
+                MethodBase ret = null;
+                if (!mMethodCache.ContainsKey(tkey))
+                {
+                    ret = mCodeTool.GetLMethod(mScriptType, mObject, pFunctionName, pPramCount);
+                    mMethodCache.Add(tkey, ret);
+                }
+
+                ret = mMethodCache[tkey];
+                return ret;
+            }
+
             #endregion
             #region 调用委托
             protected void CallAction(Action _action)
@@ -271,11 +261,11 @@ namespace LitEngine
             virtual protected void Awake()
             {
                 InitScriptOnAwake();
-                CallScriptFunctionByName("Awake");
+                CallFunctionVoid("Awake");
             }
             virtual protected void Start()
             {
-                CallScriptFunctionByName("Start");
+                CallFunctionVoid("Start");
                 RegAll();
             }
             virtual protected void OnDestroy()
@@ -285,12 +275,12 @@ namespace LitEngine
 
             virtual protected void OnDisable()
             {
-                CallScriptFunctionByName("OnDisable");
+                CallFunctionVoid("OnDisable");
                 UnRegAll();
             }
             virtual protected void OnEnable()
             {
-                CallScriptFunctionByName("OnEnable");
+                CallFunctionVoid("OnEnable");
                 RegAll();
             }
             #endregion

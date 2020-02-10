@@ -12,5 +12,9 @@ namespace LitEngine.Method
         {
             return SMethod.Invoke(target, parameters);
         }
+        override public void Call()
+        {
+            SMethod.Invoke(target, null);
+        }
     }
 }
