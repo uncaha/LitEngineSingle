@@ -55,12 +55,14 @@
   <ItemGroup>
     <Compile Include="CreatCLRBindingFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Script\CodeTool\CodeTool_Lua.cs" />
     <Compile Include="Script\CodeTool\IEnumeratorAdaptor.cs" />
     <Compile Include="Script\CodeTool\LuaType.cs" />
     <Compile Include="Script\CodeTool\Method\MethodBase.cs" />
     <Compile Include="Script\CodeTool\Method\Method_Action.cs" />
     <Compile Include="Script\CodeTool\Method\Method_CS.cs" />
     <Compile Include="Script\CodeTool\Method\Method_LS.cs" />
+    <Compile Include="Script\CodeTool\Method\Method_Lua.cs" />
     <Compile Include="Script\CodeTool\overrideDelegateAdaptre.cs" />
     <Compile Include="Script\Core\AppCore.cs" />
     <Compile Include="Script\CodeTool\CodeToolBase.cs" />
