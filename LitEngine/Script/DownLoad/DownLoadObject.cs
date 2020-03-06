@@ -3,7 +3,7 @@ using System.IO;
 using UnityEngine;
 using System.Net;
 using System.Threading;
-
+using System.Threading.Tasks;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 
@@ -91,7 +91,8 @@ namespace LitEngine.DownLoad
             mDisposed = true;
 
             mThreadRuning = false;
-
+            curTask?.Dispose();
+            curTask = null;
             if (mDownLoadThread != null)
                 mDownLoadThread.Join();
 
@@ -105,15 +106,17 @@ namespace LitEngine.DownLoad
             State = DownloadState.normal;
         }
 
-        public void StartDownLoadAsync()
+        Task curTask;
+        public Task StartDownLoadAsync()
         {
-            if (State != DownloadState.normal) return;
+            if (State != DownloadState.normal) return curTask;
             State = DownloadState.downloading;
-
+            curTask = Task.Run(ReadNetByte);
             mThreadRuning = true;
-            mDownLoadThread = new Thread(ReadNetByte);
-            mDownLoadThread.IsBackground = true;
-            mDownLoadThread.Start();
+            //mDownLoadThread = new Thread(ReadNetByte);
+            //mDownLoadThread.IsBackground = true;
+            //mDownLoadThread.Start();
+            return curTask;
         }
 
         public void StartDownLoad()
