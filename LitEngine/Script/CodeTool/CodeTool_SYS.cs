@@ -28,8 +28,7 @@ namespace LitEngine.CodeTool
         public void InitByBytes(byte[] _dll, byte[] _pdb)
         {
             if (_dll == null) throw new System.NullReferenceException("AddAssemblyType bytes 不可为null");
-            mAssembly = System.AppDomain.CurrentDomain.Load(_dll, _pdb);
-            InitByAssembly(mAssembly);
+            InitByAssembly(System.AppDomain.CurrentDomain.Load(_dll, _pdb));
         }
 
         public void InitByAssembly(Assembly _assembly)

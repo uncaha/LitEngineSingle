@@ -95,7 +95,7 @@ namespace LitEngine
             #endregion
 
             #region 回调
-            protected System.Action<MSG_RECALL_DATA> mReCallDelgate = null;
+            public event System.Action<MSG_RECALL_DATA> MessageDelgate = null;
             #endregion
 
             #region 控制
@@ -112,8 +112,8 @@ namespace LitEngine
             virtual protected void OnDestroy()
             {
                 Dispose(true);
-                if (mReCallDelgate != null)
-                    mReCallDelgate(GetMsgReCallData(MSG_RECALL.Destoryed, mNetTag + "- 删除Net对象完成."));
+                if (MessageDelgate != null)
+                    MessageDelgate(GetMsgReCallData(MSG_RECALL.Destoryed, mNetTag + "- 删除Net对象完成."));
             }
 
             virtual public void Dispose()
@@ -128,24 +128,17 @@ namespace LitEngine
                 mDisposed = true;
                 if (IsCOrD())
                     return;
-                mReCallDelgate = null;
+                MessageDelgate = null;
                 mMsgHandlerList.Clear();
                 DisConnect();
                 mState = TcpState.Disposed;
             }
 
-            virtual public void InitSocket(string _hostname, int _port, System.Action<MSG_RECALL_DATA> _ReCallDelegate )
+            virtual public void InitSocket(string _hostname, int _port)
             {
-
                 mHostName = _hostname;
                 mPort = _port;
-                SetReCallDelegate(_ReCallDelegate);
                 gameObject.name = mNetTag + "-Server:" + mHostName;
-            }
-
-            virtual public void SetReCallDelegate(System.Action<MSG_RECALL_DATA> _ReCallDelegate)
-            {
-                mReCallDelgate = _ReCallDelegate;
             }
 
             protected List<IPAddress> GetServerIpAddress(string _hostname)
@@ -291,7 +284,7 @@ namespace LitEngine
 
             virtual protected void AddMainThreadMsgReCall(MSG_RECALL_DATA _recall)
             {
-                if (mReCallDelgate == null) return;
+                if (MessageDelgate == null) return;
                 mToMainThreadMsgList.Enqueue(_recall);
 
             }
@@ -349,8 +342,8 @@ namespace LitEngine
             virtual protected void UpdateReCalledMsg()
             {
                 try {
-                    if (mToMainThreadMsgList.Count == 0 || mReCallDelgate == null) return;
-                    mReCallDelgate(mToMainThreadMsgList.Dequeue());
+                    if (mToMainThreadMsgList.Count == 0 || MessageDelgate == null) return;
+                    MessageDelgate(mToMainThreadMsgList.Dequeue());
                 }
                 catch (Exception _error)
                 {
