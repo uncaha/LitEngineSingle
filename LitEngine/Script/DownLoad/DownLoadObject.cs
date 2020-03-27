@@ -111,7 +111,7 @@ namespace LitEngine.DownLoad
         {
             if (State != DownloadState.normal) return curTask;
             State = DownloadState.downloading;
-            curTask = Task.Run(ReadNetByte);
+            curTask = Task.Run((System.Action)ReadNetByte);
             mThreadRuning = true;
             //mDownLoadThread = new Thread(ReadNetByte);
             //mDownLoadThread.IsBackground = true;
@@ -254,6 +254,7 @@ namespace LitEngine.DownLoad
                 mReqest.Abort();
                 mReqest = null;
             }
+            curTask = null;
         }
     }
 }
