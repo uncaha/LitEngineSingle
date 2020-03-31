@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using LitEngine.UpdateSpace;
+using System.Threading.Tasks;
 namespace LitEngine.DownLoad
 {
     public enum DownloadState
@@ -28,8 +29,8 @@ namespace LitEngine.DownLoad
         public string Error { get; private set; }
 
         private bool autoDispose = false;
-        public Action<string[], string> FinishedDelegate;
-        public Action<long, long, float> ProgressDelegate;
+        public event Action<string[], string> FinishedDelegate;
+        public event Action<long, long, float> ProgressDelegate;
         private List<DownLoadObject> groupList = new List<DownLoadObject>();
         private UpdateNeedDisObject updateObject;
         public DownLoadGroup(string newKey ,bool newAutoDispose = true)
@@ -90,25 +91,33 @@ namespace LitEngine.DownLoad
 
         public void AddByUrl(string _sourceurl, string _destination, bool _clear)
         {
+            if (State != DownloadState.normal)
+            {
+                DLog.LogError("已经开始的任务不可插入新内容.");
+                return;
+            }
+            if (IsHaveURL(_sourceurl)) return;
             Add(new DownLoadObject(_sourceurl, _destination, _clear));
         }
 
-        public void Add(DownLoadObject newObject)
+        private void Add(DownLoadObject newObject)
         {
-            if(State != DownloadState.normal)
-            {
-                DLog.LogError("已经开始的任务不可插入新内容." );
-                return;
-            }
-            if (groupList.Contains(newObject))
-            {
-                DLog.LogError("重复下载,url = "+newObject.SourceURL);
-                return;
-            }
             groupList.Add(newObject);
         }
 
-        public void StartAsync()
+        private bool IsHaveURL(string pSourceurl)
+        {
+            int tindex = groupList.FindIndex((a) => a.SourceURL.Contains(pSourceurl));
+            if (tindex != -1)
+            {
+                DLog.LogError("重复添加下载,url = " + pSourceurl);
+                return true;
+            }
+
+            return false;
+        }
+
+        public void Start()
         {
             if (State != DownloadState.normal) return;
             State = DownloadState.downloading;
@@ -133,29 +142,38 @@ namespace LitEngine.DownLoad
                     groupList[i].RestState();
             }
             if (groupList.Count > 0)
-                StartAsync();
+                Start();
         }
 
-        bool isAllDone = false;
+
+        bool isAllChildDone {
+            get
+            {
+                bool ret = true;
+                for (int i = 0; i < groupList.Count; i++)
+                {
+                    ContentLength += groupList[i].ContentLength;
+                    DownLoadedLength += groupList[i].DownLoadedLength;
+                    if (!groupList[i].IsDone)
+                    {
+                        ret = false;
+                        break;
+                    }   
+                }
+                return ret;
+            }
+        }
         protected void Update()
         {
             if (IsDone) return;
 
             ContentLength = 0;
             DownLoadedLength = 0;
-            isAllDone = true;
-            for (int i = 0; i < groupList.Count; i++)
-            {
-                ContentLength += groupList[i].ContentLength;
-                DownLoadedLength += groupList[i].DownLoadedLength;
-                if (!groupList[i].IsDone)
-                    isAllDone = false;
-            }
 
             if (ProgressDelegate != null)
                 ProgressDelegate(DownLoadedLength,ContentLength, Progress);
 
-            if (isAllDone)
+            if (isAllChildDone)
             {
                 string[] tcmpfile = new string[groupList.Count];
                 string terror = null;
