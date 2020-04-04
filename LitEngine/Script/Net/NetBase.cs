@@ -99,6 +99,7 @@ namespace LitEngine
             #endregion
 
             #region 控制
+            public bool isConnected { get { return mState == TcpState.Connected && mSocket != null && mSocket.Connected; } }
             protected TcpState mState = TcpState.None;
             protected bool mStartThread = false; //线程开关
             protected bool mDisposed = false;

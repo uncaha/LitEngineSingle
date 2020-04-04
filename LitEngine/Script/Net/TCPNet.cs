@@ -47,7 +47,7 @@ namespace LitEngine
             {
                 if (IsCOrD())
                     return;
-                if (mState == TcpState.Connected && mSocket != null && mSocket.Connected)
+                if (isConnected)
                 {
                     AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.ConectError, mNetTag + "重复建立连接"));
                     return;
@@ -95,12 +95,12 @@ namespace LitEngine
                     try
                     {
                         mStartThread = true;
-                        #region 发送;
-                        CreatSend();
-                        #endregion
 
                         #region 接收;
                         CreatRec();
+                        #endregion
+                        #region 发送;
+                        CreatSend();
                         #endregion
 
                         DLog.Log( "收发线程启动!");
