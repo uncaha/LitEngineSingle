@@ -4,9 +4,9 @@ namespace LitEngine.TemPlate.Event
 {
     internal class EventGroup
     {
-        public System.Enum Key { get; private set; }
+        public System.Type Key { get; private set; }
         public Dictionary<object, EventObject> Delgates { get; private set; }
-        public EventGroup(System.Enum _key)
+        public EventGroup(System.Type _key)
         {
             Key = _key;
             Delgates = new Dictionary<object, EventObject>();

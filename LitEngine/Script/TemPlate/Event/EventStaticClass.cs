@@ -4,24 +4,24 @@ namespace LitEngine.TemPlate.Event
 {
     public static class EventStaticClass
     {
-        public static void RegEvent(this object pTarget, Enum _def, Action<object> pRreceive)
+        public static void RegEvent(this object pTarget, Type pType, Action<object> pRreceive)
         {
-            EventDispatch.Reg(pTarget,_def, pRreceive);
+            EventDispatch.Reg(pTarget, pType, pRreceive);
         }
 
-        public static void UnRegEvent(this object pTarget, Enum _def)
+        public static void UnRegEvent(this object pTarget, Type pType)
         {
-            EventDispatch.UnReg(pTarget,_def);
+            EventDispatch.UnReg(pTarget, pType);
         }
 
         public static void UnRegAllEvent(this object pTarget)
         {
-            EventDispatch.UnRegByTarget(pTarget);
+            EventDispatch.UnRegAllEvent(pTarget);
         }
 
-        static public void SendEvent(this object target, Enum _def, object _sendObject = null)
+        static public void SendEvent(this object target,object pObject)
         {
-            EventDispatch.Send(_def, _sendObject);
+            EventDispatch.Send(pObject);
         }
     }
 }

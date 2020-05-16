@@ -28,11 +28,12 @@ namespace LitEngine
         {
             public MSG_RECALL mCmd;
             public string mMsg;
-
-            public MSG_RECALL_DATA(MSG_RECALL _cmd, string _msg)
+            public object data;
+            public MSG_RECALL_DATA(MSG_RECALL _cmd, string _msg,object pdata = null)
             {
                 mCmd = _cmd;
                 mMsg = _msg;
+                data = pdata;
             }
         }
 

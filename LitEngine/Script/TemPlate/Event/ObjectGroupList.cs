@@ -8,7 +8,7 @@ namespace LitEngine.TemPlate.Event
 {
     internal class ObjectGroupList
     {
-        private Dictionary<System.Enum, EventGroup> groups = new Dictionary<System.Enum, EventGroup>();
+        private Dictionary<System.Type, EventGroup> groups = new Dictionary<System.Type, EventGroup>();
         private object target;
         public int Count
         {
@@ -28,12 +28,12 @@ namespace LitEngine.TemPlate.Event
                 groups.Add(pGroup.Key, pGroup);
         }
 
-        public int Remove(System.Enum pEnum)
+        public int Remove(System.Type pKey)
         {
-            if (groups.ContainsKey(pEnum))
+            if (groups.ContainsKey(pKey))
             {
-                groups[pEnum].Remove(target);
-                groups.Remove(pEnum);
+                groups[pKey].Remove(target);
+                groups.Remove(pKey);
             }
                
             return groups.Count;

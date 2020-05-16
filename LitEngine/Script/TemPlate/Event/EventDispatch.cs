@@ -23,19 +23,19 @@ namespace LitEngine.TemPlate.Event
             }
         }
 
-        private Dictionary<Enum, EventGroup> mReceiver = new Dictionary<Enum, EventGroup>();
+        private Dictionary<System.Type, EventGroup> mReceiver = new Dictionary<System.Type, EventGroup>();
         private Dictionary<object, ObjectGroupList> objParentlists = new Dictionary<object, ObjectGroupList>();
         private EventDispatch() { }
 
-        static public void Reg(object pTarget, Enum _def, Action<object> pReceiver)
+        static public void Reg(object pTarget, System.Type pType, Action<object> pReceiver)
         {
             if (pReceiver == null) return;
             EventGroup tgroup = null;
-            if (!Eventdp.mReceiver.ContainsKey(_def))
+            if (!Eventdp.mReceiver.ContainsKey(pType))
             {
-                Eventdp.mReceiver.Add(_def, new EventGroup(_def));
+                Eventdp.mReceiver.Add(pType, new EventGroup(pType));
             }
-            tgroup = Eventdp.mReceiver[_def];
+            tgroup = Eventdp.mReceiver[pType];
             tgroup.Add(pTarget, pReceiver);
             
 
@@ -46,17 +46,17 @@ namespace LitEngine.TemPlate.Event
             Eventdp.objParentlists[pTarget].Add(tgroup);
         }
 
-        static public void UnReg(object pTarget, Enum _def)
+        static public void UnReg(object pTarget, System.Type pType)
         {
             if (pTarget == null) return;
             if (!Eventdp.objParentlists.ContainsKey(pTarget)) return;
-            if (Eventdp.objParentlists[pTarget].Remove(_def) == 0)
+            if (Eventdp.objParentlists[pTarget].Remove(pType) == 0)
             {
                 Eventdp.objParentlists.Remove(pTarget);
             }
         }
 
-        static public void UnRegByTarget(object pTarget)
+        static public void UnRegAllEvent(object pTarget)
         {
             if (pTarget == null) return;
             if (!Eventdp.objParentlists.ContainsKey(pTarget)) return;
@@ -75,10 +75,20 @@ namespace LitEngine.TemPlate.Event
             }
         }
 
-        static public void Send(Enum _def, object _sendObject = null)
+        static public void Send(object pObject)
         {
-            if (!Eventdp.mReceiver.ContainsKey(_def)) return;
-            Eventdp.mReceiver[_def].Call(_sendObject);
+            if (pObject == null) return;
+            try
+            {
+                Type tkey = pObject.GetType();
+                if (!Eventdp.mReceiver.ContainsKey(tkey)) return;
+                Eventdp.mReceiver[tkey].Call(pObject);
+            }
+            catch (Exception erro)
+            {
+                DLog.LogError("EventDispatch: " + erro.Message);
+            }
+            
         }
     }
 }

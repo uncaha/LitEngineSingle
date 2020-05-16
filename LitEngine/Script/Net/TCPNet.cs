@@ -162,25 +162,24 @@ namespace LitEngine
             #region 线程发送模式
             protected void SendMessageThread()
             {
-
-                try
+                while (mStartThread)
                 {
-                    while (mStartThread)
+                    var tdata = mSendDataList.Dequeue();
+                    try
                     {
-                        Thread.Sleep(2);
                         if (mSendDataList.Count == 0)
                             continue;
-                        SendThread(mSendDataList.Dequeue());
+                        SendThread(tdata);
                     }
-
+                    catch (Exception e)
+                    {
+                        DLog.LogError(mNetTag + ":SendMessageThread->" + e.ToString());
+                        CloseSRThread();
+                        AddMainThreadMsgReCall(new MSG_RECALL_DATA(MSG_RECALL.SendError, mNetTag + "-" + e.ToString(),tdata));
+                        break;
+                    }
+                    Thread.Sleep(2);
                 }
-                catch (Exception e)
-                {
-                    DLog.LogError( mNetTag + ":SendMessageThread->" + e.ToString());
-                    CloseSRThread();
-                    AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.SendError, mNetTag + "-" + e.ToString()));
-                }
-
             }
             virtual protected void SendThread(SendData _data)
             {
