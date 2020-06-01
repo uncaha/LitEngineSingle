@@ -164,12 +164,13 @@ namespace LitEngine
             {
                 while (mStartThread)
                 {
-                    var tdata = mSendDataList.Dequeue();
+                    if (mSendDataList.Count == 0)
+                        continue;
+                    SendData tdata = null;
                     try
                     {
-                        if (mSendDataList.Count == 0)
-                            continue;
-                        SendThread(tdata);
+                        tdata  = (SendData)mSendDataList.Dequeue();
+                        SendThread((SendData)tdata);
                     }
                     catch (Exception e)
                     {
@@ -185,7 +186,7 @@ namespace LitEngine
             {
                 if (_data == null) return;
                 int sendlen = mSocket.Send(_data.Data, _data.SendLen, SocketFlags.None);
-                DebugMsg(_data.Cmd, _data.Data, 0, _data.SendLen, "Send-SendThread");
+                DebugMsg(_data.Cmd, _data.Data, 0, _data.SendLen, "Send-SendThread-"+ sendlen);
             }
             #endregion
             #endregion
@@ -194,16 +195,22 @@ namespace LitEngine
 
             protected void ReceiveMessage()
             {
+                if (IsShowDebugLog)
+                {
+                    DLog.Log("Start ReceiveMessage");
+                }
                 try
                 {
                     while (mStartThread)
                     {
+                        
                         if (mSocket.Available != 0)
                         {
                             int receiveNumber = 0;
                             receiveNumber = mSocket.Receive(mRecbuffer, 0, mReadMaxLen, SocketFlags.None);
                             if (receiveNumber > 0)
                                 Processingdata(receiveNumber, mRecbuffer);
+                            
                         }
                         Thread.Sleep(1);
                     }
@@ -214,6 +221,10 @@ namespace LitEngine
                     DLog.LogError( mNetTag + ":ReceiveMessage->" + e.ToString());
                     CloseSRThread();
                     AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.ReceiveError, mNetTag + "-" + e.ToString()));
+                }
+                if (IsShowDebugLog)
+                {
+                    DLog.Log("End ReceiveMessage");
                 }
             }
 

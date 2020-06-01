@@ -152,7 +152,7 @@ namespace LitEngine
                     {
                         if (mSendDataList.Count == 0)
                             continue;                      
-                        SendThread(mSendDataList.Dequeue());
+                        SendThread((SendData)mSendDataList.Dequeue());
                     }
                     catch (Exception e)
                     {

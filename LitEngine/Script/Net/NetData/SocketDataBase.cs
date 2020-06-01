@@ -10,8 +10,8 @@ namespace LitEngine
     {
         public struct SocketDataBase
         {
-            static public int mFirstLen = 2;//包头长度占位
-            static public int mCmdLen = 2;//cmd占位
+            static public int mFirstLen = 4;//包头长度占位
+            static public int mCmdLen = 4;//cmd占位
             static public int mPackageTopLen = mFirstLen + mCmdLen;
 
         }

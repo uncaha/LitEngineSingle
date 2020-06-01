@@ -51,8 +51,8 @@ namespace LitEngine
             public bool IsFullData()
             {
                 if (mIndex - mPos < SocketDataBase.mPackageTopLen) return false;
-                short tlen = SReadShort(mBuffer, mPos);
-                if (mIndex - mPos - SocketDataBase.mPackageTopLen < tlen) return false;
+                int tlen = SReadInt(mBuffer, mPos);
+                if (mIndex - mPos < tlen) return false;
                 return true;    
             }
 
@@ -65,9 +65,9 @@ namespace LitEngine
 
             public void SetReceiveData(ReceiveData _data)
             {
-                short tlen = SReadShort(mBuffer, mPos);
+                int tlen = SReadInt(mBuffer, mPos);
                 _data.SetBuffer(mBuffer, mPos);
-                mPos = tlen + SocketDataBase.mPackageTopLen;
+                mPos += tlen;
             }
             #endregion
 

@@ -9,7 +9,7 @@ namespace LitEngine
         public class ReceiveData
         {
             public int ArrayIndex = 0;
-            short mCmd;
+            int mCmd;
             int mLen;
 
             byte[] mData;
@@ -58,14 +58,17 @@ namespace LitEngine
                 mCSLEObject = null;
                 mIndex = 0;
                 int tindex = _offset;
-                mLen = BufferBase.SReadShort(_buffer,tindex);
-                tindex += sizeof(short);
-                mCmd = BufferBase.SReadShort(_buffer,tindex);
-                tindex += sizeof(short);
+                int tlen = BufferBase.SReadInt(_buffer,tindex);
+                mLen = tlen - SocketDataBase.mPackageTopLen;
+                tindex += sizeof(int);
+                mCmd = BufferBase.SReadInt(_buffer,tindex);
+                tindex += sizeof(int);
                 if (mData == null || mLen > mData.Length)
                     mData = new byte[mLen];
                 else
                     mData.Initialize();
+
+                mIndex = 0;
                 Array.Copy(_buffer, tindex, mData, 0, mLen);
             }
             public byte[] GetData()

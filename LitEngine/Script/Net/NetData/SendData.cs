@@ -8,11 +8,11 @@ namespace LitEngine
     {
         public class SendData
         {
-            short mCmd;
-            short mLen;
+            int mCmd;
+            int mLen;
 
             byte[] mData;
-            short mIndex;
+            int mIndex;
             bool mIsEnd;
             public bool Sended;
             #region 属性
@@ -23,7 +23,7 @@ namespace LitEngine
                     return GetData();
                 }
             }
-            public short Len
+            public int Len
             {
                 get
                 {
@@ -39,7 +39,7 @@ namespace LitEngine
                 }
             }
 
-            public short Cmd
+            public int Cmd
             {
                 get
                 {
@@ -47,7 +47,7 @@ namespace LitEngine
                 }
             }
             #endregion
-            public SendData(short _cmd)
+            public SendData(int _cmd)
             {
                 mData = new byte[128];
                 mCmd = _cmd;
@@ -55,13 +55,13 @@ namespace LitEngine
                 mIndex = 0;
                 mIsEnd = false;
                 Sended = false;
-                AddShort(mLen);
-                AddShort(mCmd);
+                AddInt(mLen);
+                AddInt(mCmd);
             }
             public void Rest()
             {
                 mLen = 0;
-                mIndex = 4;
+                mIndex = SocketDataBase.mPackageTopLen;
                 mIsEnd = false;
                 Sended = false;
             }
@@ -70,10 +70,10 @@ namespace LitEngine
                 lock(this)
                 {
                     if (mIsEnd) return mData;
-                    mLen = (short)(mIndex - SocketDataBase.mPackageTopLen);
-                    short tbackupindex = mIndex;
+                    mLen = mIndex;
+                    int tbackupindex = mIndex;
                     mIndex = 0;
-                    AddShort(mLen);
+                    AddInt(mLen);
                     mIndex = tbackupindex;
                     mIsEnd = true;
                     return mData;

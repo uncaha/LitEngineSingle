@@ -83,8 +83,8 @@ namespace LitEngine
             protected byte[] mRecbuffer = new byte[mReadMaxLen];
 
             protected BufferBase mBufferData = new BufferBase(2048);
-            protected SafeQueue<SendData> mSendDataList = new SafeQueue<SendData>();//发送数据队列
-            protected SafeQueue<ReceiveData> mResultDataList = new SafeQueue<ReceiveData>();//已接收的消息队列             
+            protected System.Collections.Queue mSendDataList = System.Collections.Queue.Synchronized(new System.Collections.Queue());//发送数据队列
+            protected System.Collections.Queue mResultDataList = System.Collections.Queue.Synchronized(new System.Collections.Queue());//已接收的消息队列             
             #endregion
             #region 分发
             static public int OneFixedUpdateChoseCount = 5;
@@ -363,7 +363,7 @@ namespace LitEngine
                 {
                     try
                     {
-                        ReceiveData trecdata = mResultDataList.Dequeue();
+                        ReceiveData trecdata = (ReceiveData)mResultDataList.Dequeue();
                         Call(trecdata.Cmd, trecdata);
                         i--;
                     }
