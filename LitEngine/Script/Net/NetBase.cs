@@ -203,6 +203,11 @@ namespace LitEngine
                 return true;
             }
 
+            virtual public bool IsCanConnect()
+            {
+                return !isConnected && !IsCOrD();
+            }
+
 
             virtual protected void CloseSRThread()
             {
