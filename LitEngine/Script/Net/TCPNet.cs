@@ -53,9 +53,7 @@ namespace LitEngine
                     return;
                 }
                 mState = TcpState.Connecting;
-                Thread tcreatthread = new Thread(ThreatConnect);
-                tcreatthread.IsBackground = true;
-                tcreatthread.Start();
+                System.Threading.Tasks.Task.Run(ThreatConnect);
             }
 
             virtual protected bool TCPConnect()
@@ -129,18 +127,12 @@ namespace LitEngine
 
             protected void CreatSend()
             {
-                mSendThread = new Thread(SendMessageThread);
-                mSendThread.Priority = System.Threading.ThreadPriority.BelowNormal;
-                mSendThread.IsBackground = true;
-                mSendThread.Start();
+                System.Threading.Tasks.Task.Run(SendMessageThread);
             }
 
             protected void CreatRec()
             {
-                mRecThread = new Thread(ReceiveMessage);
-                mRecThread.Priority = System.Threading.ThreadPriority.BelowNormal;
-                mRecThread.IsBackground = true;
-                mRecThread.Start();
+                System.Threading.Tasks.Task.Run(ReceiveMessage);
             }
 
             #endregion

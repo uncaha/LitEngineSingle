@@ -62,8 +62,8 @@ namespace LitEngine
                 IPVALL,
             }
 
-            protected Thread mSendThread;
-            protected Thread mRecThread;
+            protected System.Threading.Tasks.Task mSendThread;
+            protected System.Threading.Tasks.Task mRecThread;
            // protected ManualResetEvent mWaitObject = new ManualResetEvent(false);
 
             protected Socket mSocket = null;
@@ -230,18 +230,21 @@ namespace LitEngine
             {
                 try
                 {
+                    ClearQueue();
                     //需要注意释放顺序
                     mStartThread = false;
-                    WaitThreadJoin(mSendThread);
-                    WaitThreadJoin(mRecThread);
+                    mSendThread?.Dispose();
+                    mRecThread?.Dispose();
+
                     if (mSocket != null)
                     {
                         if (mSocket.ProtocolType == ProtocolType.Tcp && mSocket.Connected)
+                        {
                             mSocket.Shutdown(SocketShutdown.Both);
+                        }
                         mSocket.Close();
                         mSocket = null;
-                    }
-                    ClearQueue();
+                    }  
                 }
                 catch (Exception err)
                 {
