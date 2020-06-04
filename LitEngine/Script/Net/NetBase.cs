@@ -253,20 +253,21 @@ namespace LitEngine
             {
                 //需要注意重复调用
                 mState = TcpState.Closing;
-                Thread tcreatthread = new Thread(CloseSocket);
-                tcreatthread.IsBackground = true;
-                tcreatthread.Start();
                 try
                 {
-                    WaitThreadJoin(tcreatthread);
-                    DLog.Log( mNetTag + ":socket is closed!");
+                    CloseSocket();
+                    if (!mDisposed)
+                    {
+                        AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.DisConnected, mNetTag + "- 断开连接完成."));
+                    }
+                    DLog.Log(mNetTag + ":socket is closed!");
                 }
                 catch (Exception err)
                 {
                     DLog.LogError(mNetTag + ":Disconnect - " + err);
                 }
                 mState = TcpState.Closed;
-                AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.DisConnected, mNetTag + "- 断开连接完成." ));
+               
             }
             virtual public void DisConnect()
             {

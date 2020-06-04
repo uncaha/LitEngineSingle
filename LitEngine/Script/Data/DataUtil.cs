@@ -38,6 +38,12 @@ namespace LitEngine.Data
     }
     public class DataUtil
     {
+        public class SaveValue
+        {
+            public FieldInfo info;
+            public object value;
+        }
+
         public DataUtil()
         {
         }
@@ -99,26 +105,30 @@ namespace LitEngine.Data
             pWriter.WriteBool(pTarget != null);
             if (pTarget == null) return;
             System.Type ttype = pTarget.GetType();
-            List<FieldInfo> tfieldlist = new List<FieldInfo>(ttype.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public));
-            for (int i = tfieldlist.Count - 1; i >= 0; i--)
-            {
-                FieldInfo tinfo = tfieldlist[i];
-                NeedToSave tetst = (NeedToSave)tinfo.GetCustomAttribute(typeof(NeedToSave));
+            var tfields = ttype.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            List<SaveValue> tfieldlist = new List<SaveValue>();
 
-                if (tetst == null)
+            for (int i = 0; i < tfields.Length; i++)
+            {
+                FieldInfo tinfo = tfields[i];
+                NeedToSave tetst = tinfo.GetCustomAttribute(typeof(NeedToSave)) as NeedToSave;
+                object tvalue = tinfo.GetValue(pTarget);
+
+                if (tetst != null && tvalue != null)
                 {
-                    tfieldlist.RemoveAt(i);
+                    SaveValue item = new SaveValue() { info = tinfo,value = tvalue };
+                    tfieldlist.Add(item);
                 }
             }
+
             pWriter.WriteString(ttype.FullName);
             pWriter.WriteInt(tfieldlist.Count);
 
             for (int i = 0; i < tfieldlist.Count; i++)
             {
-                FieldInfo tinfo = tfieldlist[i];
-                object tvalue = tinfo.GetValue(pTarget);
-                NeedToSave tatt = DataUtil.GetSaveAttribute(tvalue, tinfo.Name);
-                SaveByField(pWriter, tatt, tvalue);
+                SaveValue tinfo = tfieldlist[i];
+                NeedToSave tatt = DataUtil.GetSaveAttribute(tinfo.value, tinfo.info.Name);
+                SaveByField(pWriter, tatt, tinfo.value);
             }
 
         }
@@ -202,11 +212,11 @@ namespace LitEngine.Data
             DataType ttype = (DataType)pReader.ReadInt32();
             string tFieldName = pReader.ReadString();
 
-            if (pValue == null && pParent != null)
+            FieldInfo tinfo = pParent == null ? null : pParent.GetType().GetField(tFieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            if (pValue == null && tinfo != null)
             {
-                FieldInfo tinfo = pParent.GetType().GetField(tFieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                 pValue = tinfo.GetValue(pParent);
-                if(pValue == null)
+                if (pValue == null)
                 {
                     pValue = GetObjectByType(tinfo.FieldType, true);
                 }
@@ -227,9 +237,9 @@ namespace LitEngine.Data
                     ret = ReadDictionary(pReader, pValue);
                     break;
             }
-            if (pParent != null)
+
+            if (tinfo != null)
             {
-                FieldInfo tinfo = pParent.GetType().GetField(tFieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                 tinfo.SetValue(pParent, ret);
             }
 
