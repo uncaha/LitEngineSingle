@@ -2,35 +2,48 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Collections;
+using System.Threading;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Reflection;
-using LitEngine;
-public class LogToFile
+public class LogToFile : IDisposable
 {
-    private static string sFilePath = "";
-    private static bool sIsInit = false;
-    private static Dictionary<UnityEngine.LogType, string> sStackLogTypeList = new Dictionary<LogType, string>();
-    private static Dictionary<UnityEngine.LogType, string> sSaveToFileLogTypeList = new Dictionary<LogType, string>();
+    private class LogData
+    {
+        public string logStr;
+        public string stackTrace;
+        public LogType type;
+    }
+    private static LogToFile sInstance = null;
 
-    private static LogWindow logDiagle = null;
+    private string sFilePath = "";
+    private int mainThreadID = -1;
+
+    private Queue logQue = Queue.Synchronized( new Queue());
+    private Thread saveThread;
+    private bool saveThreadRunning = false;
+
+    private StreamWriter logWriger = null;
     public static void InitLogCallback()
     {
-        if (sIsInit) return;
-        sIsInit = true;
+        if (sInstance != null) return;
+        sInstance = new LogToFile();
+    }
 
-        AddSaveToFileLogType(UnityEngine.LogType.Error);
-        AddSaveToFileLogType(UnityEngine.LogType.Assert);
-        AddSaveToFileLogType(UnityEngine.LogType.Exception);
-
-        AddStackLogType(UnityEngine.LogType.Error);
-        AddStackLogType(UnityEngine.LogType.Assert);
-        AddStackLogType(UnityEngine.LogType.Exception);
+    private LogToFile()
+    {
+        mainThreadID = Thread.CurrentThread.ManagedThreadId;
 
         Application.logMessageReceived += logCallback;
-        AppDomain.CurrentDomain.UnhandledException += _OnUncaughtExceptionHandler;
+        Application.logMessageReceivedThreaded += logCallbackTrhread;
+        Application.quitting += OnQuit;
 
-        if (Application.platform == RuntimePlatform.WindowsEditor)
+        this.saveThreadRunning = true;
+        saveThread = new Thread(SaveFileThread);
+        saveThread.Start();
+
+
+
+        if (Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.OSXEditor)
             sFilePath = Application.dataPath + "/../LogFile/";
         else
             sFilePath = Application.persistentDataPath + "/LogFile/";
@@ -38,32 +51,57 @@ public class LogToFile
         if (!Directory.Exists(sFilePath))
             Directory.CreateDirectory(sFilePath);
         string filename = GetNowLogName();
-        SaveFile(filename, GetTitleStr(), System.Text.Encoding.UTF8);
+        logWriger = new StreamWriter(filename,true,Encoding.UTF8);
+
+        logWriger.WriteLine(GetTitleStr());
+        logWriger.Flush();
     }
 
-    public static void InitLogWindow()
+    ~LogToFile()
     {
-        if (logDiagle == null)
+        Dispose(false);
+    }
+
+    protected bool mDisposed = false;
+    public void Dispose()
+    {
+        Application.logMessageReceived -= logCallback;
+        Application.logMessageReceivedThreaded -= logCallbackTrhread;
+        Dispose(true);
+        System.GC.SuppressFinalize(this);
+    }
+
+    protected void Dispose(bool _disposing)
+    {
+        if (mDisposed)
+            return;
+        mDisposed = true;
+        this.saveThreadRunning = false;
+
+        try
         {
-            GameObject tobj = new GameObject("LogWindow");
-            GameObject.DontDestroyOnLoad(tobj);
-            logDiagle = tobj.AddComponent<LogWindow>();
+            if (logWriger != null)
+            {
+                logWriger.Close();
+            }
+            logWriger = null;
         }
+        catch (Exception ex)
+        {
+        }
+
+        try
+        {
+            saveThread.Abort();
+        }
+        catch (ThreadInterruptedException ex)
+        {
+        }
+
     }
 
-    public static void AddSaveToFileLogType(UnityEngine.LogType _type)
-    {
-        if (sSaveToFileLogTypeList.ContainsKey(_type)) return;
-        sSaveToFileLogTypeList.Add(_type, _type.ToString());
-    }
 
-    public static void AddStackLogType(UnityEngine.LogType _type)
-    {
-        if (sStackLogTypeList.ContainsKey(_type)) return;
-        sStackLogTypeList.Add(_type, _type.ToString());
-    }
-
-    public static string GetTagStr(int _len, string _tag)
+    public string GetTagStr(int _len, string _tag)
     {
         StringBuilder ret = new StringBuilder();
         for (int i = 0; i < _len; i++)
@@ -71,7 +109,19 @@ public class LogToFile
         return ret.ToString();
     }
 
-    public static string GetTitleStr()
+    public string GetNowLogName()
+    {
+        DateTime now = DateTime.Now;
+        return GetLogName(now.Year, now.Month, now.Day,now.Hour,now.Minute,now.Second);
+    }
+
+    public string GetLogName(int _Year, int _Month, int _Day,int _hour,int _min,int _sec)
+    {
+        return string.Format("{0}/log_{1}_{2}_{3}.log", sFilePath, _Year, _Month, _Day);
+    }
+
+
+    public string GetTitleStr()
     {
         string filename = GetNowLogName();
 
@@ -114,190 +164,67 @@ public class LogToFile
         return sb.ToString();
     }
 
-    private static void _OnUncaughtExceptionHandler(object sender, System.UnhandledExceptionEventArgs args)
+    void logCallback(string log, string pStackTrace, UnityEngine.LogType pType)
     {
-        if (args == null || args.ExceptionObject == null)
-        {
-            return;
-        }
-
-        try
-        {
-            if (args.ExceptionObject.GetType() != typeof(System.Exception))
-            {
-                return;
-            }
-        }
-        catch (Exception _e)
-        {
-            DLog.LogError(_e);
-            return;
-        }
-
-        GetHandleExceptionString((System.Exception)args.ExceptionObject, "-LogToFile-");
+        if (mainThreadID != Thread.CurrentThread.ManagedThreadId) return;
+        LogData tdata = new LogData() { logStr = log, stackTrace = pStackTrace, type = pType};
+        LogOutPut(tdata);
     }
 
-    public static void logCallback(string log, string stackTrace, UnityEngine.LogType _type)
+    void logCallbackTrhread(string log, string pStackTrace, UnityEngine.LogType pType)
     {
-        if (!sSaveToFileLogTypeList.ContainsKey(_type)) return;
-        string logstr = SaveToFile(_type.ToString(), log, stackTrace, _type);
-        if (logDiagle != null)
-            logDiagle.AddLog(logstr);
+        if (mainThreadID == Thread.CurrentThread.ManagedThreadId) return;
+        LogData tdata = new LogData() { logStr = log, stackTrace = pStackTrace, type = pType };
+        LogOutPut(tdata);
     }
 
-    public static string GetNowLogName()
+    void LogOutPut(LogData pData)
     {
-        DateTime now = DateTime.Now;
-        return GetLogName(now.Year, now.Month, now.Day);
+        logQue.Enqueue(pData);
     }
 
-    public static string GetLogName(int _Year, int _Month, int _Day)
+    void OnQuit()
     {
-        return string.Format("{0}/log_{1}_{2}_{3}.log", sFilePath, _Year, _Month, _Day);
+        Dispose();
     }
 
-    static string SaveToFile(string prefix, string content, string callstack, UnityEngine.LogType _type)
+    private void SaveFileThread()
     {
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        sb.Append("[");
-        sb.Append(prefix);
-        sb.Append("] ");
-        sb.Append(string.Format("[{0}] ", System.DateTime.Now));
-        sb.AppendLine(content);
-
-        if (sStackLogTypeList.ContainsKey(_type))
+        while(saveThreadRunning)
         {
-            sb.AppendLine(callstack);
-        }
+           if(logQue.Count == 0)
+           {
+                continue;
+           }
 
-        string ret = sb.ToString();
-        SaveFile(GetNowLogName(), ret, System.Text.Encoding.UTF8);
-        return ret;
+           while (this.logQue.Count > 0)
+           {
+                LogData log = (LogData)this.logQue.Dequeue();
+                SaveToFile(log.type.ToString(), log.logStr, log.stackTrace, log.type);
+           }
+        }
     }
 
-    #region 堆栈信息
-    public static string GetHandleExceptionString(System.Exception e, string message)
-    {
-        if (e == null)
-        {
-            return "";
-        }
-
-        string name = e.GetType().Name;
-        string reason = e.Message;
-
-        if (!string.IsNullOrEmpty(message))
-        {
-            reason = string.Format("{0}{1}***{2}", reason, Environment.NewLine, message);
-        }
-
-        StringBuilder stackTraceBuilder = new StringBuilder("");
-
-        StackTrace stackTrace = new StackTrace(e, true);
-        int count = stackTrace.FrameCount;
-        for (int i = 0; i < count; i++)
-        {
-            StackFrame frame = stackTrace.GetFrame(i);
-
-            stackTraceBuilder.AppendFormat("{0}.{1}", frame.GetMethod().DeclaringType.Name, frame.GetMethod().Name);
-
-            ParameterInfo[] parameters = frame.GetMethod().GetParameters();
-            if (parameters == null || parameters.Length == 0)
-            {
-                stackTraceBuilder.Append(" () ");
-            }
-            else
-            {
-                stackTraceBuilder.Append(" (");
-
-                int pcount = parameters.Length;
-
-                ParameterInfo param = null;
-                for (int p = 0; p < pcount; p++)
-                {
-                    param = parameters[p];
-                    stackTraceBuilder.AppendFormat("{0} {1}", param.ParameterType.Name, param.Name);
-
-                    if (p != pcount - 1)
-                    {
-                        stackTraceBuilder.Append(", ");
-                    }
-                }
-                param = null;
-
-                stackTraceBuilder.Append(") ");
-            }
-
-            string fileName = frame.GetFileName();
-            if (!string.IsNullOrEmpty(fileName) && !fileName.ToLower().Equals("unknown"))
-            {
-                fileName = fileName.Replace("\\", "/");
-
-                int loc = fileName.ToLower().IndexOf("/assets/");
-                if (loc < 0)
-                {
-                    loc = fileName.ToLower().IndexOf("assets/");
-                }
-
-                if (loc > 0)
-                {
-                    fileName = fileName.Substring(loc);
-                }
-
-                stackTraceBuilder.AppendFormat("(at {0}:{1})", fileName, frame.GetFileLineNumber());
-            }
-            stackTraceBuilder.AppendLine();
-        }
-
-        return stackTraceBuilder.ToString();
-    }
-
-    public static string GetStackTrace()
-    {
-        StringBuilder tstacktracebuilder = new StringBuilder();
-
-        StackTrace stackTrace = new StackTrace(true);
-        StackFrame[] stackFrame = stackTrace.GetFrames();
-        if (stackFrame != null)
-        {
-            for (int i = 0; i < stackFrame.Length; i++)
-            {
-                StackFrame tframe = stackFrame[i];
-                System.Reflection.MethodBase tmethod = tframe.GetMethod();
-                if (tmethod.DeclaringType == typeof(LogToFile)
-                    || tmethod.DeclaringType == typeof(DLog)
-                    || tmethod.DeclaringType == typeof(Logger)
-                    || tmethod.DeclaringType == typeof(Application)
-                    || tmethod.DeclaringType.ToString().Contains("DebugLogHandler")
-                    || tmethod.DeclaringType.ToString().Contains("ILRuntime."))
-                    continue;
-                ParameterInfo[] tparams = tmethod.GetParameters();
-                StringBuilder tparamsstr = new StringBuilder();
-                for (int j = 0; j < tparams.Length; j++)
-                {
-                    tparamsstr.Append(tparams[j].ParameterType.ToString());
-                    if (j < tparams.Length - 1)
-                        tparamsstr.Append(",");
-                }
-                string tmsg = string.Format("{0}:{1}({2})(line:{3})", tmethod.DeclaringType.ToString(), tmethod.Name, tparamsstr.ToString(), tframe.GetFileLineNumber());
-                tstacktracebuilder.AppendLine("         *" + tmsg);
-            }
-        }
-
-        return tstacktracebuilder.ToString();
-    }
-    #endregion
-
-    static protected void SaveFile(string path, string contents, Encoding encoding)
+    void SaveToFile(string prefix, string content, string callstack, UnityEngine.LogType pType)
     {
         try
         {
-            System.IO.File.AppendAllText(path, contents, System.Text.Encoding.UTF8);
+            logWriger.WriteLine(string.Format("[{0}][{1}] {2}", prefix, System.DateTime.Now, content));
+            if (pType == LogType.Assert || pType == LogType.Error || pType == LogType.Exception)
+            {
+               
+                logWriger.WriteLine("┌──────────────────────────────────ERROR──────────────────────────────────┐");
+                logWriger.WriteLine(callstack);
+                logWriger.WriteLine("└─────────────────────────────────────────────────────────────────────────┘");
+            }
+            logWriger.Flush();
         }
         catch (Exception _e)
         {
         }
+
     }
 }
+
 
 
