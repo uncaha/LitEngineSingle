@@ -100,13 +100,14 @@ namespace LitEngine
 
             protected void CreatSend()
             {
-                mSendThread = System.Threading.Tasks.Task.Run(SendMessageThread);
+                mSendThread = new Thread(SendMessageThread);
+                mSendThread.Start();
             }
 
             protected void CreatRec()
             {
-                mRecPoint = new IPEndPoint(IPAddress.Any, 0);
-                mRecThread = System.Threading.Tasks.Task.Run(ReceiveMessage);
+                mRecThread = new Thread(ReceiveMessage);
+                mRecThread.Start();
             }
 
             virtual protected void CreatSendAndRecThread()

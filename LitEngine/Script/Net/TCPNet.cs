@@ -46,7 +46,11 @@ namespace LitEngine
             override public void ConnectToServer()
             {
                 if (IsCOrD())
+                {
+                    DLog.LogError(mNetTag + string.Format("[{0}]Closing或Connecting状态下不可执行.", mNetTag));
                     return;
+                }
+                    
                 if (isConnected)
                 {
                     AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.ConectError, mNetTag + "重复建立连接"));
@@ -127,12 +131,14 @@ namespace LitEngine
 
             protected void CreatSend()
             {
-                System.Threading.Tasks.Task.Run(SendMessageThread);
+                mSendThread = new Thread(SendMessageThread);
+                mSendThread.Start();
             }
 
             protected void CreatRec()
             {
-                System.Threading.Tasks.Task.Run(ReceiveMessage);
+                mRecThread = new Thread(ReceiveMessage);
+                mRecThread.Start();
             }
 
             #endregion
@@ -171,7 +177,6 @@ namespace LitEngine
                         AddMainThreadMsgReCall(new MSG_RECALL_DATA(MSG_RECALL.SendError, mNetTag + "-" + e.ToString(),tdata));
                         break;
                     }
-                    Thread.Sleep(2);
                 }
             }
             virtual protected void SendThread(SendData _data)
@@ -204,7 +209,6 @@ namespace LitEngine
                                 Processingdata(receiveNumber, mRecbuffer);
                             
                         }
-                        Thread.Sleep(1);
                     }
 
                 }

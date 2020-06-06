@@ -62,8 +62,8 @@ namespace LitEngine
                 IPVALL,
             }
 
-            protected System.Threading.Tasks.Task mSendThread;
-            protected System.Threading.Tasks.Task mRecThread;
+            protected Thread mSendThread;
+            protected Thread mRecThread;
            // protected ManualResetEvent mWaitObject = new ManualResetEvent(false);
 
             protected Socket mSocket = null;
@@ -199,13 +199,13 @@ namespace LitEngine
                     return true;
                 }
                 if (mState != TcpState.Closing && mState != TcpState.Connecting) return false;
-                DLog.LogError( mNetTag + string.Format( "[{0}]Closing或Connecting状态下不可执行.", mNetTag));
                 return true;
             }
 
             virtual public bool IsCanConnect()
             {
-                return !isConnected && !IsCOrD();
+                if (IsCOrD() || isConnected) return false;
+                return true;
             }
 
 
@@ -228,14 +228,12 @@ namespace LitEngine
             }
             virtual protected void CloseSocket()
             {
+                ClearQueue();
+                //需要注意释放顺序
+                mStartThread = false;
+
                 try
                 {
-                    ClearQueue();
-                    //需要注意释放顺序
-                    mStartThread = false;
-                    mSendThread?.Dispose();
-                    mRecThread?.Dispose();
-
                     if (mSocket != null)
                     {
                         if (mSocket.ProtocolType == ProtocolType.Tcp && mSocket.Connected)
@@ -244,13 +242,14 @@ namespace LitEngine
                         }
                         mSocket.Close();
                         mSocket = null;
-                    }  
+                    }
                 }
                 catch (Exception err)
                 {
                     DLog.LogError(mNetTag + "socket的关闭时出现异常:" + err);
                 }
-                
+                WaitThreadJoin(mSendThread);
+                WaitThreadJoin(mRecThread);
             }
             virtual protected void CloseSocketStart()
             {
