@@ -24,7 +24,7 @@ namespace LitEngine.DownLoad
         #region 属性
         private Action<string, string> mFinished;
         private Action<long, long, float> mProgress;
-        private DownLoadObject mObject;
+        private DownLoader mObject;
         private UpdateNeedDisObject mUpdateObject;
         private string mURL;
         private bool mIsDone = false;
@@ -41,7 +41,7 @@ namespace LitEngine.DownLoad
             {
                 AppName = _key;
                 mURL = _sourceurl;
-                mObject = new DownLoadObject(_sourceurl, _destination, _IsClear);
+                mObject = new DownLoader(_sourceurl, _destination, _IsClear);
 
                 mFinished = _finished;
                 mProgress = _progress;

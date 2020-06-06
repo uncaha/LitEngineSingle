@@ -9,8 +9,13 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace LitEngine.DownLoad
 {
-    public class DownLoadObject : System.Collections.IEnumerator, System.IDisposable
+    public class DownLoader : System.Collections.IEnumerator, System.IDisposable
     {
+        #region event
+        public event System.Action OnStart = null;
+        public event System.Action<DownLoader> OnComplete = null;
+        public event System.Action<int,byte[]> OnReceiveBytes = null;
+        #endregion
         #region 属性
         public string DestinationPath { get; private set; }
         public string SourceURL { get; private set; }
@@ -25,7 +30,7 @@ namespace LitEngine.DownLoad
                 return ContentLength > 0 ? (float)DownLoadedLength / ContentLength : 0;
             }
         }
-
+        
         public DownloadState State { get; private set; }
         public bool IsDone { get { return State == DownloadState.finished; } }
 
@@ -51,11 +56,10 @@ namespace LitEngine.DownLoad
         private WebResponse mResponse;
         private Stream mHttpStream;
 
-        private Thread mDownLoadThread = null;
 
         #endregion
         #region 构造析构
-        public DownLoadObject(string _sourceurl, string _destination, bool _clear)
+        public DownLoader(string _sourceurl, string _destination, bool _clear)
         {
             SourceURL = _sourceurl;
             DestinationPath = _destination;
@@ -72,7 +76,7 @@ namespace LitEngine.DownLoad
             State = DownloadState.normal;
         }
 
-        ~DownLoadObject()
+        ~DownLoader()
         {
             Dispose(false);
         }
@@ -93,8 +97,6 @@ namespace LitEngine.DownLoad
             mThreadRuning = false;
             curTask?.Dispose();
             curTask = null;
-            if (mDownLoadThread != null)
-                mDownLoadThread.Join();
 
             CloseHttpClient();
         }
@@ -111,11 +113,8 @@ namespace LitEngine.DownLoad
         {
             if (State != DownloadState.normal) return curTask;
             State = DownloadState.downloading;
-            curTask = Task.Run((System.Action)ReadNetByte);
             mThreadRuning = true;
-            //mDownLoadThread = new Thread(ReadNetByte);
-            //mDownLoadThread.IsBackground = true;
-            //mDownLoadThread.Start();
+            curTask = Task.Run((System.Action)ReadNetByte);
             return curTask;
         }
 
@@ -130,6 +129,7 @@ namespace LitEngine.DownLoad
 
         private void ReadNetByte()
         {
+            OnStart?.Invoke();
             FileStream ttempfile = null;
             try
             {
@@ -152,7 +152,7 @@ namespace LitEngine.DownLoad
                 }
 
                 mReqest = (HttpWebRequest)HttpWebRequest.Create(SourceURL);
-                mReqest.Timeout = 5000;
+                mReqest.Timeout = 20000;
 
                 if (SourceURL.Contains("https://"))
                     ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(CheckValidationResult);
@@ -192,6 +192,9 @@ namespace LitEngine.DownLoad
                 {
                     DownLoadedLength += tReadSize;
                     ttempfile.Write(tbuffer, 0, tReadSize);
+
+                    OnReceiveBytes?.Invoke(tReadSize, tbuffer);
+
                     tReadSize = mHttpStream.Read(tbuffer, 0, tlen);
 
                     if (++tcount >= 512)
@@ -229,6 +232,7 @@ namespace LitEngine.DownLoad
 
             CloseHttpClient();
             State = DownloadState.finished;
+            OnComplete?.Invoke(this);
         }
         private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
         {

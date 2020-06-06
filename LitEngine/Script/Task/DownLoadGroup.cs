@@ -31,7 +31,7 @@ namespace LitEngine.DownLoad
         private bool autoDispose = false;
         public event Action<string[], string> FinishedDelegate;
         public event Action<long, long, float> ProgressDelegate;
-        private List<DownLoadObject> groupList = new List<DownLoadObject>();
+        private List<DownLoader> groupList = new List<DownLoader>();
         private UpdateNeedDisObject updateObject;
         public DownLoadGroup(string newKey ,bool newAutoDispose = true)
         {
@@ -97,10 +97,10 @@ namespace LitEngine.DownLoad
                 return;
             }
             if (IsHaveURL(_sourceurl)) return;
-            Add(new DownLoadObject(_sourceurl, _destination, _clear));
+            Add(new DownLoader(_sourceurl, _destination, _clear));
         }
 
-        private void Add(DownLoadObject newObject)
+        private void Add(DownLoader newObject)
         {
             groupList.Add(newObject);
         }
