@@ -12,17 +12,14 @@ namespace LitEngine
             public bool Dead { get; set; }
             public UpdateObjectVector Owner { get;set; }
             public bool IsRegToOwner { get; protected set; }
+            public float deleteTime { get; protected set; }
+
             protected MethodBase method = null;
             protected object target = null;
             protected float mMaxTime = 0.0f;
-            protected float mTimer = 0;
             protected bool mIsUseTimer = false;
-            public float UpdateTimer
-            {
-                get { return mTimer; }
-                set { mTimer = value; }
-            }
 
+            protected float timer = 0;
             public float MaxTime
             {
                 get
@@ -113,9 +110,11 @@ namespace LitEngine
 
             virtual public bool IsTimeOut()
             {
+                timer += Time.deltaTime;
                 if (!mIsUseTimer) return true;
-                if (Time.realtimeSinceStartup < mTimer) return false;
-                mTimer = Time.realtimeSinceStartup + mMaxTime;
+                if (deleteTime < mMaxTime) return false;
+                deleteTime = timer;
+                timer = 0;
                 return true;
             }
         }
@@ -151,83 +150,6 @@ namespace LitEngine
             }
         }
 
-        public class UpdateGroup : UpdateBase
-        {
-            private List<UpdateObject> GroupList;
-
-            private int mUpdateCount = 0;
-            private int mNowUpdateCount = 0;
-            private int mUpdateCountEveryFrame = 0;
-            public int UpdateCountEveryFrame
-            {
-                get { return mUpdateCountEveryFrame; }
-                set { mUpdateCountEveryFrame = value < 0 ? 0 : value; }
-            }
-            public int Count
-            {
-                get;
-                private set;
-            }
-            public UpdateGroup()
-            {
-                GroupList = new List<UpdateObject>();
-                Count = 0;
-                UpdateCountEveryFrame = 0;
-            }
-            public void AddObject(UpdateObject _obj)
-            {
-                GroupList.Add(_obj);
-                Count++;
-            }
-            public void Remove(UpdateObject _obj)
-            {
-                if (GroupList.Contains(_obj))
-                {
-                    GroupList.Remove(_obj);
-                    Count--;
-                }
-            }
-
-
-            override public void RunDelgete()
-            {
-                if (!IsTimeOut()) return;
-                if (UpdateCountEveryFrame == 0)
-                    UpdateAll();
-                else
-                    UpdatePerCount();
-            }
-
-            private void UpdateAll()
-            {
-                short i = 0;
-                for (; i < Count; i++)
-                {
-                    GroupList[i].RunDelgete();
-                }
-            }
-            private void UpdatePerCount()
-            {
-                int i = mUpdateCount;
-                for (; i < Count; i++)
-                {
-                    GroupList[i].RunDelgete();
-                    mUpdateCount++;
-                    mNowUpdateCount++;
-                    if (mNowUpdateCount == UpdateCountEveryFrame)
-                    {
-                        mNowUpdateCount = 0;
-                        break;
-                    }
-
-                }
-                if (mUpdateCount >= Count)
-                {
-                    mUpdateCount = 0;
-                    mNowUpdateCount = 0;
-                }
-            }
-        }
     }
    
 }
