@@ -6,15 +6,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using UnityEngine.Video;
 
 namespace LitEngine.DownLoad
 {
     public class DownLoader : System.Collections.IEnumerator, System.IDisposable
     {
         #region event
-        public event System.Action OnStart = null;
+        public event System.Action<DownLoader> OnStart = null;
         public event System.Action<DownLoader> OnComplete = null;
-        public event System.Action<int,byte[]> OnReceiveBytes = null;
         #endregion
         #region 属性
         public string DestinationPath { get; private set; }
@@ -114,25 +114,37 @@ namespace LitEngine.DownLoad
             if (State != DownloadState.normal) return curTask;
             State = DownloadState.downloading;
             mThreadRuning = true;
+            OnStart?.Invoke(this);
             curTask = Task.Run((System.Action)ReadNetByte);
+            WaitComplete();
             return curTask;
+        }
+
+        async void WaitComplete()
+        {
+            await curTask;
+            OnComplete?.Invoke(this);
         }
 
         public void StartDownLoad()
         {
             if (State != DownloadState.normal) return;
             State = DownloadState.downloading;
-
             mThreadRuning = true;
+            OnStart?.Invoke(this);
             ReadNetByte();
+            OnComplete?.Invoke(this);
         }
 
         private void ReadNetByte()
         {
-            OnStart?.Invoke();
             FileStream ttempfile = null;
             try
             {
+                if(!Directory.Exists(DestinationPath))
+                {
+                    Directory.CreateDirectory(DestinationPath);
+                }
                 long thaveindex = 0;
                 if (File.Exists(TempFile))
                 {
@@ -192,9 +204,6 @@ namespace LitEngine.DownLoad
                 {
                     DownLoadedLength += tReadSize;
                     ttempfile.Write(tbuffer, 0, tReadSize);
-
-                    OnReceiveBytes?.Invoke(tReadSize, tbuffer);
-
                     tReadSize = mHttpStream.Read(tbuffer, 0, tlen);
 
                     if (++tcount >= 512)
@@ -232,7 +241,7 @@ namespace LitEngine.DownLoad
 
             CloseHttpClient();
             State = DownloadState.finished;
-            OnComplete?.Invoke(this);
+            
         }
         private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
         {
