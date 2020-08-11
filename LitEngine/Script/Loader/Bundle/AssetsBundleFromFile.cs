@@ -19,7 +19,7 @@ namespace LitEngine
                 if (mAssetsBundle != null)
                 {
                     if (((AssetBundle)mAssetsBundle).isStreamedSceneAssetBundle)
-                        mAsset = ((AssetBundle)mAssetsBundle).mainAsset;
+                        ((AssetBundle)mAssetsBundle).LoadAllAssets();
                     else
                         mAsset = ((AssetBundle)mAssetsBundle).LoadAsset(mAssetName);
 
