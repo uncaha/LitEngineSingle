@@ -213,6 +213,7 @@ namespace LitEngine
             {
                 mStartThread = false;
                 mState = TcpState.Closed;
+                KillSocket();
             }
             virtual protected void ClearQueue()
             {
@@ -226,12 +227,9 @@ namespace LitEngine
                 if (_thread == null) return;
                 _thread.Join();
             }
-            virtual protected void CloseSocket()
-            {
-                ClearQueue();
-                //需要注意释放顺序
-                mStartThread = false;
 
+            void KillSocket()
+            {
                 try
                 {
                     if (mSocket != null)
@@ -248,6 +246,13 @@ namespace LitEngine
                 {
                     DLog.LogError(mNetTag + "socket的关闭时出现异常:" + err);
                 }
+            }
+            virtual protected void CloseSocket()
+            {
+                ClearQueue();
+                //需要注意释放顺序
+                mStartThread = false;
+                KillSocket();
                 WaitThreadJoin(mSendThread);
                 WaitThreadJoin(mRecThread);
             }
