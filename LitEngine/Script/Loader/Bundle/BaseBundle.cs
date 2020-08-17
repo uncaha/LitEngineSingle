@@ -108,6 +108,20 @@ namespace LitEngine
             }
             #endregion
 
+            protected void OptAssetShow()
+            {
+                if (mAsset != null
+                    && (Application.platform == RuntimePlatform.WindowsEditor
+                    || Application.platform == RuntimePlatform.OSXEditor
+                    || Application.platform == RuntimePlatform.LinuxEditor
+                        )
+                    )
+                {
+                    if(mAsset.GetType().Equals(typeof(UnityEngine.Material)))
+                        RestShader((UnityEngine.Material)mAsset);
+                }
+            }
+
             protected void RestShader(UnityEngine.Material targetMat)
             {
                 if (targetMat == null) return;
