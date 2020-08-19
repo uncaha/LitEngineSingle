@@ -64,18 +64,13 @@ namespace LitEngine
                 mAsset = mLoadObjReq.asset;
                 if (mAsset == null)
                 {
-                    mAsset = ((AssetBundle)mAssetsBundle).mainAsset;
+                    var tobjs = ((AssetBundle)mAssetsBundle).LoadAllAssets();
+                    if (tobjs != null && tobjs.Length > 0)
+                        mAsset = tobjs[0];
                     DLog.LogError("在资源包 " + mPathName + " 中找不到文件名:" + DeleteSuffixName(mAssetName).ToLowerInvariant() + " 的资源。或者因为资源的命名不规范导致unity加载模块找不到该资源. ");
                 }
 
-                if (mAsset != null && mAsset.GetType().Equals(typeof(UnityEngine.Material))
-                        && (Application.platform == RuntimePlatform.WindowsEditor
-                           || Application.platform == RuntimePlatform.OSXEditor
-                           || Application.platform == RuntimePlatform.LinuxEditor)
-                        )
-                {
-                    RestShader((UnityEngine.Material)mAsset);
-                }
+                OptAssetShow();
 
                 mCreat = null;
                 mLoadObjReq = null;

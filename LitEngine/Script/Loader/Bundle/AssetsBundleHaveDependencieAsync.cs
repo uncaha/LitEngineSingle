@@ -104,7 +104,13 @@ namespace LitEngine
                 {
                     for (int i = 0; i < mDepList.Count; i++)
                     {
-                        AssetsBundleHaveDependencieAsync tbd = (AssetsBundleHaveDependencieAsync)mDepList[i];
+                        if (mDepList[i].Loaded) continue;
+                        AssetsBundleHaveDependencieAsync tbd = mDepList[i] as AssetsBundleHaveDependencieAsync;
+                        if (tbd == null)
+                        {
+                            UnityEngine.Debug.LogErrorFormat("异步加载强制转换出现错误.类型 ={0},所属资源 = {1}", mDepList[i].GetType(), mAssetName);
+                            continue;
+                        }
                         if (tbd.Step == StepState.WaitingLoadAsset)
                             tbd.StartLoadAssets();
                     }

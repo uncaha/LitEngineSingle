@@ -19,18 +19,11 @@ namespace LitEngine
                 if (mAssetsBundle != null)
                 {
                     if (((AssetBundle)mAssetsBundle).isStreamedSceneAssetBundle)
-                        mAsset = ((AssetBundle)mAssetsBundle).mainAsset;
+                        ((AssetBundle)mAssetsBundle).LoadAllAssets();
                     else
                         mAsset = ((AssetBundle)mAssetsBundle).LoadAsset(mAssetName);
 
-                    if(mAsset != null && mAsset.GetType().Equals(typeof(UnityEngine.Material))
-                        &&(Application.platform == RuntimePlatform.WindowsEditor
-                           || Application.platform == RuntimePlatform.OSXEditor
-                           || Application.platform == RuntimePlatform.LinuxEditor)
-                        )
-                    {
-                        RestShader((UnityEngine.Material)mAsset);
-                    }
+                    OptAssetShow();
                 }
                 else
                     DLog.LogError("AssetsBundleFromFile打开文件失败,请检查资源是否存在-" + mPathName);
