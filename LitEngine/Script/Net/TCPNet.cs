@@ -160,22 +160,25 @@ namespace LitEngine
             #region 线程发送模式
             protected void SendMessageThread()
             {
-                while (mStartThread)
+                try
                 {
-                    if (mSendDataList.Count == 0)
-                        continue;
-                    SendData tdata = null;
-                    try
+                    while (mStartThread)
                     {
-                        tdata  = (SendData)mSendDataList.Dequeue();
+                        if (mSendDataList.Count == 0)
+                            continue;
+                        SendData tdata = null;
+                        tdata = (SendData)mSendDataList.Dequeue();
                         SendThread((SendData)tdata);
                     }
-                    catch (Exception e)
+                    
+                }
+                catch (Exception e)
+                {
+                    if(mStartThread)
                     {
                         DLog.LogError(mNetTag + ":SendMessageThread->" + e.ToString());
                         CloseSRThread();
-                        AddMainThreadMsgReCall(new MSG_RECALL_DATA(MSG_RECALL.SendError, mNetTag + "-" + e.ToString(),tdata));
-                        break;
+                        AddMainThreadMsgReCall(new MSG_RECALL_DATA(MSG_RECALL.SendError, mNetTag + "-" + e.ToString()));
                     }
                 }
             }
@@ -214,9 +217,12 @@ namespace LitEngine
                 }
                 catch (Exception e)
                 {
-                    DLog.LogError( mNetTag + ":ReceiveMessage->" + e.ToString());
-                    CloseSRThread();
-                    AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.ReceiveError, mNetTag + "-" + e.ToString()));
+                    if(mStartThread)
+                    {
+                        DLog.LogError(mNetTag + ":ReceiveMessage->" + e.ToString());
+                        CloseSRThread();
+                        AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.ReceiveError, mNetTag + "-" + e.ToString()));
+                    }  
                 }
                 if (IsShowDebugLog)
                 {
