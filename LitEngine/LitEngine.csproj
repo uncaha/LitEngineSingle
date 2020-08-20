@@ -122,11 +122,8 @@
     <Compile Include="Script\SteamReaderAndWriter\AesStreamBase.cs" />
     <Compile Include="Script\SteamReaderAndWriter\AESWriter.cs" />
     <Compile Include="Script\STL\SafeList.cs" />
-    <Compile Include="Script\Task\DownLoadGroup.cs" />
     <Compile Include="Script\Tool\SpriteArray.cs" />
     <Compile Include="Script\UnZip\UnZipFile.cs" />
-    <Compile Include="Script\DownLoad\DownLoadObject.cs" />
-    <Compile Include="Script\Task\DownLoadTask.cs" />
     <Compile Include="Script\Core\GameCore.cs" />
     <Compile Include="Script\CodeTool\SystemType.cs" />
     <Compile Include="Script\Loader\Bundle\AssetsBundleHaveDependencie.cs" />
@@ -222,8 +219,15 @@
     <Compile Include="Script\UnZip\Zip\Zip\ZipOutputStream.cs" />
     <Compile Include="Script\Data\CustomData\DataObject.cs" />
     <Compile Include="Script\Data\DataUtil.cs" />
+    <Compile Include="Script\DownLoad\DownLoader.cs" />
+    <Compile Include="Script\DownLoad\DownLoadGroup.cs" />
+    <Compile Include="Script\DownLoad\DownLoadManager.cs" />
+    <Compile Include="Script\DownLoad\IDownLoad.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Script\DownLoad\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
