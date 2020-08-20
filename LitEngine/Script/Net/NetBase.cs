@@ -244,14 +244,13 @@ namespace LitEngine
                 }
                 catch (Exception err)
                 {
-                    DLog.LogError(mNetTag + "socket的关闭时出现异常:" + err);
+                   // DLog.LogError(mNetTag + "socket的关闭时出现异常:" + err);
                 }
             }
             virtual protected void CloseSocket()
             {
-                ClearQueue();
-                //需要注意释放顺序
                 mStartThread = false;
+                ClearBuffer();
                 KillSocket();
                 WaitThreadJoin(mSendThread);
                 WaitThreadJoin(mRecThread);
@@ -263,10 +262,6 @@ namespace LitEngine
                 try
                 {
                     CloseSocket();
-                    if (!mDisposed)
-                    {
-                        AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.DisConnected, mNetTag + "- 断开连接完成."));
-                    }
                     DLog.Log(mNetTag + ":socket is closed!");
                 }
                 catch (Exception err)
@@ -274,11 +269,21 @@ namespace LitEngine
                     DLog.LogError(mNetTag + ":Disconnect - " + err);
                 }
                 mState = TcpState.Closed;
-               
+
+                if (!mDisposed)
+                {
+                    AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.DisConnected, mNetTag + "- 断开连接完成."));
+                }
+
+            }
+
+            virtual public void ClearBuffer()
+            {
+                ClearQueue();
             }
             virtual public void DisConnect()
             {
-                if (IsCOrD() || mState == TcpState.Closed)
+                if (IsCOrD())
                     return;
                 CloseSocketStart();  
             }
