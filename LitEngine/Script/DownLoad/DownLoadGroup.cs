@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
+using System.Text;
 namespace LitEngine.DownLoad
 {
     public enum DownloadState
@@ -69,15 +70,17 @@ namespace LitEngine.DownLoad
         }
         #endregion
 
-        public void AddByUrl(string pSourceurl, string pDestination, string pFileName,string pMD5, long pLength, bool pClear)
+        public DownLoader AddByUrl(string pSourceurl, string pDestination, string pFileName,string pMD5, long pLength, bool pClear)
         {
             if (State != DownloadState.normal)
             {
                 Debug.LogError("已经开始的任务不可插入新内容.");
-                return;
+                return null;
             }
-            if (IsHaveURL(pSourceurl)) return;
-            Add(new DownLoader(pSourceurl, pDestination,pFileName, pMD5, pLength, pClear));
+            if (IsHaveURL(pSourceurl)) return null;
+            DownLoader ret = new DownLoader(pSourceurl, pDestination,pFileName, pMD5, pLength, pClear);
+            Add(ret);
+            return ret;
         }
 
         private void Add(DownLoader newObject)
@@ -132,6 +135,20 @@ namespace LitEngine.DownLoad
                 StartAsync();
         }
 
+        public Dictionary<string,string> GetNotCompletFileNameTable()
+        {
+            Dictionary<string,string> ret = new Dictionary<string,string>();
+            for (int i = groupList.Count - 1; i >= 0; i--)
+            {
+                if (!groupList[i].IsCompleteDownLoad)
+                {
+                    ret.Add(groupList[i].FileName,groupList[i].SourceURL);
+                }     
+            }
+
+            return ret;
+        }
+
 
         bool UpdateChild()
         {
@@ -162,18 +179,16 @@ namespace LitEngine.DownLoad
             if (IsDone) return;
             IsDone = true;
 
-            List<string> tcmpfiles = new List<string>();
-            string terror = "";
+            StringBuilder terrostr = new StringBuilder();
             for (int i = 0; i < groupList.Count; i++)
             {
                 if (groupList[i].Error != null)
                 {
-                    terror += groupList[i].Error + "|";
-                    tcmpfiles.Add(groupList[i].SourceURL);
+                    terrostr.AppendLine(groupList[i].Error);
                 }
             }
 
-            Error = terror;
+            Error = terrostr.ToString();
 
             var tfinished = onComplete;
 

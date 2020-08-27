@@ -14,7 +14,7 @@ namespace LitEngine.LoadAsset
     {
 
         #region 类属性
-        static public string sSuffixName = ".bytes";
+        public const string sSuffixName = ".bytes";
         protected string mAssetName = "";
         protected string mPathName = "";
         protected UnityEngine.Object mAssetsBundle;

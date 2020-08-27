@@ -54,7 +54,7 @@ namespace LitEngine.DownLoad
 
         #endregion
         #region 构造析构
-        public DownLoader(string pSourceurl, string pDestination,string pFileName,string pMD5,long pLength, bool pClear)
+        public DownLoader(string pSourceurl, string pDestination,string pFileName = null,string pMD5 = null,long pLength = 0, bool pClear = true)
         {
             Key = pSourceurl;
             SourceURL = pSourceurl;
@@ -162,35 +162,40 @@ namespace LitEngine.DownLoad
                 mReqest.Timeout = 20000;
 
                 if (SourceURL.Contains("https://"))
-                    ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(CheckValidationResult);
-
-                if (thaveindex > 0)
-                    mReqest.AddRange((int)thaveindex);
-
-                int tindex = 0;
-                while (tindex++ < 4 && mThreadRuning)
                 {
-                    try
-                    {
-                        mResponse = mReqest.GetResponse();
-                        break;
-                    }
-                    catch (System.Exception _error)
-                    {
-                        Debug.LogFormat("ReadNetByte 获取Response失败,尝试次数{0},error = {1}", tindex, _error);
-                    }
+                    ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(CheckValidationResult);
                 }
 
-                if (mResponse == null)
-                    throw new System.NullReferenceException("ReadNetByte 获取Response失败.");
+                if (thaveindex > 0)
+                {
+                    mReqest.AddRange((int)thaveindex);
+                }
+
+                string rspError = null;
+                try
+                {
+                    mResponse = mReqest.GetResponse();
+                }
+                catch (System.Exception _error)
+                {
+                    rspError = _error.Message;
+                }
+
+                if (mResponse == null || rspError != null)
+                {
+                    string terro = string.Format("ReadNetByte 获取Response失败.[Error] = {0}", rspError);
+                    throw new System.NullReferenceException(terro);
+                }
 
                 mHttpStream = mResponse.GetResponseStream();
                 ContentLength = mResponse.ContentLength;
                 InitContentLength = ContentLength;//重置为实际大小
 
                 if (ttempfile == null)
+                {
                     ttempfile = System.IO.File.Create(TempFile);
-
+                }
+                    
                 int tcount = 0;
                 int tlen = 1024;
                 byte[] tbuffer = new byte[tlen];
@@ -212,11 +217,13 @@ namespace LitEngine.DownLoad
             }
             catch (System.Exception _error)
             {
-                Error = _error.ToString();
+                Error = string.Format("[URL] = {0},[Error] = {1}", SourceURL, _error.Message);
             }
 
             if (ttempfile != null)
+            {
                 ttempfile.Close();
+            }
 
             try
             {
@@ -242,19 +249,25 @@ namespace LitEngine.DownLoad
                 else
                 {
                     if (Error == null)
-                        Error = "文件未能完成下载.Stream 被中断.";
+                    {
+                        Error = string.Format("[URL] = {0},[Error] = 文件未能完成下载.Stream 被中断.", SourceURL);
+                    }
+                        
                 }
             }
             catch (System.Exception erro)
             {
-                Error = erro.ToString();
+                Error = string.Format("[URL] = {0},[Error] = {1}", SourceURL, erro.Message);
             }
 
+            FinishedThread();  
+        }
 
+        private void FinishedThread()
+        {
             CloseHttpClient();
             mThreadRuning = false;
             State = DownloadState.finished;
-            
         }
         private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
         {

@@ -8,7 +8,8 @@ namespace LitEngine
 {
     public class LoaderManager : MonoManagerBase
     {
-        static public string ManifestName = "AppManifest";
+        public const string ManifestName = "AppManifest";
+        public const string byteFileInfoFileName = "bytefileinfo.txt";
         private static bool IsDispose = false;
         private static object lockobj = new object();
         private static LoaderManager sInstance = null;
@@ -40,6 +41,10 @@ namespace LitEngine
         private LoadTaskVector mBundleTaskList = null;
         private WaitingList mWaitLoadBundleList = null;
         public AssetBundleManifest Manifest { get; private set; }
+
+        public ByteFileInfoList _ByteInfoData;
+        public static ByteFileInfoList ByteInfoData { get { return Instance._ByteInfoData; } }
+
         private bool mInited = false;
         private bool isDisposed = false;
         #endregion
@@ -61,22 +66,54 @@ namespace LitEngine
         #endregion
 
         #region 初始化,销毁,设置
+        static public void ReLoadResInfo()
+        {
+            if(sInstance != null)
+            {
+                sInstance.LoadResInfo();
+            }
+        }
         private void Init()
         {
             if (mInited) return;
             mInited = true;
+
+            mWaitLoadBundleList = new WaitingList();
+            mBundleList = new BundleVector();
+            mBundleTaskList = new LoadTaskVector();
+
+            LoadResInfo();
+        }
+
+        private void LoadResInfo()
+        {
+            LoadMainfest();
+            LoadByteFileInfoList();
+        }
+
+        private void LoadMainfest()
+        {
             AssetBundle tbundle = AssetBundle.LoadFromFile(GetFullPath(ManifestName));
             if (tbundle != null)
             {
                 Manifest = tbundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
                 tbundle.Unload(false);
             }
-            else
-                DLog.LogErrorFormat("未能加载App资源列表 filename = {0}", ManifestName);
+        }
 
-            mWaitLoadBundleList = new WaitingList();
-            mBundleList = new BundleVector();
-            mBundleTaskList = new LoadTaskVector();
+        public void LoadByteFileInfoList()
+        {
+            _ByteInfoData = new ByteFileInfoList();
+            AssetBundle tinfobundle = AssetBundle.LoadFromFile(GetFullPath(byteFileInfoFileName));
+            if (tinfobundle != null)
+            {
+                TextAsset tass = tinfobundle.LoadAsset<TextAsset>(byteFileInfoFileName);
+                if (tass != null)
+                {
+                    _ByteInfoData.Load(tass.bytes);
+                }
+                tinfobundle.Unload(false);
+            }
         }
         #region 释放
         override public void DestroyManager()

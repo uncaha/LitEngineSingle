@@ -222,11 +222,15 @@
     <Compile Include="Script\DownLoad\DownLoadManager.cs" />
     <Compile Include="Script\DownLoad\IDownLoad.cs" />
     <Compile Include="Script\Loader\LoaderManager.cs" />
+    <Compile Include="Script\DownLoad\Update\UpdateData.cs" />
+    <Compile Include="Script\DownLoad\Update\UpdateManager.cs" />
+    <Compile Include="Script\Loader\ByteFileInfoList.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />
   <ItemGroup>
     <Folder Include="Script\DownLoad\" />
+    <Folder Include="Script\DownLoad\Update\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
