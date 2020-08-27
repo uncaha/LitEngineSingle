@@ -6,7 +6,6 @@ namespace LitEngine
     using UpdateSpace;
     using DownLoad;
     using UnZip;
-    using Loader;
     public class PublicUpdateManager : MonoManagerBase
     {
         private UpdateObjectVector mUpdateList = new UpdateObjectVector(UpdateType.Update);

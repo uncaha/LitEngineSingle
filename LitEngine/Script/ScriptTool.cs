@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace LitEngine
 {
-    using Loader;
+
     public class OutObject<T, M>
     {
         public T mObject;

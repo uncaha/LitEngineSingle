@@ -3,10 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine.SceneManagement;
+using LitEngine.LoadAsset;
 namespace LitEngine
 {
-    using UpdateSpace;
-    using Loader;
     public class LoaderManager : MonoManagerBase
     {
         static public string ManifestName = "AppManifest";
@@ -283,10 +282,6 @@ namespace LitEngine
             Instance.LoadAssetAsyncRetain(_key, _AssetsName.ToLowerInvariant(), _callback, true);
         }
 
-        static public BaseBundle WWWLoadAsync(string _key, string _FullName, System.Action<string, object> _callback)
-        {
-            return Instance.WWWLoad(_key, _FullName.ToLowerInvariant(), _callback);
-        }
         #endregion
 
 
@@ -357,38 +352,7 @@ namespace LitEngine
             return mBundleList[_AssetsName];
         }
         #endregion
-        #region WWW载入
-        protected BaseBundle WWWLoad(string _key, string _FullName, System.Action<string, object> _callback)
-        {
-            if (_callback == null)
-            {
-                DLog.LogError("assetsbundle -- CallBack Fun can not be null");
-                return null;
-            }
 
-            if (mBundleList.Contains(_FullName))
-            {
-                if (mBundleList[_FullName].Loaded)
-                {
-                    if (mBundleList[_FullName].Asset == null)
-                        DLog.LogError("WWWLoad-erro in vector。文件载入失败,请检查文件名:" + _FullName);
-                    mBundleList[_FullName].Retain();
-                    _callback(_key, mBundleList[_FullName].Asset);
-                }
-                else
-                {
-                    CreatTaskAndStart(_key, mBundleList[_FullName], _callback, true);
-                    ActiveLoader(true);
-                }
-
-            }
-            else
-            {
-                LoadBundleAsync(new WWWBundle(_FullName), _key, _callback, true);
-            }
-            return mBundleList[_FullName];
-        }
-        #endregion
         #endregion
 
         #region 文本读取

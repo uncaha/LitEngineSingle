@@ -154,9 +154,7 @@
     <Compile Include="Script\Loader\Bundle\AssetsBundleFromFile.cs" />
     <Compile Include="Script\Loader\Bundle\BaseBundle.cs" />
     <Compile Include="Script\Loader\Bundle\BundleVector.cs" />
-    <Compile Include="Script\Loader\Bundle\WWWBundle.cs" />
     <Compile Include="Script\Loader\LoadderCreat.cs" />
-    <Compile Include="Script\Managers\LoaderManager.cs" />
     <Compile Include="Script\Loader\LoadTask.cs" />
     <Compile Include="Script\Net\HttpNet.cs" />
     <Compile Include="Script\Net\NetBase.cs" />
@@ -223,6 +221,7 @@
     <Compile Include="Script\DownLoad\DownLoadGroup.cs" />
     <Compile Include="Script\DownLoad\DownLoadManager.cs" />
     <Compile Include="Script\DownLoad\IDownLoad.cs" />
+    <Compile Include="Script\Loader\LoaderManager.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />

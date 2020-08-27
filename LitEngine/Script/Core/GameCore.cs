@@ -4,7 +4,6 @@ using UnityEngine.SceneManagement;
 using LitEngine.CodeTool;
 namespace LitEngine
 {
-    using Loader;
     using IO;
     public sealed class GameCore
     {
