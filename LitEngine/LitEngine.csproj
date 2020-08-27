@@ -128,8 +128,6 @@
     <Compile Include="Script\CodeTool\SystemType.cs" />
     <Compile Include="Script\Loader\Bundle\AssetsBundleHaveDependencie.cs" />
     <Compile Include="Script\Loader\Bundle\AssetsBundleHaveDependencieAsync.cs" />
-    <Compile Include="Script\Loader\LoadTaskVector.cs" />
-    <Compile Include="Script\Loader\WaitingList.cs" />
     <Compile Include="Script\Managers\MonoManagerBase.cs" />
     <Compile Include="Script\Managers\UpdateManager\UpdateObjectVector.cs" />
     <Compile Include="Script\Net\NetData\BufferBase.cs" />
@@ -154,8 +152,6 @@
     <Compile Include="Script\Loader\Bundle\AssetsBundleFromFile.cs" />
     <Compile Include="Script\Loader\Bundle\BaseBundle.cs" />
     <Compile Include="Script\Loader\Bundle\BundleVector.cs" />
-    <Compile Include="Script\Loader\LoadderCreat.cs" />
-    <Compile Include="Script\Loader\LoadTask.cs" />
     <Compile Include="Script\Net\HttpNet.cs" />
     <Compile Include="Script\Net\NetBase.cs" />
     <Compile Include="Script\Net\NetData\ReceiveData.cs" />
@@ -225,12 +221,18 @@
     <Compile Include="Script\DownLoad\Update\UpdateData.cs" />
     <Compile Include="Script\DownLoad\Update\UpdateManager.cs" />
     <Compile Include="Script\Loader\ByteFileInfoList.cs" />
+    <Compile Include="Script\Loader\AssetMap.cs" />
+    <Compile Include="Script\Loader\LoadTool\LoadderCreat.cs" />
+    <Compile Include="Script\Loader\LoadTool\LoadTask.cs" />
+    <Compile Include="Script\Loader\LoadTool\LoadTaskVector.cs" />
+    <Compile Include="Script\Loader\LoadTool\WaitingList.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />
   <ItemGroup>
     <Folder Include="Script\DownLoad\" />
     <Folder Include="Script\DownLoad\Update\" />
+    <Folder Include="Script\Loader\LoadTool\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
