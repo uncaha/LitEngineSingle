@@ -25,6 +25,7 @@ namespace LitEngine.DownLoad
         public string CompleteFile { get; private set; }//下载结束文件 FullPath
         public string FileName { get; private set; }//文件名
         public string Error { get; private set; }//error message
+        public int priority = 1;
         public float Progress
         {
             get

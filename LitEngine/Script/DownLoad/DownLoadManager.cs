@@ -4,6 +4,13 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace LitEngine.DownLoad
 {
+    public class SortDownLoader : System.Collections.IComparer
+    {
+        public int Compare(object x, object y)
+        {
+            return -((DownLoader)x).priority.CompareTo(((DownLoader)y).priority);
+        }
+    }
     public class DownLoadManager : MonoBehaviour
     {
 
@@ -31,6 +38,7 @@ namespace LitEngine.DownLoad
             }
         }
         public const int MaxThread = 3;
+        private static bool isNeedSort = false;
 
         private Hashtable sDownLoadMap = Hashtable.Synchronized(new Hashtable());
         private ArrayList sDownLoading = ArrayList.Synchronized(new ArrayList());
@@ -118,7 +126,20 @@ namespace LitEngine.DownLoad
             {
                 Instance.sDownLoadMap.Add(pDownLoader.Key, pDownLoader);
                 Instance.sWaitDownLoad.Add(pDownLoader);
+                isNeedSort = true;
             }
+        }
+
+        public static void SortWaitQue()
+        {
+            if(!isNeedSort) return;
+            Instance.sWaitDownLoad.Sort(new SortDownLoader());
+            isNeedSort = false;
+        }
+
+        public static int Compare(DownLoader a, DownLoader b) 
+        {
+            return a.priority.CompareTo(b.priority);
         }
         
 
@@ -145,7 +166,6 @@ namespace LitEngine.DownLoad
                 }
             }
         }
-
 
         private void Update()
         {
@@ -177,6 +197,7 @@ namespace LitEngine.DownLoad
         {
             if (sWaitDownLoad.Count > 0 && sDownLoading.Count < MaxThread)
             {
+                SortWaitQue();
                 int tneed = MaxThread - sDownLoading.Count;
                 for (int i = 0; i < tneed; i++)
                 {
