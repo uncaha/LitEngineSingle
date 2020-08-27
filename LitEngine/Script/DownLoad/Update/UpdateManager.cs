@@ -5,13 +5,14 @@ using LitEngine.LoadAsset;
 using LitEngine.DownLoad;
 using System.IO;
 using System.Collections.Generic;
+using System.Text;
 namespace LitEngine.UpdateTool
 {
     public class UpdateManager : MonoBehaviour
     {
         public const string checkfile = "checkInfoData.txt";
         public const string downloadedfile = "downloadedData.txt";
-        public const string upateMgrData = "jsonData/updateData";
+        public const string upateMgrData = "updateData";
         private static object lockobj = new object();
         private static UpdateManager sInstance = null;
         private static UpdateManager Instance
@@ -53,6 +54,19 @@ namespace LitEngine.UpdateTool
             if (datatxt != null)
             {
                 UnityEngine.JsonUtility.FromJsonOverwrite(datatxt.text, updateData);
+            }
+            else
+            {
+                StringBuilder tstrbd = new StringBuilder();
+                tstrbd.AppendLine(string.Format("加载版本文件失败.请检查Resources目录下是否有 {0}.txt 文件", upateMgrData));
+                tstrbd.AppendLine("格式如下:");
+                tstrbd.AppendLine("{");
+                tstrbd.AppendLine("\"version\":\"1\",");
+                tstrbd.AppendLine("\"server\":\"http://localhost/Resources/\"");
+                tstrbd.AppendLine("}");
+
+                DLog.LogError(tstrbd.ToString());
+                
             }
         }
 
