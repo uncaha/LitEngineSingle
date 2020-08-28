@@ -282,7 +282,7 @@ namespace LitEngine.UpdateTool
             string tcheckfile = GetCheckFileName();
             string tfilePath = Path.Combine(GameCore.PersistentResDataPath, tcheckfile);
             
-            if (useCache && !File.Exists(tfilePath))
+            if (!useCache || !File.Exists(tfilePath))
             {
                 checkLoader = DownLoadManager.DownLoadFileAsync(tuf, GameCore.PersistentResDataPath, tcheckfile, null, 0, null);
                 while (!checkLoader.IsDone)
