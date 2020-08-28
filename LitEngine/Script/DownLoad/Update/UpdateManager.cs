@@ -257,7 +257,7 @@ namespace LitEngine.UpdateTool
             checkLoader = null;
         }
 
-        static public void CheckUpdate(System.Action<ByteFileInfoList> onComplete, bool needRetry = false)
+        static public void CheckUpdate(System.Action<ByteFileInfoList> onComplete, bool useCache , bool needRetry = false)
         {
             if (isChecking || isUpdateing)
             {
@@ -265,22 +265,22 @@ namespace LitEngine.UpdateTool
                 return;
             }
             isChecking = true;
-            Instance.StartCoroutine(sInstance.WaitStartCheck(0.1f, onComplete, needRetry));
+            Instance.StartCoroutine(sInstance.WaitStartCheck(0.1f, onComplete, useCache, needRetry));
         }
 
-        IEnumerator WaitStartCheck(float delayTime, System.Action<ByteFileInfoList> onComplete, bool needRetry)
+        IEnumerator WaitStartCheck(float delayTime, System.Action<ByteFileInfoList> onComplete, bool useCache, bool needRetry = false)
         {
             yield return new WaitForSeconds(delayTime);
-            Instance.StartCoroutine(sInstance.CheckingUpdate(onComplete, needRetry));
+            Instance.StartCoroutine(sInstance.CheckingUpdate(onComplete, useCache,needRetry));
         }
 
-        IEnumerator CheckingUpdate(System.Action<ByteFileInfoList> onComplete, bool needRetry)
+        IEnumerator CheckingUpdate(System.Action<ByteFileInfoList> onComplete, bool useCache, bool needRetry = false)
         {
             string tdicpath = string.Format("{0}/{1}/", updateData.server, updateData.version);
             string tuf = tdicpath + LoaderManager.byteFileInfoFileName;
             string tcheckfile = GetCheckFileName();
             string tfilePath = Path.Combine(GameCore.PersistentResDataPath, tcheckfile);
-            if (!File.Exists(tfilePath))
+            if (useCache && !File.Exists(tfilePath))
             {
                 ReleaseCheckLoader();
                 checkLoader = DownLoadManager.DownLoadFileAsync(tuf, GameCore.PersistentResDataPath, tcheckfile, null, 0, null);
