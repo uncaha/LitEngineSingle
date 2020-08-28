@@ -10,6 +10,7 @@ namespace LitEngine.LoadAsset
         public string resName = "";
         public string fileMD5 = "";
         public long fileSize = 0;
+        public int priority = 1;
     }
     public class ByteFileInfoList
     {

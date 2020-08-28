@@ -156,6 +156,7 @@ namespace LitEngine.UpdateTool
             {
                 string turl = tdicpath + item.resName;
                 var tloader = downLoadGroup.AddByUrl(turl, GameCore.PersistentResDataPath, item.resName, item.fileMD5, item.fileSize, false);
+                tloader.priority = item.priority;
                 tloader.OnComplete += (a) =>
                 {
                     if (string.IsNullOrEmpty(a.Error))
