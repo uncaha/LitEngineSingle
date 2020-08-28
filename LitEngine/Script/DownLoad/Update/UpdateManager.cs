@@ -76,14 +76,18 @@ namespace LitEngine.UpdateTool
         }
         private void OnDisable()
         {
+            Stop();
+        }
+
+        private void Stop()
+        {
+            StopAllCoroutines();
             ReTryCount = 0;
             ReTryCheckCount = 0;
             isUpdateing = false;
             isChecking = false;
-            if (downLoadGroup != null)
-            {
-                downLoadGroup.Dispose();
-            }
+            ReleaseGroupLoader();
+            ReleaseCheckLoader();
         }
 
         #region prop
@@ -109,9 +113,22 @@ namespace LitEngine.UpdateTool
         static int ReTryCount = 0;
         static int ReTryCheckCount = 0;
         DownLoadGroup downLoadGroup;
+        DownLoader checkLoader;
         #endregion
 
         #region update
+        static public void StopAll()
+        {
+            Instance.Stop();
+        }
+
+        void ReleaseGroupLoader()
+        {
+            if (downLoadGroup == null) return;
+            downLoadGroup.Dispose();
+            downLoadGroup = null;
+        }
+
         static public void UpdateRes(ByteFileInfoList pInfo, System.Action<ByteFileInfoList, string> onComplete, bool autoRetry = false)
         {
             if (isUpdateing)
@@ -131,11 +148,8 @@ namespace LitEngine.UpdateTool
 
         IEnumerator FileUpdateing(ByteFileInfoList pInfo, System.Action<ByteFileInfoList, string> onComplete, bool autoRetry)
         {
-            if (downLoadGroup != null)
-            {
-                downLoadGroup.Dispose();
-            }
             string tdicpath = string.Format("{0}/{1}/", updateData.server, updateData.version);
+            ReleaseGroupLoader();
             downLoadGroup = new DownLoadGroup("updateGroup");
             foreach (var item in pInfo.fileInfoList)
             {
@@ -236,6 +250,12 @@ namespace LitEngine.UpdateTool
         #endregion
 
         #region check
+        void ReleaseCheckLoader()
+        {
+            if (checkLoader == null) return;
+            checkLoader.Dispose();
+            checkLoader = null;
+        }
 
         static public void CheckUpdate(System.Action<ByteFileInfoList> onComplete, bool needRetry = false)
         {
@@ -262,12 +282,13 @@ namespace LitEngine.UpdateTool
             string tfilePath = Path.Combine(GameCore.PersistentResDataPath, tcheckfile);
             if (!File.Exists(tfilePath))
             {
-                DownLoader tdl = DownLoadManager.DownLoadFileAsync(tuf, GameCore.PersistentResDataPath, tcheckfile, null, 0, null);
-                while (!tdl.IsDone)
+                ReleaseCheckLoader();
+                checkLoader = DownLoadManager.DownLoadFileAsync(tuf, GameCore.PersistentResDataPath, tcheckfile, null, 0, null);
+                while (!checkLoader.IsDone)
                 {
                     yield return null;
                 }
-                DownLoadCheckFileEnd(tdl, onComplete, needRetry);
+                DownLoadCheckFileEnd(checkLoader, onComplete, needRetry);
             }
             else
             {
