@@ -226,6 +226,7 @@
     <Compile Include="Script\Loader\LoadTool\LoadTask.cs" />
     <Compile Include="Script\Loader\LoadTool\LoadTaskVector.cs" />
     <Compile Include="Script\Loader\LoadTool\WaitingList.cs" />
+    <Compile Include="Script\DownLoad\Update\UpdateAssetManager.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />
