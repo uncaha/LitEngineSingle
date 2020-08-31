@@ -149,12 +149,11 @@ namespace LitEngine.UpdateTool
 
         IEnumerator FileUpdateing(ByteFileInfoList pInfo, UpdateComplete onComplete, bool autoRetry)
         {
-            string tdicpath = string.Format("{0}/{1}/", updateData.server, updateData.version);
             ReleaseGroupLoader();
             downLoadGroup = new DownLoadGroup("updateGroup");
             foreach (var item in pInfo.fileInfoList)
             {
-                string turl = tdicpath + item.resName;
+                string turl = GetServerUrl(item.resName);
                 var tloader = downLoadGroup.AddByUrl(turl, GameCore.PersistentResDataPath, item.resName, item.fileMD5, item.fileSize, false);
                 tloader.priority = item.priority;
                 tloader.OnComplete += (a) =>
@@ -278,8 +277,7 @@ namespace LitEngine.UpdateTool
         {
             ReleaseCheckLoader();
 
-            string tdicpath = string.Format("{0}/{1}/", updateData.server, updateData.version);
-            string tuf = tdicpath + LoaderManager.byteFileInfoFileName;
+            string tuf = GetServerUrl(LoaderManager.byteFileInfoFileName + BaseBundle.sSuffixName);
             string tcheckfile = GetCheckFileName();
             string tfilePath = Path.Combine(GameCore.PersistentResDataPath, tcheckfile);
             
@@ -433,5 +431,20 @@ namespace LitEngine.UpdateTool
             }
         }
         #endregion
+        public string GetServerUrl(string pFile)
+        {
+            switch(Application.platform)
+            {
+                case RuntimePlatform.IPhonePlayer:
+                case RuntimePlatform.tvOS:
+                case RuntimePlatform.OSXPlayer:
+                case RuntimePlatform.OSXEditor:
+                    return string.Format("{0}/{1}/{2}/{3}", updateData.server,"ios", updateData.version,pFile);
+                case RuntimePlatform.Android:
+                    return string.Format("{0}/{1}/{2}/{3}", updateData.server, "android", updateData.version,pFile);
+                default:
+                    return string.Format("{0}/{1}/{2}/{3}", updateData.server, Application.platform.ToString().ToLowerInvariant(), updateData.version, pFile);
+            }
+        }
     }
 }
