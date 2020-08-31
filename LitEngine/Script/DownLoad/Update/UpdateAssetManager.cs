@@ -49,6 +49,24 @@ public class UpdateAssetManager
     public UpdateType updateType { get; private set; }
     public ByteFileInfoList updateList { get; private set; }
 
+    public float CheckProcess
+    {
+        get
+        {
+            if (UpdateManager.checkDL == null) return 1;
+            return UpdateManager.checkDL.Progress;
+        }
+    }
+
+    public float UpdateProcess
+    {
+        get
+        {
+            if (UpdateManager.updateGroup == null) return 1;
+            return UpdateManager.updateGroup.Progress;
+        }
+    }
+
     #endregion
     private UpdateAssetManager()
     {

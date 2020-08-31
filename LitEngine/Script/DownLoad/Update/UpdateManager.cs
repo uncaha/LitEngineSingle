@@ -98,6 +98,13 @@ namespace LitEngine.UpdateTool
                 return Instance.downLoadGroup;
             }
         }
+        static public DownLoader checkDL
+        {
+            get
+            {
+                return Instance.checkLoader;
+            }
+        }
         static public bool IsRuningUpdate
         {
             get
