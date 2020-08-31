@@ -137,6 +137,7 @@ public class UpdateAssetManager
         if(error == null)
         {
             updateType = UpdateType.finished;
+            checkType = CheckType.AllGood;
             updateList = null;
         }
         else
