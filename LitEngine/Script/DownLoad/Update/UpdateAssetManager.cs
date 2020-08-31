@@ -145,7 +145,7 @@ public class UpdateAssetManager
     void CaseFail()
     {
         checkType = CheckType.checking;
-        UpdateManager.CheckUpdate(OnCheckComplete, false, false);
+        UpdateManager.CheckUpdate(OnCheckComplete, false, true);
     }
     void CaseNeedUpdate()
     {
