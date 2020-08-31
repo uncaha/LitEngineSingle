@@ -67,6 +67,23 @@ public class UpdateAssetManager
         }
     }
 
+    public long DownLoadLength
+    {
+        get
+        {
+            if (UpdateManager.updateGroup == null) return 0;
+            return UpdateManager.updateGroup.DownLoadedLength;
+        }
+    }
+    public long ContentLength
+    {
+        get
+        {
+            if (UpdateManager.updateGroup == null) return 0;
+            return UpdateManager.updateGroup.ContentLength;
+        }
+    }
+
     #endregion
     private UpdateAssetManager()
     {
