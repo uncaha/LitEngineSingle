@@ -111,7 +111,7 @@ public class UpdateCheckTool : MonoBehaviour
                 Debug.Log(UpdateAssetManager.Ins.DownLoadLength + "/" + UpdateAssetManager.Ins.ContentLength + "|" + UpdateAssetManager.Ins.UpdateProcess);
                 yield return null;
             }
-
+            Debug.Log(UpdateAssetManager.Ins.updateType);
             switch (UpdateAssetManager.Ins.updateType)
             {
                 case UpdateAssetManager.UpdateType.fail:
