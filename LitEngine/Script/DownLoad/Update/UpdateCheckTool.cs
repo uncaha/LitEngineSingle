@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-
+using LitEngine.UpdateTool;
 public class UpdateCheckTool : MonoBehaviour
 {
     public delegate void UpdateAction();
@@ -54,11 +54,11 @@ public class UpdateCheckTool : MonoBehaviour
         }
         else
         {
-            if(UpdateAssetManager.Ins.checkType != UpdateAssetManager.CheckType.checking)
+            if (UpdateAssetManager.Ins.checkType != UpdateAssetManager.CheckType.checking)
             {
                 UpdateAssetManager.Ins.CheckUpdate();
             }
-            
+
             while (UpdateAssetManager.Ins.checkType == UpdateAssetManager.CheckType.checking)
             {
                 yield return null;
@@ -102,11 +102,11 @@ public class UpdateCheckTool : MonoBehaviour
         else
         {
             Debug.Log(UpdateAssetManager.Ins.updateType);
-            if(UpdateAssetManager.Ins.updateType != UpdateAssetManager.UpdateType.updateing)
+            if (UpdateAssetManager.Ins.updateType != UpdateAssetManager.UpdateType.updateing)
             {
                 UpdateAssetManager.Ins.UpdateAssets();
             }
-            
+
             Debug.Log(UpdateAssetManager.Ins.updateType);
             while (UpdateAssetManager.Ins.updateType == UpdateAssetManager.UpdateType.updateing)
             {
