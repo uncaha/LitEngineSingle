@@ -29,28 +29,29 @@ public class UpdateCheckTool : MonoBehaviour
     }
 
     #region 更新
-    static public bool CheckUpdate(UpdateAction onComplete)
+    /// <summary>
+    /// 更新检测示例
+    /// </summary>
+    /// <returns></returns>
+    static public bool CheckUpdate()
     {
         if (UpdateAssetManager.Ins.checkType == UpdateAssetManager.CheckType.AllGood)
         {
-            onComplete?.Invoke();
             return false;
         }
         else
         {
-            Ins.StartCoroutine(Ins.Check(onComplete));
+            Ins.StartCoroutine(Ins.Check());
             return true;
         }
-
     }
-    IEnumerator Check(UpdateAction onComplete)
+    IEnumerator Check()
     {
         yield return null;
         Debug.Log(UpdateAssetManager.Ins.checkType);
         if (UpdateAssetManager.Ins.checkType == UpdateAssetManager.CheckType.AllGood)
         {
             //不需要更新
-            onComplete?.Invoke();
         }
         else
         {
@@ -68,19 +69,17 @@ public class UpdateCheckTool : MonoBehaviour
             {
                 case UpdateAssetManager.CheckType.needUpdate:
                     {
-                        StartCoroutine(UpdateAsset(onComplete));
+                        StartCoroutine(UpdateAsset());
                     }
                     break;
                 case UpdateAssetManager.CheckType.fail:
                     {
                         //检测失败
-                        onComplete?.Invoke();
                     }
                     break;
                 case UpdateAssetManager.CheckType.AllGood:
                     {
                         //无需更新
-                        onComplete?.Invoke();
                     }
                     break;
                 default:
@@ -91,13 +90,12 @@ public class UpdateCheckTool : MonoBehaviour
 
     }
 
-    IEnumerator UpdateAsset(UpdateAction onComplete)
+    IEnumerator UpdateAsset()
     {
         yield return null;
         if (UpdateAssetManager.Ins.checkType != UpdateAssetManager.CheckType.needUpdate)
         {
             //不需要更新
-            onComplete?.Invoke();
         }
         else
         {
@@ -119,13 +117,11 @@ public class UpdateCheckTool : MonoBehaviour
                 case UpdateAssetManager.UpdateType.fail:
                     {
                         //更新失败
-                        onComplete?.Invoke();
                     }
                     break;
                 case UpdateAssetManager.UpdateType.finished:
                     {
                         //更新完成
-                        onComplete?.Invoke();
                     }
                     break;
                 default:
