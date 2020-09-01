@@ -65,9 +65,9 @@ namespace LitEngine.LoadAsset
             {
                 Init();
             }
-
+            string pkey = pAsset.ToLowerInvariant();
             AssetObject ret;
-            if (!assetMap.TryGetValue(pAsset, out ret))
+            if (!assetMap.TryGetValue(pkey, out ret))
             {
                 ret = sNullObject;
                 ret.assetName = pAsset;
