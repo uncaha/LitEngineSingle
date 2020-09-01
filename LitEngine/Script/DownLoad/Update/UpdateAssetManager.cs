@@ -149,6 +149,12 @@ namespace LitEngine.UpdateTool
         }
         #endregion
         #region check
+        public bool IsNeedUpdate()
+        {
+            bool needCheck = checkType != CheckType.AllGood;
+            bool needUpdate = updateType != UpdateType.finished;
+            return needCheck || needUpdate;
+        }
         public void CheckUpdate()
         {
             if (checkType == CheckType.checking) return;
