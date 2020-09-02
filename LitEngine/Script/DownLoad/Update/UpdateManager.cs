@@ -91,6 +91,9 @@ namespace LitEngine.UpdateTool
         }
 
         #region prop
+        static public float DownloadProcess { get; private set; }
+        static public long DownLoadLength { get; private set; }
+        static public long ContentLength { get; private set; }
         static public DownLoadGroup updateGroup
         {
             get
@@ -172,9 +175,10 @@ namespace LitEngine.UpdateTool
                 };
             }
             downLoadGroup.StartAsync();
-
+            UpdateProcess();
             while (!downLoadGroup.IsDone)
             {
+                UpdateProcess();
                 yield return null;
             }
 
@@ -187,6 +191,14 @@ namespace LitEngine.UpdateTool
                 UpdateFileFail(pInfo, onComplete, autoRetry);
             }
 
+        }
+
+        void UpdateProcess()
+        {
+            if (downLoadGroup == null) return;
+            DownloadProcess = downLoadGroup.Progress;
+            ContentLength = downLoadGroup.ContentLength;
+            DownLoadLength = downLoadGroup.DownLoadedLength;
         }
 
         void UpdateFileFinished(UpdateComplete onComplete)

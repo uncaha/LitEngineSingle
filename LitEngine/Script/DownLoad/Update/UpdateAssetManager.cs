@@ -62,36 +62,27 @@ namespace LitEngine.UpdateTool
             }
         }
 
-        private float _UpdateProcess = 0;
         public float UpdateProcess
         {
             get
             {
-                if (UpdateManager.updateGroup == null) return _UpdateProcess;
-                _UpdateProcess = UpdateManager.updateGroup.Progress;
-                return _UpdateProcess;
+                return UpdateManager.DownloadProcess;
             }
         }
 
-        private long _DownLoadLength = 0;
         public long DownLoadLength
         {
             get
             {
-                if (UpdateManager.updateGroup == null) return _DownLoadLength;
-                _DownLoadLength = UpdateManager.updateGroup.DownLoadedLength;
-                return _DownLoadLength;
+                return UpdateManager.DownLoadLength;
             }
         }
 
-        private long _ContentLength = 0;
         public long ContentLength
         {
             get
             {
-                if (UpdateManager.updateGroup == null) return _ContentLength;
-                _ContentLength = UpdateManager.updateGroup.ContentLength;
-                return _ContentLength;
+                return UpdateManager.ContentLength;
             }
         }
         #endregion
