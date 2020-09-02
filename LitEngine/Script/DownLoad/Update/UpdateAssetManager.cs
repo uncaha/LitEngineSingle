@@ -51,38 +51,47 @@ namespace LitEngine.UpdateTool
         public UpdateType updateType { get; private set; }
         public ByteFileInfoList updateList { get; private set; }
 
+        private float _CheckProcess = 0;
         public float CheckProcess
         {
             get
             {
-                if (UpdateManager.checkDL == null) return 1;
-                return UpdateManager.checkDL.Progress;
+                if (UpdateManager.checkDL == null) return _CheckProcess;
+                _CheckProcess = UpdateManager.checkDL.Progress;
+                return _CheckProcess;
             }
         }
 
+        private float _UpdateProcess = 0;
         public float UpdateProcess
         {
             get
             {
-                if (UpdateManager.updateGroup == null) return 1;
-                return UpdateManager.updateGroup.Progress;
+                if (UpdateManager.updateGroup == null) return _UpdateProcess;
+                _UpdateProcess = UpdateManager.updateGroup.Progress;
+                return _UpdateProcess;
             }
         }
 
+        private long _DownLoadLength = 0;
         public long DownLoadLength
         {
             get
             {
-                if (UpdateManager.updateGroup == null) return 0;
-                return UpdateManager.updateGroup.DownLoadedLength;
+                if (UpdateManager.updateGroup == null) return _DownLoadLength;
+                _DownLoadLength = UpdateManager.updateGroup.DownLoadedLength;
+                return _DownLoadLength;
             }
         }
+
+        private long _ContentLength = 0;
         public long ContentLength
         {
             get
             {
-                if (UpdateManager.updateGroup == null) return 0;
-                return UpdateManager.updateGroup.ContentLength;
+                if (UpdateManager.updateGroup == null) return _ContentLength;
+                _ContentLength = UpdateManager.updateGroup.ContentLength;
+                return _ContentLength;
             }
         }
         #endregion
