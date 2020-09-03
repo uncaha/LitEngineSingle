@@ -48,6 +48,7 @@ namespace LitEngine.UpdateTool
         #endregion
 
         #region prop
+        public bool AutoUpdate { get; set; }
         public CheckType checkType { get; private set; }
         public UpdateType updateType { get; private set; }
         public ByteFileInfoList updateList { get; private set; }
@@ -91,6 +92,7 @@ namespace LitEngine.UpdateTool
         {
             checkType = CheckType.none;
             updateType = UpdateType.none;
+            AutoUpdate = true;
         }
 
         public void Pause()
@@ -120,6 +122,7 @@ namespace LitEngine.UpdateTool
             switch (updateType)
             {
                 case UpdateType.none:
+                case UpdateType.pause:
                 case UpdateType.fail:
                     CaseUpdateFail();
                     break;
