@@ -129,9 +129,9 @@ namespace LitEngine.UpdateTool
             Instance.Stop();
         }
 
-        static public void ReStart()
+        static public bool ReStart()
         {
-            Instance.ReTryGroupDownload();
+           return Instance.ReTryGroupDownload();
         }
 
         private void Stop()
@@ -157,17 +157,19 @@ namespace LitEngine.UpdateTool
             downLoadGroup.Stop();
         }
 
-        void ReTryGroupDownload()
+        bool ReTryGroupDownload()
         {
             if (isUpdateing)
             {
                 Debug.LogError("更新中,请勿重复调用.");
-                return;
+                return false;
             }
-            if (downLoadGroup == null || downLoadGroup.IsCompleteDownLoad) return;
+            if (downLoadGroup == null || downLoadGroup.IsCompleteDownLoad) return false;
             isUpdateing = true;
             downLoadGroup.ReTryAsync();
             StartCoroutine(WaitUpdateDone());
+
+            return true;
         }
 
         static public void UpdateRes(ByteFileInfoList pInfo, UpdateComplete onComplete, bool autoRetry)
