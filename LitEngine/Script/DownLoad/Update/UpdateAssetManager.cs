@@ -18,6 +18,7 @@ namespace LitEngine.UpdateTool
         {
             none = 0,
             updateing,
+            pause,
             fail,
             finished,
         }
@@ -90,6 +91,27 @@ namespace LitEngine.UpdateTool
         {
             checkType = CheckType.none;
             updateType = UpdateType.none;
+        }
+
+        public void Pause()
+        {
+            if (checkType != CheckType.needUpdate) return;
+            updateType = UpdateType.pause;
+            UpdateManager.StopAll();
+        }
+        public bool Resume()
+        {
+            if (checkType != CheckType.needUpdate) return false;
+            bool istart = UpdateManager.ReStart();
+            if (istart)
+            {
+                updateType = UpdateType.updateing;
+            }
+            else
+            {
+                updateType = UpdateType.fail;
+            }
+            return istart;
         }
         #region update
         public void UpdateAssets()
