@@ -119,9 +119,9 @@ namespace LitEngine.UpdateTool
         static bool isUpdateing = false;
         static bool isChecking = false;
 
-        static int ReTryMaxCount = 5;
-        static int ReTryCount = 0;
-        static int ReTryCheckCount = 0;
+        int ReTryMaxCount = 20;
+        int ReTryCount = 0;
+        int ReTryCheckCount = 0;
         DownLoadGroup downLoadGroup;
         DownLoader checkLoader;
         #endregion
@@ -154,10 +154,10 @@ namespace LitEngine.UpdateTool
         IEnumerator WaitStarUpdate(float delayTime, ByteFileInfoList pInfo, UpdateComplete onComplete, bool autoRetry)
         {
             yield return new WaitForSeconds(delayTime);
-            Instance.StartCoroutine(Instance.FileUpdateing(pInfo, onComplete, autoRetry));
+            Instance.FileUpdateing(pInfo, onComplete, autoRetry);
         }
 
-        IEnumerator FileUpdateing(ByteFileInfoList pInfo, UpdateComplete onComplete, bool autoRetry)
+        void FileUpdateing(ByteFileInfoList pInfo, UpdateComplete onComplete, bool autoRetry)
         {
             ReleaseGroupLoader();
             downLoadGroup = new DownLoadGroup("updateGroup");
@@ -176,12 +176,19 @@ namespace LitEngine.UpdateTool
             }
             downLoadGroup.StartAsync();
             UpdateProcess();
+
+            StartCoroutine(WaitUpdateDone(pInfo, onComplete, autoRetry));
+
+        }
+
+        IEnumerator WaitUpdateDone(ByteFileInfoList pInfo, UpdateComplete onComplete, bool autoRetry)
+        {
             while (!downLoadGroup.IsDone)
             {
                 UpdateProcess();
                 yield return null;
             }
-
+            UpdateProcess();
             if (string.IsNullOrEmpty(downLoadGroup.Error))
             {
                 UpdateFileFinished(onComplete);
@@ -190,7 +197,13 @@ namespace LitEngine.UpdateTool
             {
                 UpdateFileFail(pInfo, onComplete, autoRetry);
             }
+        }
 
+        IEnumerator WaitReTryUpdate(ByteFileInfoList pInfo, UpdateComplete onComplete, bool autoRetry)
+        {
+            yield return new WaitForSeconds(5f);
+            downLoadGroup.ReTryAsync();
+            StartCoroutine(WaitUpdateDone(pInfo, onComplete, autoRetry));
         }
 
         void UpdateProcess()
@@ -224,7 +237,7 @@ namespace LitEngine.UpdateTool
             {
                 Debug.Log(downLoadGroup.Error);
                 ReTryCount++;
-                UpdateRes(erroListInfo, onComplete, autoRetry);
+                StartCoroutine(WaitReTryUpdate(pInfo, onComplete, autoRetry));
             }
         }
 
@@ -316,6 +329,12 @@ namespace LitEngine.UpdateTool
 
         }
 
+        IEnumerator WaitRetryCheck(CheckComplete onComplete, bool useCache, bool needRetry)
+        {
+            yield return new WaitForSeconds(5);
+            CheckUpdate(onComplete, useCache, needRetry);
+        }
+
         void DownLoadCheckFileFinished(CheckComplete onComplete)
         {
             isChecking = false;
@@ -334,7 +353,7 @@ namespace LitEngine.UpdateTool
             if (needRetry)
             {
                 ReTryCheckCount++;
-                CheckUpdate(onComplete, useCache, needRetry);
+                StartCoroutine(WaitRetryCheck(onComplete, useCache, needRetry));
             }
             else
             {

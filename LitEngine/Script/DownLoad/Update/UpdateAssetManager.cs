@@ -135,7 +135,7 @@ namespace LitEngine.UpdateTool
 
         void OnUpdateComplete(ByteFileInfoList info, string error)
         {
-            if (error == null)
+            if (string.IsNullOrEmpty(error))
             {
                 updateType = UpdateType.finished;
                 checkType = CheckType.AllGood;
