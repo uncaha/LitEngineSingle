@@ -77,18 +77,10 @@ namespace LitEngine.UpdateTool
         private void OnDisable()
         {
             Stop();
-        }
-
-        private void Stop()
-        {
-            StopAllCoroutines();
-            ReTryCount = 0;
-            ReTryCheckCount = 0;
-            isUpdateing = false;
-            isChecking = false;
             ReleaseGroupLoader();
             ReleaseCheckLoader();
         }
+
 
         #region prop
         static public float DownloadProcess { get; private set; }
@@ -124,6 +116,10 @@ namespace LitEngine.UpdateTool
         int ReTryCheckCount = 0;
         DownLoadGroup downLoadGroup;
         DownLoader checkLoader;
+
+        ByteFileInfoList curInfo;
+        UpdateComplete curOnComplete;
+        bool curAutoRetry;
         #endregion
 
         #region update
@@ -133,11 +129,45 @@ namespace LitEngine.UpdateTool
             Instance.Stop();
         }
 
+        static public void ReStart()
+        {
+            Instance.ReTryGroupDownload();
+        }
+
+        private void Stop()
+        {
+            StopAllCoroutines();
+            ReTryCount = 0;
+            ReTryCheckCount = 0;
+            isUpdateing = false;
+            isChecking = false;
+            StopGroupLoader();
+        }
+
         void ReleaseGroupLoader()
         {
             if (downLoadGroup == null) return;
             downLoadGroup.Dispose();
             downLoadGroup = null;
+        }
+
+        void StopGroupLoader()
+        {
+            if (downLoadGroup == null) return;
+            downLoadGroup.Stop();
+        }
+
+        void ReTryGroupDownload()
+        {
+            if (isUpdateing)
+            {
+                Debug.LogError("更新中,请勿重复调用.");
+                return;
+            }
+            if (downLoadGroup == null || downLoadGroup.IsCompleteDownLoad) return;
+            isUpdateing = true;
+            downLoadGroup.ReTryAsync();
+            StartCoroutine(WaitUpdateDone());
         }
 
         static public void UpdateRes(ByteFileInfoList pInfo, UpdateComplete onComplete, bool autoRetry)
@@ -159,6 +189,9 @@ namespace LitEngine.UpdateTool
 
         void FileUpdateing(ByteFileInfoList pInfo, UpdateComplete onComplete, bool autoRetry)
         {
+            curInfo = pInfo;
+            curOnComplete = onComplete;
+            curAutoRetry = autoRetry;
             ReleaseGroupLoader();
             downLoadGroup = new DownLoadGroup("updateGroup");
             foreach (var item in pInfo.fileInfoList)
@@ -177,11 +210,11 @@ namespace LitEngine.UpdateTool
             downLoadGroup.StartAsync();
             UpdateProcess();
 
-            StartCoroutine(WaitUpdateDone(pInfo, onComplete, autoRetry));
+            StartCoroutine(WaitUpdateDone());
 
         }
 
-        IEnumerator WaitUpdateDone(ByteFileInfoList pInfo, UpdateComplete onComplete, bool autoRetry)
+        IEnumerator WaitUpdateDone()
         {
             while (!downLoadGroup.IsDone)
             {
@@ -191,19 +224,19 @@ namespace LitEngine.UpdateTool
             UpdateProcess();
             if (string.IsNullOrEmpty(downLoadGroup.Error))
             {
-                UpdateFileFinished(onComplete);
+                UpdateFileFinished();
             }
             else
             {
-                UpdateFileFail(pInfo, onComplete, autoRetry);
+                UpdateFileFail();
             }
         }
 
-        IEnumerator WaitReTryUpdate(ByteFileInfoList pInfo, UpdateComplete onComplete, bool autoRetry)
+        IEnumerator WaitReTryUpdate()
         {
             yield return new WaitForSeconds(5f);
             downLoadGroup.ReTryAsync();
-            StartCoroutine(WaitUpdateDone(pInfo, onComplete, autoRetry));
+            StartCoroutine(WaitUpdateDone());
         }
 
         void UpdateProcess()
@@ -214,30 +247,30 @@ namespace LitEngine.UpdateTool
             DownLoadLength = downLoadGroup.DownLoadedLength;
         }
 
-        void UpdateFileFinished(UpdateComplete onComplete)
+        void UpdateFileFinished()
         {
             isUpdateing = false;
             UpdateLocalList();
-            CallUpdateOnComplete(onComplete, null, null);
+            CallUpdateOnComplete(curOnComplete, null, null);
         }
 
-        void UpdateFileFail(ByteFileInfoList pInfo, UpdateComplete onComplete, bool autoRetry)
+        void UpdateFileFail()
         {
             isUpdateing = false;
-            ByteFileInfoList erroListInfo = GetErroListInfo(downLoadGroup, pInfo);
+            ByteFileInfoList erroListInfo = GetErroListInfo(downLoadGroup, curInfo);
             if (ReTryCount >= ReTryMaxCount)
             {
-                autoRetry = false;
+                curAutoRetry = false;
             }
-            if (!autoRetry)
+            if (!curAutoRetry)
             {
-                CallUpdateOnComplete(onComplete, erroListInfo, downLoadGroup.Error);
+                CallUpdateOnComplete(curOnComplete, erroListInfo, downLoadGroup.Error);
             }
             else
             {
                 Debug.Log(downLoadGroup.Error);
                 ReTryCount++;
-                StartCoroutine(WaitReTryUpdate(pInfo, onComplete, autoRetry));
+                StartCoroutine(WaitReTryUpdate());
             }
         }
 
