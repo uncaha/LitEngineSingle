@@ -68,6 +68,15 @@ namespace LitEngine.DownLoad
             onComplete = null;
             OnProgress = null;
         }
+
+        public void Stop()
+        {
+            for (int i = 0; i < groupList.Count; i++)
+            {
+                groupList[i].Stop();
+            }
+            IsDone = true;
+        }
         #endregion
 
         public DownLoader AddByUrl(string pSourceurl, string pDestination, string pFileName,string pMD5, long pLength, bool pClear)

@@ -98,12 +98,17 @@ namespace LitEngine.DownLoad
                 return;
             mDisposed = true;
 
-            IsDone = true;
-            mThreadRuning = false;
-            CloseHttpClient();
+            Stop();
             OnComplete = null;
             OnProgress = null;
             OnStart = null;
+        }
+
+        public void Stop()
+        {
+            IsDone = true;
+            mThreadRuning = false;
+            CloseHttpClient();
         }
         #endregion
 
