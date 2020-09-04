@@ -75,11 +75,13 @@ namespace LitEngine.DownLoad
             {
                 groupList[i].Stop();
             }
+            Error = "下载中断.";
             IsDone = true;
+            State = DownloadState.finished;
         }
         #endregion
 
-        public DownLoader AddByUrl(string pSourceurl, string pDestination, string pFileName,string pMD5, long pLength, bool pClear)
+        public DownLoader AddByUrl(string pSourceurl, string pDestination, string pFileName, string pMD5, long pLength, bool pClear)
         {
             if (State != DownloadState.normal)
             {
@@ -87,7 +89,7 @@ namespace LitEngine.DownLoad
                 return null;
             }
             if (IsHaveURL(pSourceurl)) return null;
-            DownLoader ret = new DownLoader(pSourceurl, pDestination,pFileName, pMD5, pLength, pClear);
+            DownLoader ret = new DownLoader(pSourceurl, pDestination, pFileName, pMD5, pLength, pClear);
             Add(ret);
             return ret;
         }
@@ -118,9 +120,9 @@ namespace LitEngine.DownLoad
             {
                 if (!groupList[i].IsCompleteDownLoad)
                 {
-                    DownLoadManager.DownLoadFileAsync(groupList[i],null,null);
+                    DownLoadManager.DownLoadFileAsync(groupList[i], null, null);
                 }
-                ContentLength += groupList[i].InitContentLength;
+                ContentLength += groupList[i].ContentLength;
             }
             Error = null;
             IsDone = false;
@@ -138,21 +140,21 @@ namespace LitEngine.DownLoad
                 {
                     groupList[i].RestState();
                 }
-                    
+
             }
             if (groupList.Count > 0)
                 StartAsync();
         }
 
-        public Dictionary<string,string> GetNotCompletFileNameTable()
+        public Dictionary<string, string> GetNotCompletFileNameTable()
         {
-            Dictionary<string,string> ret = new Dictionary<string,string>();
+            Dictionary<string, string> ret = new Dictionary<string, string>();
             for (int i = groupList.Count - 1; i >= 0; i--)
             {
                 if (!groupList[i].IsCompleteDownLoad)
                 {
-                    ret.Add(groupList[i].FileName,groupList[i].SourceURL);
-                }     
+                    ret.Add(groupList[i].FileName, groupList[i].SourceURL);
+                }
             }
 
             return ret;
@@ -161,15 +163,17 @@ namespace LitEngine.DownLoad
 
         bool UpdateChild()
         {
-            if(groupList.Count == 0) return true;
+            if (groupList.Count == 0) return true;
             bool isAllDone = true;
             DownLoadedLength = 0;
             Progress = 0;
+            ContentLength = 0;
             for (int i = 0; i < groupList.Count; i++)
             {
                 var item = groupList[i];
                 DownLoadedLength += item.DownLoadedLength;
                 Progress += item.Progress;
+                ContentLength += item.ContentLength;
                 if (!groupList[i].IsCompleteDownLoad)
                 {
                     item.Update();

@@ -87,6 +87,16 @@ namespace LitEngine.UpdateTool
                 return UpdateManager.ContentLength;
             }
         }
+        public bool CanUpdate
+        {
+            get
+            {
+                return updateType != UpdateType.updateing
+                    && updateType != UpdateType.finished
+                    && checkType == CheckType.needUpdate
+                    && AutoUpdate;
+            }
+        }
         #endregion
         private UpdateAssetManager()
         {
@@ -97,13 +107,16 @@ namespace LitEngine.UpdateTool
 
         public void Pause()
         {
-            if (checkType != CheckType.needUpdate) return;
+            if (updateType != UpdateType.updateing) return;
+            if (updateType == UpdateType.pause) return;
             updateType = UpdateType.pause;
             UpdateManager.StopAll();
+            AutoUpdate = false;
         }
         public bool Resume()
         {
             if (checkType != CheckType.needUpdate) return false;
+            if (updateType != UpdateType.pause) return false;
             bool istart = UpdateManager.ReStart();
             if (istart)
             {
@@ -113,6 +126,7 @@ namespace LitEngine.UpdateTool
             {
                 updateType = UpdateType.fail;
             }
+            AutoUpdate = true;
             return istart;
         }
         #region update
