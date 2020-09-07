@@ -380,19 +380,28 @@ namespace LitEngine.UpdateTool
         void DownLoadCheckFileFail(CheckComplete onComplete, bool useCache, bool needRetry)
         {
             isChecking = false;
-            if (ReTryCheckCount >= ReTryMaxCount)
-            {
-                needRetry = false;
-            }
 
-            if (needRetry)
+            string tfilePath = Path.Combine(GameCore.PersistentResDataPath, GetCheckFileName());
+            if (!File.Exists(tfilePath))
             {
-                ReTryCheckCount++;
-                StartCoroutine(WaitRetryCheck(onComplete, useCache, needRetry));
+                if (ReTryCheckCount >= ReTryMaxCount)
+                {
+                    needRetry = false;
+                }
+
+                if (needRetry)
+                {
+                    ReTryCheckCount++;
+                    StartCoroutine(WaitRetryCheck(onComplete, useCache, needRetry));
+                }
+                else
+                {
+                    CallCheckOnComplete(onComplete, null);
+                }
             }
             else
             {
-                CallCheckOnComplete(onComplete, null);
+                DownLoadCheckFileFinished(onComplete);
             }
         }
 

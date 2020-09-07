@@ -132,8 +132,8 @@ namespace LitEngine.DownLoad
 
         private void ReadNetByte()
         {
-            float tdownloadSize = 0;
-            float tneedDownLoadSize = 0;
+            long tdownloadSize = 0;
+            long tneedDownLoadSize = 0;
             FileStream ttempfile = null;
             try
             {
@@ -203,7 +203,7 @@ namespace LitEngine.DownLoad
                 DownLoadedLength = thaveindex;
                 if (isClearDownload)
                 {
-                    ContentLength = mResponse.ContentLength;
+                    ContentLength = tneedDownLoadSize;
                 }
 
                 if (ttempfile == null)
@@ -247,30 +247,14 @@ namespace LitEngine.DownLoad
             {
                 if (tdownloadSize == tneedDownLoadSize)
                 {
-                    if (File.Exists(TempFile))
-                    {
-                        if (File.Exists(CompleteFile))
-                        {
-                            File.Delete(CompleteFile);
-                        }
-
-                        int tindex = CompleteFile.LastIndexOf('/');
-                        string tcompletePagth = CompleteFile.Substring(0, tindex);
-
-                        if (!Directory.Exists(tcompletePagth))
-                        {
-                            Directory.CreateDirectory(tcompletePagth);
-                        }
-                        File.Move(TempFile, CompleteFile);
-                    }
+                    DownLoadComplete();
                 }
                 else
                 {
-                    if (Error == null)
+                    if (string.IsNullOrEmpty(Error))
                     {
                         Error = string.Format("[URL] = {0},[Error] = 文件未能完成下载.Stream 被中断.", SourceURL);
                     }
-
                 }
             }
             catch (System.Exception erro)
@@ -279,6 +263,34 @@ namespace LitEngine.DownLoad
             }
 
             FinishedThread();
+        }
+
+        void DownLoadComplete()
+        {
+            if (File.Exists(TempFile))
+            {
+                if (File.Exists(CompleteFile))
+                {
+                    File.Delete(CompleteFile);
+                }
+
+                if (CheckMD5())
+                {
+                    int tindex = CompleteFile.LastIndexOf('/');
+                    string tcompletePagth = CompleteFile.Substring(0, tindex);
+
+                    if (!Directory.Exists(tcompletePagth))
+                    {
+                        Directory.CreateDirectory(tcompletePagth);
+                    }
+                    File.Move(TempFile, CompleteFile);
+                }
+                else
+                {
+                    File.Delete(TempFile);
+                    Error = string.Format("[URL] = {0},[Error] = 文件MD5验证失败.MD5 = {1},tempMd5 = {2}", SourceURL, MD5String, tempMD5);
+                }
+            }
         }
 
         private void FinishedThread()
@@ -311,7 +323,36 @@ namespace LitEngine.DownLoad
                 mReqest = null;
             }
         }
+        string tempMD5 = null;
+        bool CheckMD5()
+        {
+            if (string.IsNullOrEmpty(MD5String)) return true;
+            tempMD5 = GetMD5File(TempFile);
+            return MD5String.Equals(tempMD5);
+        }
 
+        public static string GetMD5File(string file)
+        {
+            try
+            {
+                FileStream fs = new FileStream(file, FileMode.Open);
+                System.Security.Cryptography.MD5 md5 = new System.Security.Cryptography.MD5CryptoServiceProvider();
+                byte[] retVal = md5.ComputeHash(fs);
+                fs.Close();
+
+                System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                for (int i = 0; i < retVal.Length; i++)
+                {
+                    sb.Append(retVal[i].ToString("x2"));
+                }
+                return sb.ToString();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError("md5file() fail, error:" + ex.Message);
+            }
+            return null;
+        }
 
         void CallComplete()
         {
