@@ -7,10 +7,11 @@ namespace LitEngine
     using IO;
     public sealed class GameCore
     {
-        private static string DataPath = "Data";//App总数据目录
-        private static string ResDataPath = "ResData";//App资源目录
-        private static string ConfigDataPath = "ConfigData";//App配置文件目录
-        private static string ScriptDataPath = "LogicDll";//App脚本
+        public const string ExportPath = "Assets/ExportResources";
+        public const string DataPath = "Data";//App总数据目录
+        public const string ResDataPath = "ResData";//App资源目录
+        public const string ConfigDataPath = "Config";//配置文件目录
+        
 
         private static GameCore sInstance = null;
         public static GameCore Core
@@ -23,6 +24,21 @@ namespace LitEngine
             }
         }
         #region static path
+        static public bool IsEditor
+        {
+            get
+            {
+                switch (Application.platform)
+                {
+                    case RuntimePlatform.LinuxEditor:
+                    case RuntimePlatform.OSXEditor:
+                    case RuntimePlatform.WindowsEditor:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        }
 
         static private string sAppPersistentAssetsPath = null;
         static public string AppPersistentAssetsPath
@@ -61,18 +77,9 @@ namespace LitEngine
 
         static public string PersistentDataPath { get { return Core.mPersistentDataPath; } }
         static public string PersistentResDataPath { get { return Core.mPersistentResDataPath; } }
-        static public string PersistentConfigDataPath { get { return Core.mPersistentConfigDataPath; } }
-        static public string PersistentScriptDataPath { get { return Core.mPersistentScriptDataPath; } }
 
         static public string StreamingAssetsDataPath { get { return Core.mStreamingAssetsDataPath; } }
         static public string StreamingAssetsResDataPath { get { return Core.mStreamingAssetsResDataPath; } }
-        static public string StreamingAssetsConfigDataPath { get { return Core.mStreamingAssetsConfigDataPath; } }
-        static public string StreamingAssetsScriptDataPath { get { return Core.mStreamingAssetsScriptDataPath; } }
-
-        static public string ResourcesDataPath { get { return Core.mResourcesDataPath; } }
-        static public string ResourcesResDataPath { get { return Core.mResourcesResDataPath; } }
-        static public string ResourcesConfigDataPath { get { return Core.mResourcesConfigDataPath; } }
-        static public string ResourcesScriptDataPath { get { return Core.mResourcesScriptDataPath; } }
 
         static public string CombinePath(params string[] _params)
         {
@@ -125,18 +132,10 @@ namespace LitEngine
 
         private string mPersistentDataPath;
         private string mPersistentResDataPath;
-        private string mPersistentConfigDataPath;
-        private string mPersistentScriptDataPath;
 
         private string mStreamingAssetsDataPath;
         private string mStreamingAssetsResDataPath;
-        private string mStreamingAssetsConfigDataPath;
-        private string mStreamingAssetsScriptDataPath;
 
-        private string mResourcesDataPath;
-        private string mResourcesResDataPath;
-        private string mResourcesConfigDataPath;
-        private string mResourcesScriptDataPath;
 
         private ScriptManager mScriptManager;
         #endregion
@@ -148,17 +147,13 @@ namespace LitEngine
         {
             SetPath();
         }
-        static public void InitGameCore(CodeToolBase _codeTool, string pDataPath = "Data", string pResDataPath = "ResData", string pConfigDataPath = "ConfigData", string pScriptDataPath = "LogicDll")
+        static public void InitGameCore(CodeToolBase _codeTool)
         {
             if(Core.mIsInited)
             {
                 DLog.LogError( "不允许重复初始化GameCore,请检查代码");
                 return;
             }
-            DataPath = pDataPath;
-            ResDataPath = pResDataPath;
-            ConfigDataPath = pConfigDataPath;
-            ScriptDataPath = pScriptDataPath;
 
             Core.SetPath();
 
@@ -170,21 +165,11 @@ namespace LitEngine
         #region 方法
         private void SetPath()
         {
-            mResourcesDataPath = DataPath.Replace("/","");
             mPersistentDataPath = CombinePath(AppPersistentAssetsPath, DataPath);
             mStreamingAssetsDataPath = CombinePath(AppStreamingAssetsPath, DataPath);
 
             mPersistentResDataPath = CombinePath(mPersistentDataPath, ResDataPath);
             mStreamingAssetsResDataPath = CombinePath(mStreamingAssetsDataPath, ResDataPath);
-            mResourcesResDataPath = CombinePath(mResourcesDataPath, ResDataPath);
-
-            mPersistentConfigDataPath = CombinePath(mPersistentDataPath, ConfigDataPath);
-            mStreamingAssetsConfigDataPath = CombinePath(mStreamingAssetsDataPath, ConfigDataPath);
-            mResourcesConfigDataPath = CombinePath(mResourcesDataPath, ConfigDataPath);
-
-            mPersistentScriptDataPath = CombinePath(mPersistentDataPath, ScriptDataPath);
-            mStreamingAssetsScriptDataPath = CombinePath(mStreamingAssetsDataPath, ScriptDataPath);
-            mResourcesScriptDataPath = CombinePath(mResourcesDataPath, ScriptDataPath);
         }
         static public object GetScriptObject(string _classname, params object[] _parmas)
         {

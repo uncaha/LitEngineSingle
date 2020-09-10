@@ -50,11 +50,6 @@ namespace LitEngine
         #endregion
         #region 路径获取
 
-        static public string GetResourcesDataPath(string _filename)
-        {
-            return Path.Combine(GameCore.ResourcesResDataPath, _filename);
-        }
-
         static public string GetFullPath(string _filename)
         {
             _filename = BaseBundle.CombineSuffixName(_filename);
@@ -393,39 +388,63 @@ namespace LitEngine
         #endregion
 
         #region 文本读取
-        static public byte[] LoadScriptFile(string _filename)
+        static public byte[] LoadBytes(string pFileName)
         {
-            string tfullname = GameCore.PersistentScriptDataPath + _filename;
             byte[] ret = null;
-            if (System.IO.File.Exists(tfullname))
+            pFileName = string.Format("{0}/{1}", GameCore.ExportPath, pFileName);
+            if(GameCore.IsEditor)
             {
-                ret = System.IO.File.ReadAllBytes(tfullname);
+                ret = LoadBytesFromFile(pFileName);
             }
             else
             {
-                tfullname = GameCore.ResourcesScriptDataPath + _filename;
-                TextAsset tasset = (TextAsset)Resources.Load(BaseBundle.DeleteSuffixName(tfullname));
-                ret = tasset.bytes;
+                ret = LoadBytesFromBundle(pFileName);
             }
 
             return ret;
         }
 
-        static public byte[] LoadConfigFile(string _filename)
+        static byte[] LoadBytesFromFile(string pFileName)
         {
-            string tfullname = GameCore.PersistentConfigDataPath + _filename;
-            byte[] ret = null;
-            if (System.IO.File.Exists(tfullname))
+            string tfullname = GameCore.AppPersistentAssetsPath + pFileName;
+            if (!System.IO.File.Exists(tfullname))
             {
-                ret = System.IO.File.ReadAllBytes(tfullname);
+                DLog.LogError("文件读取失败 name = " + tfullname);
+                return null;
+            }
+
+            return System.IO.File.ReadAllBytes(tfullname);
+        }
+
+        static byte[] LoadBytesFromBundle(string pFileName)
+        {
+            byte[] ret = null;
+            string tfullname = GetFullPath(pFileName);
+            AssetBundle tinfobundle = AssetBundle.LoadFromFile(tfullname);
+            if (tinfobundle != null)
+            {
+                TextAsset tass = tinfobundle.LoadAsset<TextAsset>(pFileName);
+                if (tass != null)
+                {
+                    ret = tass.bytes;
+                }
+                else
+                {
+                    DLog.LogErrorFormat("AssetBundle.LoadAsset<TextAsset>() 文件读取失败 name = {0}", tfullname);
+                }
+                tinfobundle.Unload(false);
             }
             else
             {
-                tfullname = GameCore.ResourcesConfigDataPath + _filename;
-                TextAsset tasset = (TextAsset)Resources.Load(BaseBundle.DeleteSuffixName(tfullname));
-                if (tasset != null)
-                    ret = tasset.bytes;
+                DLog.LogError("文件读取失败 name = " + tfullname);
             }
+            return ret;
+        }
+
+
+        static public byte[] LoadConfigFile(string _filename)
+        {
+            byte[] ret = LoadBytes(string.Format("{0}/{1}",GameCore.ConfigDataPath, _filename));
             if (ret == null)
                 DLog.LogError("文件读取失败 name = " + _filename);
             return ret;

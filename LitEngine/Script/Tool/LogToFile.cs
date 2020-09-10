@@ -209,14 +209,20 @@ public class LogToFile : IDisposable
     {
         try
         {
-            logWriger.WriteLine(string.Format("[{0}][{1}] {2}", prefix, System.DateTime.Now, content));
+            
             if (pType == LogType.Assert || pType == LogType.Error || pType == LogType.Exception)
             {
                
                 logWriger.WriteLine("┌──────────────────────────────────ERROR──────────────────────────────────┐");
+                logWriger.WriteLine(string.Format("[{0}][{1}] {2}", prefix, System.DateTime.Now, content));
                 logWriger.WriteLine(callstack);
                 logWriger.WriteLine("└─────────────────────────────────────────────────────────────────────────┘");
             }
+            else
+            {
+                logWriger.WriteLine(string.Format("[{0}][{1}] {2}", prefix, System.DateTime.Now, content));
+            }
+
             logWriger.Flush();
         }
         catch (Exception _e)
