@@ -11,7 +11,7 @@ namespace LitEngine
         public const string DataPath = "Data";//App总数据目录
         public const string ResDataPath = "ResData";//App资源目录
         public const string ConfigDataPath = "Config";//配置文件目录
-        
+
 
         private static GameCore sInstance = null;
         public static GameCore Core
@@ -52,17 +52,17 @@ namespace LitEngine
                         case RuntimePlatform.OSXEditor:
                         case RuntimePlatform.WindowsEditor:
                         case RuntimePlatform.LinuxEditor:
-                            sAppPersistentAssetsPath = string.Format("{0}", UnityEngine.Application.dataPath + "/../").Replace("//", "/");
+                            sAppPersistentAssetsPath = string.Format("{0}/../", UnityEngine.Application.dataPath).Replace("//", "/");
                             break;
                         case RuntimePlatform.WindowsPlayer:
-                            sAppPersistentAssetsPath = string.Format("{0}", UnityEngine.Application.dataPath + "/").Replace("//", "/");
+                            sAppPersistentAssetsPath = string.Format("{0}/", UnityEngine.Application.dataPath).Replace("//", "/");
                             break;
                         default:
                             sAppPersistentAssetsPath = string.Format("{0}/", UnityEngine.Application.persistentDataPath).Replace("//", "/");
                             break;
                     }
 
-                        
+
                 }
                 return sAppPersistentAssetsPath;
             }
@@ -80,51 +80,6 @@ namespace LitEngine
 
         static public string StreamingAssetsDataPath { get { return Core.mStreamingAssetsDataPath; } }
         static public string StreamingAssetsResDataPath { get { return Core.mStreamingAssetsResDataPath; } }
-
-        static public string CombinePath(params string[] _params)
-        {
-            System.Text.StringBuilder tformatbuilder = new System.Text.StringBuilder();
-            char[] tdes = { '/' };
-            for (int i = 0; i < _params.Length; i++)
-            {
-                string tobjstr = _params[i].ToString();
-                if(i!=0)
-                    tobjstr = RemoveStartWithString(tobjstr, tdes);
-                tobjstr = RemoveEndWithString(tobjstr, tdes);
-                tformatbuilder.Append(tobjstr);
-                tformatbuilder.Append("/");
-            }
-            return tformatbuilder.ToString();
-        }
-
-        static public string CombineFilePath(params string[] _params)
-        {
-            System.Text.StringBuilder tformatbuilder = new System.Text.StringBuilder();
-            char[] tdes = {'/'};
-            for (int i = 0; i < _params.Length; i++)
-            {
-                string tobjstr = _params[i].ToString();
-                if (i != 0)
-                    tobjstr = RemoveStartWithString(tobjstr, tdes);
-                tobjstr = RemoveEndWithString(tobjstr, tdes);
-                tformatbuilder.Append(tobjstr);
-                if (i < _params.Length - 1)
-                    tformatbuilder.Append("/");
-            }
-            return tformatbuilder.ToString();
-        }
-
-        static public string RemoveEndWithString(string _source,char[] _des)
-        {
-            if (_des == null) return _source;
-            return _source.TrimEnd(_des);
-        }
-
-        static public string RemoveStartWithString(string _source, char[] _des)
-        {
-            if (_des == null) return _source;
-            return _source.TrimStart(_des);
-        }
 
         #endregion
         #region 类变量
@@ -149,9 +104,9 @@ namespace LitEngine
         }
         static public void InitGameCore(CodeToolBase _codeTool)
         {
-            if(Core.mIsInited)
+            if (Core.mIsInited)
             {
-                DLog.LogError( "不允许重复初始化GameCore,请检查代码");
+                DLog.LogError("不允许重复初始化GameCore,请检查代码");
                 return;
             }
 
@@ -165,11 +120,11 @@ namespace LitEngine
         #region 方法
         private void SetPath()
         {
-            mPersistentDataPath = CombinePath(AppPersistentAssetsPath, DataPath);
-            mStreamingAssetsDataPath = CombinePath(AppStreamingAssetsPath, DataPath);
+            mPersistentDataPath = string.Format("{0}/{1}/", AppPersistentAssetsPath, DataPath).Replace("//", "/");
+            mStreamingAssetsDataPath = string.Format("{0}/{1}/", AppStreamingAssetsPath, DataPath).Replace("//", "/");
 
-            mPersistentResDataPath = CombinePath(mPersistentDataPath, ResDataPath);
-            mStreamingAssetsResDataPath = CombinePath(mStreamingAssetsDataPath, ResDataPath);
+            mPersistentResDataPath = string.Format("{0}/{1}/", mPersistentDataPath, ResDataPath).Replace("//", "/");
+            mStreamingAssetsResDataPath = string.Format("{0}/{1}/", mStreamingAssetsDataPath, ResDataPath).Replace("//", "/");
         }
         static public object GetScriptObject(string _classname, params object[] _parmas)
         {

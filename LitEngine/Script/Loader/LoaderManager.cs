@@ -53,9 +53,9 @@ namespace LitEngine
         static public string GetFullPath(string _filename)
         {
             _filename = BaseBundle.CombineSuffixName(_filename);
-            string tfullpathname = Path.Combine(GameCore.PersistentResDataPath, _filename);
+            string tfullpathname = string.Format("{0}{1}",GameCore.PersistentResDataPath, _filename);
             if (!File.Exists(tfullpathname))
-                tfullpathname = Path.Combine(GameCore.StreamingAssetsResDataPath, _filename);
+                tfullpathname = string.Format("{0}{1}",GameCore.StreamingAssetsResDataPath, _filename);
             return tfullpathname;
         }
         #endregion
