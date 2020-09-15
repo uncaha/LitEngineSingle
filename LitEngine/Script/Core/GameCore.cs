@@ -52,13 +52,13 @@ namespace LitEngine
                         case RuntimePlatform.OSXEditor:
                         case RuntimePlatform.WindowsEditor:
                         case RuntimePlatform.LinuxEditor:
-                            sAppPersistentAssetsPath = string.Format("{0}/../", UnityEngine.Application.dataPath).Replace("//", "/");
+                            sAppPersistentAssetsPath = CombinePath(UnityEngine.Application.dataPath, "../");
                             break;
                         case RuntimePlatform.WindowsPlayer:
-                            sAppPersistentAssetsPath = string.Format("{0}/", UnityEngine.Application.dataPath).Replace("//", "/");
+                            sAppPersistentAssetsPath = CombinePath(UnityEngine.Application.dataPath, "");
                             break;
                         default:
-                            sAppPersistentAssetsPath = string.Format("{0}/", UnityEngine.Application.persistentDataPath).Replace("//", "/");
+                            sAppPersistentAssetsPath = CombinePath(UnityEngine.Application.persistentDataPath, "");
                             break;
                     }
 
@@ -67,11 +67,17 @@ namespace LitEngine
                 return sAppPersistentAssetsPath;
             }
         }
+
+        static private string sAppStreamingAssetsPath = null;
         static public string AppStreamingAssetsPath
         {
             get
             {
-                return UnityEngine.Application.streamingAssetsPath;
+                if(sAppStreamingAssetsPath == null)
+                {
+                    sAppStreamingAssetsPath = CombinePath(UnityEngine.Application.streamingAssetsPath,"");
+                }
+                return sAppStreamingAssetsPath;
             }
         }
 
@@ -120,15 +126,44 @@ namespace LitEngine
         #region 方法
         private void SetPath()
         {
-            mPersistentDataPath = string.Format("{0}/{1}/", AppPersistentAssetsPath, DataPath).Replace("//", "/");
-            mStreamingAssetsDataPath = string.Format("{0}/{1}/", AppStreamingAssetsPath, DataPath).Replace("//", "/");
+            mPersistentDataPath = CombinePath(AppPersistentAssetsPath,DataPath,"");
+            mStreamingAssetsDataPath = CombinePath(AppStreamingAssetsPath,DataPath,"");
 
-            mPersistentResDataPath = string.Format("{0}/{1}/", mPersistentDataPath, ResDataPath).Replace("//", "/");
-            mStreamingAssetsResDataPath = string.Format("{0}/{1}/", mStreamingAssetsDataPath, ResDataPath).Replace("//", "/");
+            mPersistentResDataPath = CombinePath(mPersistentDataPath,ResDataPath,"");
+            mStreamingAssetsResDataPath = CombinePath(mStreamingAssetsDataPath,ResDataPath,"");
         }
         static public object GetScriptObject(string _classname, params object[] _parmas)
         {
             return GameCore.CodeTool.GetObject(_classname, _parmas);
+        }
+
+        static public string FormatPath(string pPath)
+        {
+            return string.Join("/", pPath.Replace("\\", "/").Split('/'));
+        }
+
+        static System.Text.StringBuilder cCombineBuilder = new System.Text.StringBuilder();
+        static public string CombinePath(params string[] paths)
+        {
+            if(paths == null || paths.Length == 0) return null;
+            cCombineBuilder.Clear();
+            for (int i = 0, length = paths.Length; i < length; i++)
+            {
+                bool thavenext = i + 1 < length;
+                string item = paths[i];
+                string next = thavenext ? paths[i + 1] : "";
+                bool thv = item.EndsWith("/");
+                bool tnexthv = !thavenext || next.StartsWith("/");
+
+                cCombineBuilder.Append(item);
+
+                if (!thv && !tnexthv)
+                {
+                    cCombineBuilder.Append("/");
+                }
+            }
+
+            return cCombineBuilder.ToString();
         }
 
         #endregion
