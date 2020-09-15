@@ -37,7 +37,9 @@ namespace LitEngine.UpdateTool
             }
         }
 
-        public UpdateData updateData;
+        public static string platformPath = null;
+
+        public UpdateData updateData { get; private set; }
 
         private bool mInited = false;
         private UpdateManager()
@@ -513,20 +515,38 @@ namespace LitEngine.UpdateTool
             }
         }
         #endregion
+
+        public string GetPlatformPath()
+        {
+            string tkey = platformPath;
+            if (string.IsNullOrWhiteSpace(tkey))
+            {
+                switch (Application.platform)
+                {
+                    case RuntimePlatform.IPhonePlayer:
+                    case RuntimePlatform.tvOS:
+                    case RuntimePlatform.OSXPlayer:
+                        tkey = "ios";
+                        break;
+                    case RuntimePlatform.Android:
+                        tkey = "android";
+                        break;
+                    case RuntimePlatform.LinuxEditor:
+                    case RuntimePlatform.OSXEditor:
+                    case RuntimePlatform.WindowsEditor:
+                        tkey = "editor";
+                        break;
+                    default:
+                        tkey = Application.platform.ToString();
+                        break;
+                }
+            }
+            return tkey;
+        }
         public string GetServerUrl(string pFile)
         {
-            switch(Application.platform)
-            {
-                case RuntimePlatform.IPhonePlayer:
-                case RuntimePlatform.tvOS:
-                case RuntimePlatform.OSXPlayer:
-                case RuntimePlatform.OSXEditor:
-                    return string.Format("{0}/{1}/{2}/{3}", updateData.server,"ios", updateData.version,pFile);
-                case RuntimePlatform.Android:
-                    return string.Format("{0}/{1}/{2}/{3}", updateData.server, "android", updateData.version,pFile);
-                default:
-                    return string.Format("{0}/{1}/{2}/{3}", updateData.server, Application.platform.ToString().ToLowerInvariant(), updateData.version, pFile);
-            }
+            string tkey = GetPlatformPath();
+            return string.Format("{0}/{1}/{2}/{3}", updateData.server, tkey, updateData.version, pFile);
         }
     }
 }
