@@ -172,6 +172,10 @@ namespace LitEngine
         #endregion
 
         #region 资源管理
+        static public string GetRealAssetName(string pAssetName)
+        {
+            return GameCore.CombinePath(GameCore.ExportPath, pAssetName);
+        }
 
         static public string[] GetAllDependencies(string _assetBundleName)
         {
