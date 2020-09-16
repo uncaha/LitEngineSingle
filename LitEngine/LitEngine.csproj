@@ -222,7 +222,6 @@
     <Compile Include="Script\DownLoad\Update\UpdateManager.cs" />
     <Compile Include="Script\Loader\ByteFileInfoList.cs" />
     <Compile Include="Script\Loader\AssetMap.cs" />
-    <Compile Include="Script\Loader\LoadTool\LoadderCreat.cs" />
     <Compile Include="Script\Loader\LoadTool\LoadTask.cs" />
     <Compile Include="Script\Loader\LoadTool\LoadTaskVector.cs" />
     <Compile Include="Script\Loader\LoadTool\WaitingList.cs" />
