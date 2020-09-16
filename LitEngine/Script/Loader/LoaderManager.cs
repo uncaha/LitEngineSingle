@@ -37,6 +37,7 @@ namespace LitEngine
         }
 
         #region 属性
+        private Dictionary<string,LoadGroup> groupMap = new Dictionary<string, LoadGroup>();
         private BundleVector mBundleList = null;
         private LoadTaskVector mBundleTaskList = null;
         private WaitingList mWaitLoadBundleList = null;
@@ -202,6 +203,24 @@ namespace LitEngine
         {
             mBundleList.Add(_bundle);
         }
+        static public void AddToGroup(string pGroupKey, string assetName)
+        {
+            if(string.IsNullOrEmpty(pGroupKey) || string.IsNullOrEmpty(assetName)) return;
+            var tmap = Instance.groupMap;
+            if (!tmap.ContainsKey(pGroupKey))
+            {
+                tmap.Add(pGroupKey, new LoadGroup(pGroupKey));
+            }
+            tmap[pGroupKey].AddAsset(assetName);
+        }
+        static public void ReleaseGroup(string _key)
+        {
+            var tmap = Instance.groupMap;
+            if(tmap.ContainsKey(_key))
+            {
+                tmap[_key].ReleaseAssets();
+            }
+        }
 
         static public void ReleaseAsset(string _key)
         {
@@ -306,16 +325,18 @@ namespace LitEngine
         #endregion
 
         #region 同步
-        static public UnityEngine.Object LoadAsset(string _AssetsName)
+        static public UnityEngine.Object LoadAsset(string pAssetName,string pGroupKey = null)
         {
-            return (UnityEngine.Object)Instance.LoadAssetRetain(_AssetsName.ToLowerInvariant()).Retain();
+            AddToGroup(pGroupKey,pAssetName);
+            return (UnityEngine.Object)Instance.LoadAssetRetain(pAssetName.ToLowerInvariant()).Retain();
         }
         #endregion
 
         #region 异步
-        static public void LoadAssetAsync(string _key, string _AssetsName, System.Action<string, object> _callback)
+        static public void LoadAssetAsync(string pKey, string pAssetName, System.Action<string, object> _callback,string pGroupKey = null)
         {
-            Instance.LoadAssetAsyncRetain(_key, _AssetsName.ToLowerInvariant(), _callback, true);
+            AddToGroup(pGroupKey,pAssetName);
+            Instance.LoadAssetAsyncRetain(pKey, pAssetName.ToLowerInvariant(), _callback, true);
         }
 
         #endregion
