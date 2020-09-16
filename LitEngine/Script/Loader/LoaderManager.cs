@@ -37,7 +37,7 @@ namespace LitEngine
         }
 
         #region 属性
-        private Dictionary<string,LoadGroup> groupMap = new Dictionary<string, LoadGroup>();
+        private Dictionary<string,AssetGroup> groupMap = new Dictionary<string, AssetGroup>();
         private BundleVector mBundleList = null;
         private LoadTaskVector mBundleTaskList = null;
         private WaitingList mWaitLoadBundleList = null;
@@ -209,7 +209,7 @@ namespace LitEngine
             var tmap = Instance.groupMap;
             if (!tmap.ContainsKey(pGroupKey))
             {
-                tmap.Add(pGroupKey, new LoadGroup(pGroupKey));
+                tmap.Add(pGroupKey, new AssetGroup(pGroupKey));
             }
             tmap[pGroupKey].AddAsset(assetName);
         }
@@ -269,7 +269,7 @@ namespace LitEngine
         static private System.Action mLoadSceneCall = null;
         static private string mNowLoadingScene = null;
 
-        static public bool LoadScene(string _scenename)
+        static public bool LoadScene(string _scenename,string pGroupKey = null)
         {
             if (IsSceneLoading)
             {
@@ -280,12 +280,12 @@ namespace LitEngine
             string tusname = _scenename.EndsWith(".unity") ? _scenename.Replace(".unity", "") : _scenename;
             if (SceneManager.GetActiveScene().name.Equals(tusname))
                 return false;
-            LoaderManager.LoadAsset(_scenename);
+            LoaderManager.LoadAsset(_scenename,pGroupKey);
             SceneManager.LoadScene(tusname, LoadSceneMode.Single);
             return true;
         }
 
-        static public bool LoadSceneAsync(string _scenename, System.Action _FinishdCall)
+        static public bool LoadSceneAsync(string _scenename, System.Action _FinishdCall,string pGroupKey = null)
         {
             if (IsSceneLoading)
             {
@@ -300,7 +300,7 @@ namespace LitEngine
             IsSceneLoading = true;
             mLoadSceneCall = _FinishdCall;
 
-            LoaderManager.LoadAssetAsync(_scenename, _scenename, LoadedStartScene);
+            LoaderManager.LoadAssetAsync(_scenename, _scenename, LoadedStartScene,pGroupKey);
 
             return true;
         }
