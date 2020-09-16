@@ -36,7 +36,7 @@ namespace LitEngine.DownLoad
 
         public DownloadState State { get; private set; }
         public bool IsDone { get; private set; }//下载线程完成
-        public bool IsCompleteDownLoad { get { return IsDone && Error == null; } } //成功下载
+        public bool IsCompleteDownLoad { get; private set;} //成功下载
 
         public string MD5String { get; private set; }
         public long ContentLength { get; private set; }//需要下载的长度
@@ -274,22 +274,34 @@ namespace LitEngine.DownLoad
                     File.Delete(CompleteFile);
                 }
 
-                if (CheckMD5())
+                try
                 {
-                    int tindex = CompleteFile.LastIndexOf('/');
-                    string tcompletePagth = CompleteFile.Substring(0, tindex);
-
-                    if (!Directory.Exists(tcompletePagth))
+                    if (CheckMD5())
                     {
-                        Directory.CreateDirectory(tcompletePagth);
+                        int tindex = CompleteFile.LastIndexOf('/');
+                        string tcompletePagth = CompleteFile.Substring(0, tindex);
+
+                        if (!Directory.Exists(tcompletePagth))
+                        {
+                            Directory.CreateDirectory(tcompletePagth);
+                        }
+                        File.Move(TempFile, CompleteFile);
+                        IsCompleteDownLoad = true;
                     }
-                    File.Move(TempFile, CompleteFile);
+                    else
+                    {
+                        File.Delete(TempFile);
+                        Error = string.Format("[URL] = {0},[Error] = 文件MD5验证失败.MD5 = {1},tempMd5 = {2}", SourceURL, MD5String, tempMD5);
+                    }
                 }
-                else
+                catch (System.Exception error)
                 {
-                    File.Delete(TempFile);
-                    Error = string.Format("[URL] = {0},[Error] = 文件MD5验证失败.MD5 = {1},tempMd5 = {2}", SourceURL, MD5String, tempMD5);
+                    Error = string.Format("[URL] = {0},[Error] = 文件MD5验证失败.MD5 = {1},error = {2}", SourceURL, MD5String, error.Message);
                 }
+            }
+            else
+            {
+                Error = string.Format("[URL] = {0},[Error] = 未能找到临时下载文件.MD5 = {1},tempfile = {2}", SourceURL, MD5String, TempFile);
             }
         }
 

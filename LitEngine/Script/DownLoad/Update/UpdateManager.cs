@@ -226,7 +226,7 @@ namespace LitEngine.UpdateTool
                 yield return null;
             }
             UpdateProcess();
-            if (string.IsNullOrEmpty(downLoadGroup.Error))
+            if (downLoadGroup.IsCompleteDownLoad)
             {
                 UpdateFileFinished();
             }

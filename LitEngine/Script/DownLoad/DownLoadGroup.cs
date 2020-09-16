@@ -21,7 +21,7 @@ namespace LitEngine.DownLoad
         public float Progress { get; private set; }
 
         public bool IsDone { get; private set; }
-        public bool IsCompleteDownLoad { get { return IsDone && Error == null; } } //成功下载
+        public bool IsCompleteDownLoad { get; private set; } //成功下载
         public DownloadState State { get; private set; }
         public string Key { get; private set; }
         public string Error { get; private set; }
@@ -192,15 +192,17 @@ namespace LitEngine.DownLoad
             if (IsDone) return;
             IsDone = true;
 
+            bool tisCompleteGroup = true;
             StringBuilder terrostr = new StringBuilder();
             for (int i = 0; i < groupList.Count; i++)
             {
-                if (groupList[i].Error != null)
+                if (!groupList[i].IsCompleteDownLoad)
                 {
-                    terrostr.AppendLine(groupList[i].Error);
+                    tisCompleteGroup = false;
+                    terrostr.AppendLine(string.Format("Group- URL={0},Error={1}", groupList[i].SourceURL, groupList[i].Error));
                 }
             }
-
+            IsCompleteDownLoad = tisCompleteGroup;
             Error = terrostr.ToString();
 
             var tfinished = onComplete;
