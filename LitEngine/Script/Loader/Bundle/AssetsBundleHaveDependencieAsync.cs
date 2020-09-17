@@ -43,23 +43,49 @@ namespace LitEngine.LoadAsset
             mLoadedCount++;
         }
 
+        private void UpdateProcess()
+        {
+            mProgress = 0;
+            if (mDepList.Count > 0)
+            {
+                for (int i = 0; i < mDepList.Count; i++)
+                {
+                    mProgress += mDepList[i].Progress;
+                }
+                mProgress += mMainBundle.Progress;
+                mProgress /= (mDepList.Count + 1);
+            }
+            else
+            {
+                mProgress = mMainBundle.Progress;
+            }
+        }
+
         override public bool IsDone()
         {
+            bool ret = false;
             switch (Step)
             {
                 case StepState.None:
-                    return base.IsDone();
+                    ret = base.IsDone();
+                    break;
                 case StepState.LoadEnd:
-                    return true;
+                    ret = true;
+                    break;
                 case StepState.BundleLoad:
-                    return BundleLoad();
+                    ret = BundleLoad();
+                    break;
                 case StepState.AssetsLoad:
-                    return AssetsLoad();
+                    ret = AssetsLoad();
+                    break;
                 case StepState.ChildenAssetLoad:
-                    return ChildenAssetsLoad();
+                    ret = ChildenAssetsLoad();
+                    break;
                 default:
-                    return false;
+                    break;
             }
+            UpdateProcess();
+            return ret;
         }
 
         private bool BundleLoad()
