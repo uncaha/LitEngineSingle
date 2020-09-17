@@ -333,10 +333,10 @@ namespace LitEngine
         #endregion
 
         #region 异步
-        static public void LoadAssetAsync(string pKey, string pAssetName, System.Action<string, object> _callback,string pGroupKey = null)
+        static public BaseBundle LoadAssetAsync(string pKey, string pAssetName, System.Action<string, object> _callback, string pGroupKey = null)
         {
-            AddToGroup(pGroupKey,pAssetName);
-            Instance.LoadAssetAsyncRetain(pKey, pAssetName.ToLowerInvariant(), _callback, true);
+            AddToGroup(pGroupKey, pAssetName);
+            return Instance.LoadAssetAsyncRetain(pKey, pAssetName.ToLowerInvariant(), _callback, true);
         }
 
         #endregion

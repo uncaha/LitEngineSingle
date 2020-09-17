@@ -32,10 +32,12 @@ namespace LitEngine.LoadAsset
             public string assetName { get; private set; }
             public string groupName { get; private set; }
             public bool isLoaded { get; private set; }
+            public object resObject { get; private set; }
             System.Action<string, object> onComplete;
             System.Action<LoadAssetObject> onCompleteParent;
 
             private bool isStart = false;
+            private bool isCalled = false;
             public LoadAssetObject(string pName, System.Action<string, object> pOnComplete, System.Action<LoadAssetObject> pParentCall, string pGroup)
             {
                 assetName = pName;
@@ -53,15 +55,31 @@ namespace LitEngine.LoadAsset
             void LoadComplete(string pKey, object pRes)
             {
                 isLoaded = true;
+                resObject = pRes;
+                onCompleteParent?.Invoke(this);
+            }
+
+            public void CallComplete()
+            {
+                if (!isLoaded)
+                {
+                    DLog.LogErrorFormat("{0} 还未载入完成.错误的调用 CallComplete",assetName);
+                    return;
+                }
+                if (isCalled)
+                {
+                    DLog.LogWarningFormat("{0} 重复调用 CallComplete",assetName);
+                    return;
+                }
                 try
                 {
-                    onComplete?.Invoke(pKey, pRes);
+                    onComplete?.Invoke(assetName, resObject);
                 }
                 catch (System.Exception error)
                 {
                     DLog.LogErrorFormat("asset = {0},error = {1}", assetName, error.Message);
                 }
-                onCompleteParent?.Invoke(this);
+                isCalled = true;
             }
         }
         public string Key { get; private set; }
@@ -107,7 +125,6 @@ namespace LitEngine.LoadAsset
                 catch (System.Exception error)
                 {
                     DLog.LogErrorFormat("group = {0},error = {1}", Key, error.Message);
-                    DLog.LogError(error.ToString());
                 }
             }
         }
