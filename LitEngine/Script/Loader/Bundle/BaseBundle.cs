@@ -53,7 +53,7 @@ namespace LitEngine.LoadAsset
         #endregion
 
         #region 属性
-        public float Progress
+        virtual public float Progress
         {
             get
             {

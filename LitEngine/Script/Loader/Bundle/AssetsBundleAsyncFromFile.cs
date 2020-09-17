@@ -7,6 +7,7 @@ namespace LitEngine.LoadAsset
         private AssetBundleCreateRequest mCreat = null;
         private AssetBundleRequest mLoadObjReq = null;
         private bool WaitCallStartLoadAsset = false;
+        private bool isStreamedSceneAssetBundle = false;
         public AssetsBundleAsyncFromFile()
         {
         }
@@ -23,14 +24,14 @@ namespace LitEngine.LoadAsset
         void CreatBundleReq()
         {
             AssetBundle tasbd = mAssetsBundle as AssetBundle;
-            if (tasbd == null)
-            {
-                UnityEngine.Debug.LogError("AssetBundle 转换失败.mAssetName = " + mAssetName);
-                return;
-            }
             string tname = DeleteSuffixName(mAssetName);
             mLoadObjReq = tasbd.LoadAssetAsync(tname);
+        }
 
+        void CreatStreamedSceneReq()
+        {
+            AssetBundle tasbd = mAssetsBundle as AssetBundle;
+            mLoadObjReq = tasbd.LoadAllAssetsAsync();
         }
         override public bool IsDone()
         {
@@ -57,14 +58,18 @@ namespace LitEngine.LoadAsset
 
         private bool AssetsLoad()
         {
-
             if (!mLoadObjReq.isDone) return false;
-            mAsset = mLoadObjReq.asset;
+            if (isStreamedSceneAssetBundle)
+            {
+                mAsset = mLoadObjReq.allAssets;
+            }
+            else
+            {
+                mAsset = mLoadObjReq.asset;
+            }
+
             if (mAsset == null)
             {
-                var tobjs = ((AssetBundle)mAssetsBundle).LoadAllAssets();
-                if(tobjs != null && tobjs.Length > 0)
-                    mAsset = tobjs[0];
                 UnityEngine.Debug.LogError("在资源包 " + mPathName + " 中找不到文件名:" + DeleteSuffixName(mAssetName).ToLowerInvariant() + " 的资源。或者因为资源的命名不规范导致unity加载模块找不到该资源. ");
             }
 
@@ -98,31 +103,27 @@ namespace LitEngine.LoadAsset
                 LoadEnd();
                 return true;
             }
-
-            if (WaitCallStartLoadAsset)
-                Step = StepState.WaitingLoadAsset;
-            else
+            Step = StepState.WaitingLoadAsset;
+            if (!WaitCallStartLoadAsset)
+            {
                 StartLoadAssets();
+            } 
             return false;
         }
 
         public void StartLoadAssets()
         {
-            if (Step != StepState.WaitingLoadAsset) return;
-
-            if (((AssetBundle)mAssetsBundle).isStreamedSceneAssetBundle)
+            if (mAssetsBundle == null || Step != StepState.WaitingLoadAsset) return;
+            isStreamedSceneAssetBundle = ((AssetBundle)mAssetsBundle).isStreamedSceneAssetBundle;
+            if (isStreamedSceneAssetBundle)
             {
-                mAsset = ((AssetBundle)mAssetsBundle).mainAsset;
-                mCreat = null;
-                mLoadObjReq = null;
-                LoadEnd();
+                CreatStreamedSceneReq();
             }
             else
             {
                 CreatBundleReq();
-                Step = StepState.AssetsLoad;
             }
-
+            Step = StepState.AssetsLoad;
         }
 
         public override void Load()

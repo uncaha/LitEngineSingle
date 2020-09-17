@@ -17,7 +17,7 @@ namespace LitEngine.LoadAsset
             if (mAssetsBundle != null)
             {
                 if (((AssetBundle)mAssetsBundle).isStreamedSceneAssetBundle)
-                    ((AssetBundle)mAssetsBundle).LoadAllAssets();
+                    mAsset = ((AssetBundle)mAssetsBundle).LoadAllAssets();
                 else
                     mAsset = ((AssetBundle)mAssetsBundle).LoadAsset(mAssetName);
 

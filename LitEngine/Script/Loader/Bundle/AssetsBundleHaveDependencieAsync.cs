@@ -68,7 +68,6 @@ namespace LitEngine.LoadAsset
             if (mMainBundle.Step == StepState.BundleLoad) return false;
             for (int i = 0; i < mDepList.Count; i++)
             {
-
                 if (mDepList[i].Step == StepState.BundleLoad)
                     return false;
             }
