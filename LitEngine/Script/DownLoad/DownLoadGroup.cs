@@ -205,12 +205,14 @@ namespace LitEngine.DownLoad
             IsCompleteDownLoad = tisCompleteGroup;
             Error = terrostr.ToString();
 
-            var tfinished = onComplete;
-
+        }
+        public void CallComplete()
+        {
+            if (!IsDone) return;
             try
             {
-                if (tfinished != null)
-                    tfinished(this);
+                var tfinished = onComplete;
+                tfinished?.Invoke(this);
             }
             catch (System.Exception _error)
             {

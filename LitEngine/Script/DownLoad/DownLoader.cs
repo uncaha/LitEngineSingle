@@ -366,19 +366,23 @@ namespace LitEngine.DownLoad
             return null;
         }
 
-        void CallComplete()
+        public void CallComplete()
         {
-            if (IsDone) return;
-            IsDone = true;
+            if (!IsDone) return;
             try
             {
-                OnComplete?.Invoke(this);
+                var tcomplete = OnComplete;
+                tcomplete?.Invoke(this);
             }
             catch (System.Exception e)
             {
                 Debug.LogErrorFormat("DownLoader->CallComplete 出现错误.Url = {0},erro = {1}", SourceURL, e.ToString());
             }
-
+        }
+        void OnDone()
+        {
+            if (IsDone) return;
+            IsDone = true;
         }
         public void Update()
         {
@@ -392,7 +396,7 @@ namespace LitEngine.DownLoad
                     break;
                 case DownloadState.finished:
                     {
-                        CallComplete();
+                        OnDone();
                     }
                     break;
                 default:
