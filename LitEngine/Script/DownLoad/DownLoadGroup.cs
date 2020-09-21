@@ -33,6 +33,7 @@ namespace LitEngine.DownLoad
             State = DownloadState.normal;
             Error = null;
             ContentLength = 0;
+            IsCompleteDownLoad = false;
         }
         ~DownLoadGroup()
         {

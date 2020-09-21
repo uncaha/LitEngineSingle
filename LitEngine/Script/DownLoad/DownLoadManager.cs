@@ -37,7 +37,7 @@ namespace LitEngine.DownLoad
                 return sInstance;
             }
         }
-        public const int MaxThread = 3;
+        public const int MaxThread = 6;
         private static bool isNeedSort = false;
 
         private Hashtable sDownLoadMap = Hashtable.Synchronized(new Hashtable());
