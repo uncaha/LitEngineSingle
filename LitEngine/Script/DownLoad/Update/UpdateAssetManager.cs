@@ -172,9 +172,9 @@ namespace LitEngine.UpdateTool
 
         }
 
-        void OnUpdateComplete(ByteFileInfoList info,bool pIsComplete, string error)
+        void OnUpdateComplete(ByteFileInfoList info, string error)
         {
-            if (pIsComplete)
+            if (string.IsNullOrEmpty(error))
             {
                 updateType = UpdateType.finished;
                 checkType = CheckType.AllGood;
@@ -234,9 +234,9 @@ namespace LitEngine.UpdateTool
 
         }
 
-        void OnCheckComplete(ByteFileInfoList info,bool pIsComplete, string error)
+        void OnCheckComplete(ByteFileInfoList info, string error)
         {
-            if (pIsComplete)
+            if (error == null)
             {
                 if (info != null && info.fileMap.Count > 0)
                 {

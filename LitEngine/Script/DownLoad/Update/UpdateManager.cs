@@ -125,7 +125,7 @@ namespace LitEngine.UpdateTool
         #endregion
 
         #region update
-        public delegate void UpdateComplete(ByteFileInfoList info,bool pIsCompleteDownLoad, string error);
+        public delegate void UpdateComplete(ByteFileInfoList info, string error);
         static public void StopAll()
         {
             Instance.Stop();
@@ -255,7 +255,7 @@ namespace LitEngine.UpdateTool
         {
             isUpdateing = false;
             UpdateLocalList();
-            CallUpdateOnComplete(curOnComplete, null, downLoadGroup.IsCompleteDownLoad, downLoadGroup.Error);
+            CallUpdateOnComplete(curOnComplete, null, null);
         }
 
         void UpdateFileFail()
@@ -268,7 +268,7 @@ namespace LitEngine.UpdateTool
             }
             if (!curAutoRetry)
             {
-                CallUpdateOnComplete(curOnComplete, erroListInfo,downLoadGroup.IsCompleteDownLoad, downLoadGroup.Error);
+                CallUpdateOnComplete(curOnComplete, erroListInfo, downLoadGroup.Error);
             }
             else
             {
@@ -278,13 +278,13 @@ namespace LitEngine.UpdateTool
             }
         }
 
-        void CallUpdateOnComplete(UpdateComplete onComplete, ByteFileInfoList pInfo, bool pIsCompleteDownLoad, string pError)
+        void CallUpdateOnComplete(UpdateComplete onComplete, ByteFileInfoList pInfo, string pError)
         {
             try
             {
                 ReleaseGroupLoader();
                 ReTryCount = 0;
-                onComplete?.Invoke(pInfo, pIsCompleteDownLoad, pError);
+                onComplete?.Invoke(pInfo, pError);
             }
             catch (System.Exception erro)
             {
@@ -317,7 +317,7 @@ namespace LitEngine.UpdateTool
         #endregion
 
         #region check
-        public delegate void CheckComplete(ByteFileInfoList info, bool pIsCompleteDownLoad, string error);
+        public delegate void CheckComplete(ByteFileInfoList info, string error);
         void ReleaseCheckLoader()
         {
             if (checkLoader == null) return;
@@ -425,11 +425,11 @@ namespace LitEngine.UpdateTool
             try
             {
                 string error = checkLoader != null ? checkLoader.Error : null;
-                bool iscomplete = checkLoader.IsCompleteDownLoad;
+
                 ReleaseCheckLoader();
                 ReTryCheckCount = 0;
-
-                onComplete?.Invoke(pObj, iscomplete, error);
+               
+                onComplete?.Invoke(pObj, error);
             }
             catch (System.Exception erro)
             {
