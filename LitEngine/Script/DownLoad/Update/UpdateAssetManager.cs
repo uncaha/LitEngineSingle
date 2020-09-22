@@ -124,7 +124,7 @@ namespace LitEngine.UpdateTool
             }
             else
             {
-                updateType = UpdateType.fail;
+                updateType = UpdateType.pause;
             }
             AutoUpdate = true;
             return istart;

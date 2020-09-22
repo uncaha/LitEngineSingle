@@ -204,8 +204,11 @@ namespace LitEngine.DownLoad
                 {
                     IDownLoad item = (IDownLoad)sWaitDownLoad[0];
                     sWaitDownLoad.RemoveAt(0);
-                    sDownLoading.Add(item);
-                    item.StartAsync();
+                    if (!item.IsDone)
+                    {
+                        sDownLoading.Add(item);
+                        item.StartAsync();
+                    }
 
                     if (sWaitDownLoad.Count == 0)
                     {
