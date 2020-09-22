@@ -318,6 +318,7 @@ namespace LitEngine.UpdateTool
 
         #region check
         public delegate void CheckComplete(ByteFileInfoList info, string error);
+        public static bool autoUseCacheCheck = false;
         void ReleaseCheckLoader()
         {
             if (checkLoader == null) return;
@@ -366,9 +367,9 @@ namespace LitEngine.UpdateTool
 
         }
 
-        IEnumerator WaitRetryCheck(CheckComplete onComplete, bool useCache, bool needRetry)
+        IEnumerator WaitRetryCheck(float dt,CheckComplete onComplete, bool useCache, bool needRetry)
         {
-            yield return new WaitForSeconds(5);
+            yield return new WaitForSeconds(dt);
             CheckUpdate(onComplete, useCache, needRetry);
         }
 
@@ -379,12 +380,16 @@ namespace LitEngine.UpdateTool
             CallCheckOnComplete(onComplete, ret);
         }
 
-        void DownLoadCheckFileFail(CheckComplete onComplete, bool useCache, bool needRetry)
+        void DownLoadCheckFileFail(DownLoader dloader,CheckComplete onComplete, bool useCache, bool needRetry)
         {
             isChecking = false;
-
             string tfilePath = GameCore.CombinePath(GameCore.PersistentResDataPath, GetCheckFileName());
-            if (!File.Exists(tfilePath))
+            bool isfileExit = File.Exists(tfilePath);
+            if (dloader.IsCompleteDownLoad && isfileExit)
+            {
+                DownLoadCheckFileFinished(onComplete);
+            }
+            else
             {
                 if (ReTryCheckCount >= ReTryMaxCount)
                 {
@@ -394,16 +399,20 @@ namespace LitEngine.UpdateTool
                 if (needRetry)
                 {
                     ReTryCheckCount++;
-                    StartCoroutine(WaitRetryCheck(onComplete, useCache, needRetry));
+                    if (autoUseCacheCheck && isfileExit)
+                    {
+                        StartCoroutine(WaitRetryCheck(0.1f, onComplete, true, needRetry));
+                    }
+                    else
+                    {
+                        StartCoroutine(WaitRetryCheck(3, onComplete, useCache, needRetry));
+                    }
+
                 }
                 else
                 {
                     CallCheckOnComplete(onComplete, null);
                 }
-            }
-            else
-            {
-                DownLoadCheckFileFinished(onComplete);
             }
         }
 
@@ -416,7 +425,7 @@ namespace LitEngine.UpdateTool
             else
             {
                 Debug.Log(dloader.Error);
-                DownLoadCheckFileFail(onComplete, useCache, needRetry);
+                DownLoadCheckFileFail(dloader,onComplete, useCache, needRetry);
             }
         }
 

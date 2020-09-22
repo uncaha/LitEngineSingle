@@ -227,6 +227,7 @@ namespace LitEngine.UpdateTool
         void CaseFail()
         {
             checkType = CheckType.checking;
+            UpdateManager.autoUseCacheCheck = true;
             UpdateManager.CheckUpdate(OnCheckComplete, false, true);
         }
         void CaseNeedUpdate()
