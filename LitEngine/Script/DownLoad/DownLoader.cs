@@ -105,9 +105,15 @@ namespace LitEngine.DownLoad
 
         public void Stop()
         {
-            IsDone = true;
+            if (IsCompleteDownLoad) return;
             mThreadRuning = false;
             CloseHttpClient();
+
+            if(task != null)
+            {
+                task.Wait();
+                task = null;
+            }
         }
         #endregion
 
@@ -119,6 +125,7 @@ namespace LitEngine.DownLoad
             Error = null;
         }
 
+        Task task = null;
         public void StartAsync()
         {
             if (State != DownloadState.normal) return;
@@ -127,11 +134,12 @@ namespace LitEngine.DownLoad
             IsDone = false;
             Error = null;
             OnStart?.Invoke(this);
-            Task.Run((System.Action)ReadNetByte);
+            task = Task.Run((System.Action)ReadNetByte);
         }
 
         private void ReadNetByte()
         {
+            Error = string.Format("[URL] = {0},[Error] = 文件未能完成下载.Stream 被中断.", SourceURL);
             long tdownloadSize = 0;
             long tneedDownLoadSize = 0;
             FileStream ttempfile = null;
@@ -287,6 +295,7 @@ namespace LitEngine.DownLoad
                         }
                         File.Move(TempFile, CompleteFile);
                         IsCompleteDownLoad = true;
+                        Error = null;
                     }
                     else
                     {
@@ -317,23 +326,31 @@ namespace LitEngine.DownLoad
         }
         private void CloseHttpClient()
         {
-            if (mHttpStream != null)
+            try
             {
-                mHttpStream.Close();
-                mHttpStream = null;
+                if (mHttpStream != null)
+                {
+                    mHttpStream.Close();
+                    mHttpStream = null;
+                }
+
+                if (mResponse != null)
+                {
+                    mResponse.Close();
+                    mResponse = null;
+                }
+
+                if (mReqest != null)
+                {
+                    mReqest.Abort();
+                    mReqest = null;
+                }
+            }
+            catch (System.Exception erro)
+            {
+                Debug.LogError(string.Format("[URL] = {0},[Error] = {1}", SourceURL, erro.Message));
             }
 
-            if (mResponse != null)
-            {
-                mResponse.Close();
-                mResponse = null;
-            }
-
-            if (mReqest != null)
-            {
-                mReqest.Abort();
-                mReqest = null;
-            }
         }
         string tempMD5 = null;
         bool CheckMD5()

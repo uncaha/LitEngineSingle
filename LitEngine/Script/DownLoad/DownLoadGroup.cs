@@ -72,6 +72,7 @@ namespace LitEngine.DownLoad
 
         public void Stop()
         {
+            if(IsCompleteDownLoad) return;
             for (int i = 0; i < groupList.Count; i++)
             {
                 groupList[i].Stop();
@@ -79,6 +80,7 @@ namespace LitEngine.DownLoad
             Error = "下载中断.";
             IsDone = true;
             State = DownloadState.finished;
+            DownLoadManager.RefList();
         }
         #endregion
 

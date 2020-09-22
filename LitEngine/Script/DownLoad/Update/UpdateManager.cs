@@ -166,7 +166,7 @@ namespace LitEngine.UpdateTool
                 Debug.LogError("更新中,请勿重复调用.");
                 return false;
             }
-            if (downLoadGroup == null || downLoadGroup.IsCompleteDownLoad) return false;
+            if (downLoadGroup == null) return false;
             isUpdateing = true;
             downLoadGroup.ReTryAsync();
             StartCoroutine(WaitUpdateDone());

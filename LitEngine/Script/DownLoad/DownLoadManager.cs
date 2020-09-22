@@ -167,6 +167,11 @@ namespace LitEngine.DownLoad
             }
         }
 
+        static public void RefList()
+        {
+            Instance.Update();
+        }
+
         private void Update()
         {
             UpdateLoader();
@@ -203,11 +208,15 @@ namespace LitEngine.DownLoad
                 for (int i = 0; i < tneed; i++)
                 {
                     IDownLoad item = (IDownLoad)sWaitDownLoad[0];
-                    sWaitDownLoad.RemoveAt(0);
                     if (!item.IsDone)
                     {
+                        sWaitDownLoad.RemoveAt(0);
                         sDownLoading.Add(item);
                         item.StartAsync();
+                    }
+                    else
+                    {
+                        Remove(item.Key);
                     }
 
                     if (sWaitDownLoad.Count == 0)
