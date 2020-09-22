@@ -140,7 +140,7 @@ namespace LitEngine.DownLoad
 
         private void ReadNetByte()
         {
-            Error = string.Format("[URL] = {0},[Error] = 文件未能完成下载.Stream 被中断.", SourceURL);
+            Error = string.Format("[URL] = {0},[Error] = Can not completed.Stream erro.", SourceURL);
             long tdownloadSize = 0;
             long tneedDownLoadSize = 0;
             FileStream ttempfile = null;
@@ -202,7 +202,7 @@ namespace LitEngine.DownLoad
 
                 if (mResponse == null || rspError != null)
                 {
-                    string terro = string.Format("ReadNetByte 获取Response失败.[Error] = {0}", rspError);
+                    string terro = string.Format("ReadNetByte Get Response fail.[Error] = {0}", rspError);
                     throw new System.NullReferenceException(terro);
                 }
 
@@ -262,7 +262,7 @@ namespace LitEngine.DownLoad
                 {
                     if (string.IsNullOrEmpty(Error))
                     {
-                        Error = string.Format("[URL] = {0},[Error] = 文件未能完成下载.Stream 被中断.", SourceURL);
+                        Error = string.Format("[URL] = {0},[Error] = Can not completed.Stream erro.", SourceURL);
                     }
                 }
             }
@@ -301,17 +301,20 @@ namespace LitEngine.DownLoad
                     else
                     {
                         File.Delete(TempFile);
-                        Error = string.Format("[URL] = {0},[Error] = 文件MD5验证失败.MD5 = {1},tempMd5 = {2}", SourceURL, MD5String, tempMD5);
+                        Error = string.Format("[URL] = {0},[Error] = Check MD5 fail.MD5 = {1},tempMd5 = {2}", SourceURL, MD5String, tempMD5);
                     }
                 }
                 catch (System.Exception error)
                 {
-                    Error = string.Format("[URL] = {0},[Error] = 文件MD5验证失败.MD5 = {1},error = {2}", SourceURL, MD5String, error.Message);
+                    Error = string.Format("[URL] = {0},[Error] = Check MD5 fail.MD5 = {1},error = {2}", SourceURL, MD5String, error.Message);
                 }
             }
             else
             {
-                Error = string.Format("[URL] = {0},[Error] = 未能找到临时下载文件.MD5 = {1},tempfile = {2}", SourceURL, MD5String, TempFile);
+                if (string.IsNullOrEmpty(Error))
+                {
+                    Error = string.Format("[URL] = {0},[Error] = file Can not found .MD5 = {1},tempfile = {2}", SourceURL, MD5String, TempFile);
+                }
             }
         }
 
@@ -394,7 +397,7 @@ namespace LitEngine.DownLoad
             }
             catch (System.Exception e)
             {
-                Debug.LogErrorFormat("DownLoader->CallComplete 出现错误.Url = {0},erro = {1}", SourceURL, e.ToString());
+                Debug.LogErrorFormat("DownLoader->CallComplete error.Url = {0},erro = {1}", SourceURL, e.ToString());
             }
         }
         void OnDone()

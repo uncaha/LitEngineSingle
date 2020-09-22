@@ -82,7 +82,7 @@ namespace LitEngine.DownLoad
             DownLoader ret = null;
             if (Instance.sDownLoadMap.ContainsKey(sourceurl))
             {
-                Debug.LogWarning("为正在下载的文件添加回调.url = " + sourceurl);
+                Debug.LogWarning("the file is downloading.url = " + sourceurl);
                 ret = (DownLoader)Instance.sDownLoadMap[sourceurl];
             }
             else

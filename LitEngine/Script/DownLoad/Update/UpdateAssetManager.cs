@@ -159,7 +159,7 @@ namespace LitEngine.UpdateTool
             }
             else
             {
-                Debug.LogError("更新列表不能为空.");
+                Debug.LogError("list can not be null.");
             }
 
         }

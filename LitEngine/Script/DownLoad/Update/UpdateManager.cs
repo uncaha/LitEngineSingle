@@ -163,7 +163,7 @@ namespace LitEngine.UpdateTool
         {
             if (isUpdateing)
             {
-                Debug.LogError("更新中,请勿重复调用.");
+                Debug.LogError("Updateing.");
                 return false;
             }
             if (downLoadGroup == null) return false;
@@ -178,7 +178,7 @@ namespace LitEngine.UpdateTool
         {
             if (isUpdateing)
             {
-                Debug.LogError("更新中,请勿重复调用.");
+                Debug.LogError("Updateing.");
                 return;
             }
             isUpdateing = true;
@@ -329,7 +329,7 @@ namespace LitEngine.UpdateTool
         {
             if (isChecking || isUpdateing)
             {
-                Debug.LogError("更新流程进行中,请勿重复调用.");
+                Debug.LogError("Checking or Updateing.");
                 return;
             }
             isChecking = true;

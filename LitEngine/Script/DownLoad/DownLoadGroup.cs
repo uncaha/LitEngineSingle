@@ -77,7 +77,7 @@ namespace LitEngine.DownLoad
             {
                 groupList[i].Stop();
             }
-            Error = "下载中断.";
+            Error = "Download Stop.";
             IsDone = true;
             State = DownloadState.finished;
             DownLoadManager.RefList();
@@ -88,7 +88,7 @@ namespace LitEngine.DownLoad
         {
             if (State != DownloadState.normal)
             {
-                Debug.LogError("已经开始的任务不可插入新内容.");
+                Debug.LogError("DownLoading.");
                 return null;
             }
             if (IsHaveURL(pSourceurl)) return null;
@@ -107,7 +107,7 @@ namespace LitEngine.DownLoad
             int tindex = groupList.FindIndex((a) => a.Key.Equals(pSourceurl));
             if (tindex != -1)
             {
-                Debug.LogError("重复添加下载,url = " + pSourceurl);
+                Debug.LogError("url is duplicated,url = " + pSourceurl);
                 return true;
             }
 
