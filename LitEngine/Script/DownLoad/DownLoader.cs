@@ -108,12 +108,13 @@ namespace LitEngine.DownLoad
             if (IsCompleteDownLoad) return;
             mThreadRuning = false;
             CloseHttpClient();
-
-            if(task != null)
+            if (task != null)
             {
                 task.Wait();
                 task = null;
             }
+            IsDone = true;
+            State = DownloadState.finished;
         }
         #endregion
 
