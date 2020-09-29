@@ -72,7 +72,7 @@ namespace LitEngine
                     {
                         DLog.Log( string.Format("[开始连接]" + " HostName:{0} IpAddress:{1} AddressFamily:{2}", mHostName, tip.ToString(), tip.AddressFamily.ToString()));
                         mSocket = new Socket(tip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                        ChoseSocketTimeOutAndBuffer();
+                        RestSocketInfo();
                         mSocket.Connect(tip, mPort);
                         DLog.Log( "连接成功!");
                         ret = true;
@@ -239,7 +239,7 @@ namespace LitEngine
                     {
                         ReceiveData tssdata = mBufferData.GetReceiveData();
                         mResultDataList.Enqueue(tssdata);
-                        mBufferData.Pop();
+                        //mBufferData.Pop();
                         DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
                     }
                 }

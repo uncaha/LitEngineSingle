@@ -23,20 +23,38 @@ namespace LitEngine
                 mPos = 0;
                 mIndex = 0;
             }
-            public void Push(byte[] _buffer,int _len)
+            void CalculationPop(int pLen)
             {
-                if ((mSize - mIndex) < _len)
+                if (mPos > 0 && (mSize - mIndex) < pLen)
                 {
-                    mSize = mSize + _len + 1024;
+                    int tlen = mIndex - mPos;
+                    if(tlen > 0)
+                    {
+                        Pop();
+                    }
+                }
+            }
+            void ExpansionBuffer(int pLen)
+            {
+                if ((mSize - mIndex) < pLen)
+                {
+                    mSize = mSize + pLen + 1024 * 10;
                     byte[] tbuffer = new byte[mSize];
-                    Array.Copy(mBuffer, 0, tbuffer, 0, mIndex);
+                    Buffer.BlockCopy(mBuffer, 0, tbuffer, 0, mIndex);
                     mBuffer = tbuffer;
                 }
-                Array.Copy(_buffer, 0, mBuffer, mIndex, _len);
-                mIndex += _len;
+            }
+            public void Push(byte[] pbuffer,int pLen)
+            {
+                CalculationPop(pLen);
+                ExpansionBuffer(pLen);
+
+                Buffer.BlockCopy(pbuffer, 0, mBuffer, mIndex, pLen);
+                mIndex += pLen;
             }
             public void Pop()
             {
+                if(mPos == 0) return;
                 int tlen = mIndex - mPos;
                 if(tlen > 0)
                 {

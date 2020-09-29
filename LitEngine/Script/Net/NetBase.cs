@@ -71,18 +71,18 @@ namespace LitEngine
             protected int mPort;
             protected int mRecTimeOut = 0;
             protected int mSendTimeout = 0;
-            protected int mReceiveBufferSize = 1024;
-            protected int mSendBufferSize = 1024;
+            protected int mReceiveBufferSize = 1024 * 8;
+            protected int mSendBufferSize = 1024 * 8;
 
             protected string mNetTag = "";
             public bool StopUpdateRecMsg { get; set; }
             #endregion
 
             #region 数据
-            protected const int mReadMaxLen = 2048;
+            protected const int mReadMaxLen = 1024 * 20;
             protected byte[] mRecbuffer = new byte[mReadMaxLen];
 
-            protected BufferBase mBufferData = new BufferBase(2048);
+            protected BufferBase mBufferData = new BufferBase(1024 * 40);
             protected System.Collections.Queue mSendDataList = System.Collections.Queue.Synchronized(new System.Collections.Queue());//发送数据队列
             protected System.Collections.Queue mResultDataList = System.Collections.Queue.Synchronized(new System.Collections.Queue());//已接收的消息队列             
             #endregion
@@ -176,12 +176,13 @@ namespace LitEngine
                 mSendTimeout = _send;
                 mReceiveBufferSize = _recsize;
                 mSendBufferSize = _sendsize;
-                ChoseSocketTimeOutAndBuffer();
+                RestSocketInfo();
             }
 
-            virtual protected void ChoseSocketTimeOutAndBuffer()
+            virtual protected void RestSocketInfo()
             {
                 if (mSocket == null) return;
+                mSocket.NoDelay = true;
                 mSocket.ReceiveTimeout = mRecTimeOut;
                 mSocket.SendTimeout = mSendTimeout;
                 mSocket.ReceiveBufferSize = mReceiveBufferSize;
