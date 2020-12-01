@@ -220,9 +220,7 @@ namespace LitEngine
                     {
                         if (mSendDataList.Count == 0)
                             continue;
-                        SendData tdata = null;
-                        tdata = (SendData)mSendDataList.Dequeue();
-                        SendThread((SendData)tdata);
+                        SendThread((SendData)mSendDataList.Dequeue());
                     }
                     
                 }

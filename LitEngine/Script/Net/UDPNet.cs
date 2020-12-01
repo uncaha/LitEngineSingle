@@ -11,6 +11,7 @@ namespace LitEngine
         public class UDPNet : NetBase
         {
             #region socket属性
+            static public bool IsPushPackage = false;
             static private UDPNet sInstance = null;
             protected IPEndPoint mTargetPoint;//目标地址
             protected EndPoint mRecPoint;
@@ -184,6 +185,11 @@ namespace LitEngine
             #region 发送  
             override public void AddSend(SendData _data)
             {
+                if(_data == null)
+                {
+                    DLog.LogError( "试图添加一个空对象到发送队列!AddSend");
+                    return;
+                }
                 if (!mStartThread) return;
                 mSendDataList.Enqueue(_data);
             }
@@ -193,7 +199,6 @@ namespace LitEngine
             {
                 while (mStartThread)
                 {
-                    Thread.Sleep(2);
                     try
                     {
                         if (mSendDataList.Count == 0)
@@ -204,7 +209,6 @@ namespace LitEngine
                     {
                         DLog.LogError(mNetTag + e.ToString());
                     }
-
                 }
             }
 
@@ -252,12 +256,20 @@ namespace LitEngine
                 try
                 {
                     DebugMsg(-1, _buffer, 0, _len, "接收-bytes");
-                    mBufferData.Push(_buffer, _len);
-                    while (mBufferData.IsFullData())
+                    if (!IsPushPackage)
                     {
-                        ReceiveData tssdata = mBufferData.GetReceiveData();
+                        ReceiveData tssdata = new ReceiveData(_buffer, 0);
                         mResultDataList.Enqueue(tssdata);
-                        DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
+                    }
+                    else
+                    {
+                        mBufferData.Push(_buffer, _len);
+                        while (mBufferData.IsFullData())
+                        {
+                            ReceiveData tssdata = mBufferData.GetReceiveData();
+                            mResultDataList.Enqueue(tssdata);
+                            DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
+                        }
                     }
                 }
                 catch (Exception e)
