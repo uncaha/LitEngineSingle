@@ -527,30 +527,30 @@ namespace LitEngine.UpdateTool
 
         public string GetPlatformPath()
         {
-            string tkey = platformPath;
-            if (string.IsNullOrWhiteSpace(tkey))
+            if (string.IsNullOrWhiteSpace(platformPath))
             {
                 switch (Application.platform)
                 {
                     case RuntimePlatform.IPhonePlayer:
                     case RuntimePlatform.tvOS:
                     case RuntimePlatform.OSXPlayer:
-                        tkey = "ios";
+                        platformPath = "ios";
                         break;
                     case RuntimePlatform.Android:
-                        tkey = "android";
+                        platformPath = "android";
                         break;
                     case RuntimePlatform.LinuxEditor:
                     case RuntimePlatform.OSXEditor:
                     case RuntimePlatform.WindowsEditor:
-                        tkey = "editor";
+                        platformPath = "editor";
                         break;
                     default:
-                        tkey = Application.platform.ToString();
+                        platformPath = Application.platform.ToString();
                         break;
                 }
+                DLog.LogError("UpdateManager未设置 platform,启用默认设置. platformPath = " + platformPath);
             }
-            return tkey;
+            return platformPath;
         }
         public string GetServerUrl(string pFile)
         {
