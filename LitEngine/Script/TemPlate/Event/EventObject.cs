@@ -25,14 +25,14 @@ namespace LitEngine.TemPlate.Event
 #if LITDEBUG
             try
             {
+#endif
                 EventDelgate(pObject);
+#if LITDEBUG
             }
             catch (System.Exception _e)
             {
                 DLog.LogError(_e.ToString());
             }
-#else
-            EventDelgate(pObject);
 #endif
         }
 

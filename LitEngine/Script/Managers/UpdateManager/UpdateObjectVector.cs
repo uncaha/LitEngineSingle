@@ -71,15 +71,15 @@ namespace LitEngine
 #if LITDEBUG
                 try
                 {
+#endif
                     _runobj.RunDelgete();
+#if LITDEBUG
                 }
                 catch (System.Exception _erro)
                 {
-                    DLog.LogError( string.Format("[{0}] [{1}]{2}", mUpdateType.ToString(), _runobj.Key, _erro.ToString()));
+                    DLog.LogError(string.Format("[{0}] [{1}]{2}", mUpdateType.ToString(), _runobj.Key, _erro.ToString()));
                     _runobj.UnRegToOwner();
                 }
-#else
-                _runobj.RunDelgete();
 #endif
 
             }
@@ -97,5 +97,5 @@ namespace LitEngine
             }
         }
     }
-    
+
 }

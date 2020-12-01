@@ -88,7 +88,7 @@ namespace LitEngine
             protected System.Collections.Queue mResultDataList = System.Collections.Queue.Synchronized(new System.Collections.Queue());//已接收的消息队列             
             #endregion
             #region 分发
-            static public int OneFixedUpdateChoseCount = 5;
+            static public int OneFixedUpdateChoseCount = 60;
             protected SafeMap<int, SafeList<System.Action<ReceiveData>>> mMsgHandlerList = new SafeMap<int, SafeList<System.Action<ReceiveData>>>();//消息注册列表
             protected SafeQueue<MSG_RECALL_DATA> mToMainThreadMsgList = new SafeQueue<MSG_RECALL_DATA>();//给主线程发送通知
             #endregion
@@ -338,19 +338,24 @@ namespace LitEngine
 
             virtual public void Call(int _msgid, ReceiveData _msg)
             {
-                try {
+#if LITDEBUG
+                try
+                {
+#endif
                     if (mMsgHandlerList.ContainsKey(_msgid))
                     {
                         SafeList<System.Action<ReceiveData>> tlist = mMsgHandlerList[_msgid];
                         int tlen = tlist.Count;
-                        for (int i = tlen -1 ; i >= 0; i--)
+                        for (int i = tlen - 1; i >= 0; i--)
                             tlist[i](_msg);
                     }
+#if LITDEBUG
                 }
                 catch (Exception _error)
                 {
-                    DLog.LogError( _error.ToString());
+                    DLog.LogError(_error.ToString());
                 }
+#endif
             }
 
             #endregion

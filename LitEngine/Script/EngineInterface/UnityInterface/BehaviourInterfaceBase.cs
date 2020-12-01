@@ -72,7 +72,7 @@ namespace LitEngine
 
             virtual public void ClearScriptObject()
             {
-                if(mIsDestory)
+                if (mIsDestory)
                 {
                     return;
                 }
@@ -109,7 +109,7 @@ namespace LitEngine
             virtual protected void InitParamList()
             {
                 mUpdateDelegate = mCodeTool.GetUpdateObjectAction("Update", mScriptClass, ScriptObject);
-                if(mUpdateDelegate != null)
+                if (mUpdateDelegate != null)
                     mUpdateDelegate.Owner = GameUpdateManager.Instance.UpdateList;
 
                 mFixedUpdateDelegate = mCodeTool.GetUpdateObjectAction("FixedUpdate", mScriptClass, ScriptObject);
@@ -126,14 +126,14 @@ namespace LitEngine
                     mOnGUIDelegate.MaxTime = 0;
                     mOnGUIDelegate.Owner = GameUpdateManager.Instance.OnGUIList;
                 }
-                    
+
             }
             virtual public void InitScript(string _class)
             {
                 if (string.IsNullOrEmpty(_class) || mInitScript) return;
                 mScriptClass = _class;
                 InitScriptOnAwake();
-                if(gameObject.activeInHierarchy)
+                if (gameObject.activeInHierarchy)
                 {
                     CallFunctionVoid("Awake");
                     OnEnable();
@@ -172,36 +172,45 @@ namespace LitEngine
 
             virtual public void CallFunctionVoid(string _FunctionName)
             {
+#if LITDEBUG
                 try
                 {
+#endif
                     if (mObject == null || mScriptType == null || mCodeTool == null) return;
                     MethodBase tmethod = GetMethod(_FunctionName);
                     if (tmethod == null) return;
                     tmethod.Call();
+#if LITDEBUG
                 }
                 catch (Exception _erro)
                 {
                     DLog.LogError(string.Format("[{0}->{1}] [GameObject:{2}] Error:{3}", mScriptClass, _FunctionName, gameObject.name, _erro.ToString()));
                 }
+#endif
             }
 
             virtual public object CallScriptFunctionByNameParams(string _FunctionName, params object[] _prams)
             {
-                try {
+#if LITDEBUG
+                try
+                {
+#endif
                     if (mObject == null || mScriptType == null || mCodeTool == null) return null;
                     int tpramcount = _prams != null ? _prams.Length : 0;
                     MethodBase tmethod = GetMethod(_FunctionName, tpramcount);
                     if (tmethod == null) return null;
                     return tmethod.Invoke(_prams);
+#if LITDEBUG
                 }
                 catch (Exception _erro)
                 {
-                    DLog.LogError( string.Format("[{0}->{1}] [GameObject:{2}] Error:{3}",mScriptClass, _FunctionName, gameObject.name, _erro.ToString()));
+                    DLog.LogError(string.Format("[{0}->{1}] [GameObject:{2}] Error:{3}", mScriptClass, _FunctionName, gameObject.name, _erro.ToString()));
                 }
+#endif
                 return null;
             }
 
-            public MethodBase GetMethod(string pFunctionName,int pPramCount = 0)
+            public MethodBase GetMethod(string pFunctionName, int pPramCount = 0)
             {
                 string tkey = pFunctionName + pPramCount;
                 MethodBase ret = null;
@@ -226,10 +235,10 @@ namespace LitEngine
                 }
                 catch (Exception _error)
                 {
-                    DLog.LogError( string.Format("[{0}] Error:{1}", mScriptClass, _error.ToString()));
+                    DLog.LogError(string.Format("[{0}] Error:{1}", mScriptClass, _error.ToString()));
                 }
             }
-            protected void CallAction<T>(Action<T> _action,T _param)
+            protected void CallAction<T>(Action<T> _action, T _param)
             {
                 try
                 {
@@ -238,7 +247,7 @@ namespace LitEngine
                 }
                 catch (Exception _error)
                 {
-                    DLog.LogError( string.Format("[{0}] Error:{1}", mScriptClass, _error.ToString()));
+                    DLog.LogError(string.Format("[{0}] Error:{1}", mScriptClass, _error.ToString()));
                 }
             }
             #endregion
@@ -317,5 +326,5 @@ namespace LitEngine
             #endregion
         }
     }
-    
+
 }
