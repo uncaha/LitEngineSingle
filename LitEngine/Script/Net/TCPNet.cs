@@ -292,7 +292,6 @@ namespace LitEngine
                     {
                         ReceiveData tssdata = mBufferData.GetReceiveData();
                         mResultDataList.Enqueue(tssdata);
-                        //mBufferData.Pop();
                         DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
                     }
                 }
