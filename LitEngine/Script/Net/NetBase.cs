@@ -5,6 +5,8 @@ using System.Threading;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Collections.Generic;
+using LitEngine.UpdateSpace;
+using LitEngine.Method;
 namespace LitEngine
 {
     namespace NetTool
@@ -91,6 +93,7 @@ namespace LitEngine
             static public int OneFixedUpdateChoseCount = 60;
             protected SafeMap<int, SafeList<System.Action<ReceiveData>>> mMsgHandlerList = new SafeMap<int, SafeList<System.Action<ReceiveData>>>();//消息注册列表
             protected SafeQueue<MSG_RECALL_DATA> mToMainThreadMsgList = new SafeQueue<MSG_RECALL_DATA>();//给主线程发送通知
+            protected UpdateObject updateObject;
             #endregion
             #region 日志
             public bool IsShowDebugLog = false;
@@ -107,9 +110,14 @@ namespace LitEngine
             protected bool mDisposed = false;
             #endregion
 
-            public NetBase()
+            protected NetBase()
             {
                 StopUpdateRecMsg = false;
+            }
+
+            virtual protected void InitNet() 
+            {
+                updateObject = new UpdateObject(mNetTag,new Method_Action(MainThreadUpdate),this);
             }
 
             virtual protected void OnDestroy()
@@ -431,6 +439,19 @@ namespace LitEngine
             #endregion
 
             #endregion
+
+            protected void OnEnable()
+            {
+                GameUpdateManager.RegUpdateForward(updateObject);
+            }
+            protected void OnDisable()
+            {
+                GameUpdateManager.UnRegUpdate(updateObject);
+            }
+            virtual protected void MainThreadUpdate()
+            {
+                
+            }
 
         }
         #endregion

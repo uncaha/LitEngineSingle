@@ -47,6 +47,10 @@ namespace LitEngine
 
         }
         #region 注册
+        static internal void RegUpdateForward(UpdateBase _act)
+        {
+            Instance.UpdateList.Add(_act);
+        }
         static public void RegUpdate(UpdateBase _act)
         {
             Instance.UpdateList.Add(_act);

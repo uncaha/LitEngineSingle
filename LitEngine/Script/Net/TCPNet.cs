@@ -21,6 +21,7 @@ namespace LitEngine
                         GameObject tobj = new GameObject();
                         DontDestroyOnLoad(tobj);
                         sInstance = tobj.AddComponent<TCPNet>();
+                        sInstance.InitNet();
                         tobj.name = sInstance.mNetTag + "-Object";
                     }
                     return sInstance;
@@ -304,7 +305,7 @@ namespace LitEngine
 
             #endregion
 
-            protected void Update()
+            override protected void MainThreadUpdate()
             {
                 UpdateReCalledMsg();
                 UpdateRecMsg();

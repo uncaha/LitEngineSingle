@@ -4,6 +4,7 @@ using System.Net;
 using System;
 using System.Collections;
 using System.Threading;
+using LitEngine.UpdateSpace;
 namespace LitEngine
 {
     namespace NetTool
@@ -34,6 +35,7 @@ namespace LitEngine
                         GameObject tobj = new GameObject();
                         DontDestroyOnLoad(tobj);
                         sInstance = tobj.AddComponent<UDPNet>();
+                        sInstance.InitNet();
                         tobj.name = sInstance.mNetTag + "-Object";
                     }
                     return sInstance;
@@ -280,11 +282,12 @@ namespace LitEngine
             }
             #endregion
 
-            protected void Update()
+            override protected void MainThreadUpdate()
             {
                 UpdateReCalledMsg();
                 UpdateRecMsg();
             }
+
             #endregion
         }
     }
