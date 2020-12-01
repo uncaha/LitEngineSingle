@@ -47,9 +47,9 @@ namespace LitEngine
 
         }
         #region 注册
-        static internal void RegUpdateForward(UpdateBase _act)
+        static internal void InsertUpdate(int pIndex,UpdateBase pSor)
         {
-            Instance.UpdateList.Add(_act);
+            Instance.UpdateList.Insert(pIndex,pSor);
         }
         static public void RegUpdate(UpdateBase _act)
         {

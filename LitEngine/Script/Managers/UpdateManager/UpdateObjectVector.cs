@@ -31,6 +31,14 @@ namespace LitEngine
                 _obj.RegToOwner();
             }
 
+            public void Insert(int pIndex,UpdateBase pSor)
+            {
+                if (pSor == null || mList.Contains(pSor))
+                    return;
+                pSor.Owner = this;
+                mList.Insert(pIndex,pSor);
+            }
+
             public void AddNoSetOwner(UpdateBase _obj)
             {
                 if (_obj == null || mList.Contains(_obj))
@@ -54,16 +62,6 @@ namespace LitEngine
                     tobj.Dispose();
                 }
                 mList.Clear();
-            }
-
-            public void ClearByKey(string _key)
-            {
-                for (int i = mList.Count - 1; i >= 0; i--)
-                {
-                    UpdateBase tobj = mList[i];
-                    if (!tobj.Key.Equals(_key)) continue;
-                    tobj.Dead = true;
-                }
             }
 
             private void RunUpdate(UpdateBase _runobj)

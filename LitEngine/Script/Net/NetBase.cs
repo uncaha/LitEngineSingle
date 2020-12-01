@@ -118,10 +118,12 @@ namespace LitEngine
             virtual protected void InitNet() 
             {
                 updateObject = new UpdateObject(mNetTag,new Method_Action(MainThreadUpdate),this);
+                GameUpdateManager.InsertUpdate(0,updateObject);
             }
 
             virtual protected void OnDestroy()
             {
+                updateObject.Dispose();
                 Dispose(true);
                 if (MessageDelgate != null)
                     MessageDelgate(GetMsgReCallData(MSG_RECALL.Destoryed, mNetTag + "- 删除Net对象完成."));
@@ -440,17 +442,9 @@ namespace LitEngine
 
             #endregion
 
-            protected void OnEnable()
-            {
-                GameUpdateManager.RegUpdateForward(updateObject);
-            }
-            protected void OnDisable()
-            {
-                GameUpdateManager.UnRegUpdate(updateObject);
-            }
             virtual protected void MainThreadUpdate()
             {
-                
+
             }
 
         }
