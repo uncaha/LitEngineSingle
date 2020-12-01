@@ -76,11 +76,6 @@ namespace LitEngine
                 return mData;
             }
 
-            public object GetCSLEObject(CodeToolBase _codetool,string _classname)
-            {
-                return null;
-            }
-
             #region 读取
 
             public byte ReadByte()

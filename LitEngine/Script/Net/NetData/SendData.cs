@@ -81,9 +81,6 @@ namespace LitEngine
             }
 
             #region　添加数据
-            public void AddCSLEObject(CodeToolBase _codetool, object _object)
-            {
-            }
 
             private void ChoseDataLen(short _len)
             {
