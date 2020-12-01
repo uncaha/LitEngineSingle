@@ -32,7 +32,7 @@ namespace LitEngine.TemPlate.Event
                 DLog.LogError(_e.ToString());
             }
 #else
-            _action(_obj);
+            EventDelgate(pObject);
 #endif
         }
 
