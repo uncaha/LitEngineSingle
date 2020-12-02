@@ -13,7 +13,7 @@ namespace LitEngine.Net
         static public bool IsPushPackage = false;
         protected IPEndPoint mTargetPoint;//目标地址
         protected EndPoint mRecPoint;
-        protected string mServerIP;
+        protected IPAddress mServerIP;
         protected int mLocalPort = 30379;
         #endregion
 
@@ -31,11 +31,10 @@ namespace LitEngine.Net
             try
             {
                 var ips = GetServerIpAddress(mHostName);
-                IPAddress ipaddress = ips[0];
-                mServerIP = ipaddress.ToString();
-                mSocket = new Socket(ipaddress.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
-                mTargetPoint = new IPEndPoint(ipaddress, mPort);
-                mRecPoint = new IPEndPoint(ipaddress, mPort);
+                mServerIP = ips[0];
+                mSocket = new Socket(mServerIP.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
+                mTargetPoint = new IPEndPoint(mServerIP, mPort);
+                mRecPoint = new IPEndPoint(mServerIP, mPort);
                 int tempport = mLocalPort;
                 while (true)
                 {
@@ -111,7 +110,7 @@ namespace LitEngine.Net
             }
             if (tadata != null)
             {
-                DebugMsg(tadata.Cmd, tadata.Data, 0, tadata.SendLen, "UdpSend", result.IsCompleted);
+                //DebugMsg(tadata.Cmd, tadata.Data, 0,  tadata.SendLen, "UdpSend",result.IsCompleted);
             }
         }
 
@@ -132,6 +131,7 @@ namespace LitEngine.Net
                     {
                         int receiveNumber = mSocket.ReceiveFrom(mRecbuffer, SocketFlags.None, ref mRecPoint);
                         IPEndPoint tremot = (IPEndPoint)mRecPoint;
+
                         if (receiveNumber > 0 && tremot.Address.Equals(mServerIP))
                             Processingdata(receiveNumber, mRecbuffer);
                     }
