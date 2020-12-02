@@ -15,6 +15,7 @@ namespace LitEngine.Net
         protected EndPoint mRecPoint;
         protected IPAddress mServerIP;
         protected int mLocalPort = 30379;
+        protected AsyncCallback sendCallBack;
         #endregion
 
         #region 构造析构
@@ -35,6 +36,7 @@ namespace LitEngine.Net
                 mSocket = new Socket(mServerIP.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
                 mTargetPoint = new IPEndPoint(mServerIP, mPort);
                 mRecPoint = new IPEndPoint(mServerIP, mPort);
+                sendCallBack = SendAsyncCallback;
                 int tempport = mLocalPort;
                 while (true)
                 {
@@ -97,7 +99,7 @@ namespace LitEngine.Net
                 DLog.LogError("试图添加一个空对象到发送队列!AddSend");
                 return;
             }
-            var ar = mSocket.BeginSendTo(_data.Data, 0, _data.SendLen, SocketFlags.None, mTargetPoint, SendAsyncCallback, _data);
+            var ar = mSocket.BeginSendTo(_data.Data, 0, _data.SendLen, SocketFlags.None, mTargetPoint, sendCallBack, _data);
         }
 
         #region thread send
@@ -110,7 +112,7 @@ namespace LitEngine.Net
             }
             if (tadata != null)
             {
-                DebugMsg(tadata.Cmd, tadata.Data, 0,  tadata.SendLen, "UdpSend",result.IsCompleted);
+                DebugMsg(tadata.Cmd, tadata.Data, 0, tadata.SendLen, "UdpSend", result.IsCompleted);
             }
         }
 
