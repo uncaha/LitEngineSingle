@@ -23,6 +23,7 @@ namespace LitEngine.Net
         private UDPNet() : base()
         {
             mNetTag = "UDP";
+            sendCallBack = SendAsyncCallback;
         }
         #endregion
 
@@ -36,7 +37,7 @@ namespace LitEngine.Net
                 mSocket = new Socket(mServerIP.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
                 mTargetPoint = new IPEndPoint(mServerIP, mPort);
                 mRecPoint = new IPEndPoint(mServerIP, mPort);
-                sendCallBack = SendAsyncCallback;
+
                 int tempport = mLocalPort;
                 while (true)
                 {
@@ -99,7 +100,15 @@ namespace LitEngine.Net
                 DLog.LogError("试图添加一个空对象到发送队列!AddSend");
                 return;
             }
-            var ar = mSocket.BeginSendTo(_data.Data, 0, _data.SendLen, SocketFlags.None, mTargetPoint, sendCallBack, _data);
+            try
+            {
+                var ar = mSocket.BeginSendTo(_data.Data, 0, _data.SendLen, SocketFlags.None, mTargetPoint, sendCallBack, _data);
+            }
+            catch (System.Exception erro)
+            {
+                DLog.LogFormat("UDP Send Error.{0}", erro);
+            }
+
         }
 
         #region thread send

@@ -62,7 +62,6 @@ namespace LitEngine.Net
             IPVALL,
         }
 
-        protected Thread mSendThread;
         protected Thread mRecThread;
         // protected ManualResetEvent mWaitObject = new ManualResetEvent(false);
 
@@ -155,6 +154,11 @@ namespace LitEngine.Net
         static public void Connect()
         {
             Instance.ConnectToServer();
+        }
+
+        static public bool IsConnect()
+        {
+            return Instance.isConnected;
         }
 
         static public void SetSocketTime(int _rec, int _send, int _recsize, int _sendsize, bool pNoDelay)
@@ -339,7 +343,6 @@ namespace LitEngine.Net
             mStartThread = false;
             ClearBuffer();
             KillSocket();
-            WaitThreadJoin(mSendThread);
             WaitThreadJoin(mRecThread);
         }
         virtual protected void CloseSocketStart()
@@ -532,5 +535,3 @@ namespace LitEngine.Net
     }
     #endregion
 }
-
-

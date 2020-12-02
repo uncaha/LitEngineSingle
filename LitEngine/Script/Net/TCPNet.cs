@@ -8,11 +8,12 @@ namespace LitEngine.Net
 {
     public class TCPNet : NetBase<TCPNet>
     {
-
+        protected AsyncCallback sendCallBack;
         #region 构造析构
         private TCPNet() : base()
         {
             mNetTag = "TCP";
+            sendCallBack = SendAsyncCallback;
         }
 
         #endregion
@@ -79,9 +80,6 @@ namespace LitEngine.Net
                     #region 接收;
                     CreatRec();
                     #endregion
-                    #region 发送;
-                    CreatSend();
-                    #endregion
 
                     DLog.Log("收发线程启动!");
                 }
@@ -107,13 +105,6 @@ namespace LitEngine.Net
 
         }
 
-        protected void CreatSend()
-        {
-            mSendThread = new Thread(SendMessageThread);
-            mSendThread.IsBackground = true;
-            mSendThread.Start();
-        }
-
         protected void CreatRec()
         {
             mRecThread = new Thread(ReceiveMessage);
@@ -132,41 +123,36 @@ namespace LitEngine.Net
                 DLog.LogError("试图添加一个空对象到发送队列!AddSend");
                 return;
             }
-            if (!mStartThread) return;
-            mSendDataList.Enqueue(_data);
 
-        }
-
-        #region 线程发送模式
-        protected void SendMessageThread()
-        {
             try
             {
-                while (mStartThread)
+                SocketError errorCode = SocketError.Success;
+                var ar = mSocket.BeginSend(_data.Data, 0, _data.SendLen, SocketFlags.None, out errorCode, sendCallBack, _data);
+                if (errorCode != SocketError.Success)
                 {
-                    if (mSendDataList.Count == 0)
-                        continue;
-                    SendThread((SendData)mSendDataList.Dequeue());
+                    DLog.LogErrorFormat("TCP Send Error.{0}", errorCode);
                 }
-
             }
-            catch (Exception e)
+            catch (System.Exception erro)
             {
-                if (mStartThread)
-                {
-                    DLog.LogError(mNetTag + ":SendMessageThread->" + e.ToString());
-                    CloseSRThread();
-                    AddMainThreadMsgReCall(new MSG_RECALL_DATA(MSG_RECALL.SendError, mNetTag + "-" + e.ToString()));
-                }
+                DLog.LogFormat("TCP Send Error.{0}", erro);
             }
         }
-        virtual protected void SendThread(SendData _data)
+
+        void SendAsyncCallback(IAsyncResult result)
         {
-            if (_data == null) return;
-            int sendlen = mSocket.Send(_data.Data, _data.SendLen, SocketFlags.None);
-            DebugMsg(_data.Cmd, _data.Data, 0, _data.SendLen, "Send-SendThread-" + sendlen);
+            int tsendLen = mSocket.EndSend(result);
+            SendData tadata = result.AsyncState as SendData;
+            if (tadata != null)
+            {
+                DebugMsg(tadata.Cmd, tadata.Data, 0, tsendLen, "TCPSend", result.IsCompleted);
+            }
+            if (result.IsCompleted == false)
+            {
+                AddMainThreadMsgReCall(new MSG_RECALL_DATA(MSG_RECALL.SendError, mNetTag + "-" + result.IsCompleted));
+            }
         }
-        #endregion
+
         #endregion
 
         #region　接收
