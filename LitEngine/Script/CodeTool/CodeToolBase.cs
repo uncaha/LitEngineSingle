@@ -1,8 +1,8 @@
 ﻿using System;
 using LitEngine.Method;
+using LitEngine.UpdateSpace;
 namespace LitEngine.CodeTool
 {
-    using UpdateSpace;
     public abstract class CodeToolBase : IDisposable
     {
         public CodeToolBase()

@@ -164,7 +164,6 @@
     <Compile Include="Script\Managers\ScriptManager.cs" />
     <Compile Include="Script\ScriptOnCullDisable.cs" />
     <Compile Include="Script\ScriptTool.cs" />
-    <Compile Include="Script\Tool\MemoryTool.cs" />
     <Compile Include="Script\Managers\UpdateManager\UpdateObject.cs" />
     <Compile Include="Script\ValueType\LInt.cs" />
     <Compile Include="Script\Xml\MiniParser.cs" />
@@ -228,6 +227,8 @@
     <Compile Include="Script\DownLoad\Update\UpdateAssetManager.cs" />
     <Compile Include="Script\DownLoad\Update\UpdateCheckTool.cs" />
     <Compile Include="Script\Loader\LoadTool\LoadGroup.cs" />
+    <Compile Include="Script\Net\KCP\kcp.cs" />
+    <Compile Include="Script\Net\KCP\switch_queue.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />
@@ -235,6 +236,7 @@
     <Folder Include="Script\DownLoad\" />
     <Folder Include="Script\DownLoad\Update\" />
     <Folder Include="Script\Loader\LoadTool\" />
+    <Folder Include="Script\Net\KCP\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

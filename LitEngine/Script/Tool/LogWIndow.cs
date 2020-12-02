@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-namespace LitEngine
+namespace LitEngine.Log
 {
     public class LogWindow : MonoBehaviour
     {

@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using LitEngine.UpdateSpace;
 namespace LitEngine
 {
-    using UpdateSpace;
     public class GameUpdateManager : MonoManagerBase
     {
         private static object lockobj = new object();

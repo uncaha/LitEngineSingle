@@ -1,43 +1,46 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-public class SpriteArray : MonoBehaviour
+namespace LitEngine.Tool
 {
-    private bool isinit = false;
-    private Dictionary<string, Sprite> spdic;
-    public Sprite[] sprites;
-
-    private void Init()
+    public class SpriteArray : MonoBehaviour
     {
-        if (isinit) return;
-        if (sprites != null && sprites.Length > 0)
+        private bool isinit = false;
+        private Dictionary<string, Sprite> spdic;
+        public Sprite[] sprites;
+
+        private void Init()
         {
-            spdic = new Dictionary<string, Sprite>();
-            for (int i = 0; i < sprites.Length; i++)
+            if (isinit) return;
+            if (sprites != null && sprites.Length > 0)
             {
-                if(spdic.ContainsKey(sprites[i].name))
+                spdic = new Dictionary<string, Sprite>();
+                for (int i = 0; i < sprites.Length; i++)
                 {
-                    DLog.LogError("SpriteArray init error.重复的key : " + sprites[i].name);
-                    continue;
+                    if (spdic.ContainsKey(sprites[i].name))
+                    {
+                        DLog.LogError("SpriteArray init error.重复的key : " + sprites[i].name);
+                        continue;
+                    }
+                    spdic.Add(sprites[i].name, sprites[i]);
                 }
-                spdic.Add(sprites[i].name, sprites[i]);
+            }
+            isinit = true;
+        }
+
+        public Sprite this[string _name]
+        {
+            get
+            {
+                if (!isinit) Init();
+                if (spdic == null || !spdic.ContainsKey(_name)) return null;
+                return spdic[_name];
             }
         }
-        isinit = true;
-    }
 
-    public Sprite this[string _name]
-    {
-        get
+        private void OnDestroy()
         {
-            if (!isinit) Init();
-            if (spdic == null || !spdic.ContainsKey(_name)) return null;
-            return spdic[_name];
+            if (spdic != null)
+                spdic.Clear();
         }
-    }
-
-    private void OnDestroy()
-    {
-        if(spdic != null)
-            spdic.Clear();
     }
 }

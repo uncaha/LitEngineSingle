@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Reflection;
 using LitEngine.Method;
+using LitEngine.UpdateSpace;
 namespace LitEngine.CodeTool
 {
-    using UpdateSpace;
     public class CodeTool_SYS : CodeToolBase
     {
         private SafeMap<string, Type> mAssembType = new SafeMap<string, Type>();
