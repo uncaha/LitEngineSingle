@@ -110,12 +110,14 @@ namespace LitEngine.Net
         protected void CreatSend()
         {
             mSendThread = new Thread(SendMessageThread);
+            mSendThread.IsBackground = true;
             mSendThread.Start();
         }
 
         protected void CreatRec()
         {
             mRecThread = new Thread(ReceiveMessage);
+            mRecThread.IsBackground = true;
             mRecThread.Start();
         }
 

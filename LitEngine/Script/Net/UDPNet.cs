@@ -25,70 +25,63 @@ namespace LitEngine.Net
         }
         #endregion
 
-        #region 属性
-
-
-        public IPEndPoint TargetPoint
-        {
-            get
-            {
-                return mTargetPoint;
-            }
-
-            set
-            {
-                mTargetPoint = value;
-            }
-        }
-        #endregion
-
-
         #region 建立Socket
         override public void ConnectToServer()
         {
-            // GameUpdateManager.Instance().RegUpdate(mUpdateDelgate);
-            IPAddress[] ips = Dns.GetHostAddresses(mHostName);
-            mServerIP = ips[0].ToString();
-            mSocket = new Socket(IPAddress.Parse(mServerIP).AddressFamily, SocketType.Dgram, ProtocolType.Udp);
-            mTargetPoint = new IPEndPoint(IPAddress.Parse(mServerIP), mPort);
-            mStartThread = true;
-
-            int tempport = mLocalPort;
-            while (true)
+            try
             {
-                try
-                {
-                    IPEndPoint tMypoint = new IPEndPoint(IPAddress.Any, tempport);
-                    mSocket.Bind(tMypoint);
-                    mLocalPort = tempport;
+                var ips = GetServerIpAddress(mHostName);
+                mServerIP = ips[0].ToString();
+                mSocket = new Socket(IPAddress.Parse(mServerIP).AddressFamily, SocketType.Dgram, ProtocolType.Udp);
+                mTargetPoint = new IPEndPoint(IPAddress.Parse(mServerIP), mPort);
 
-                    break;
-                }
-                catch
+                int tempport = mLocalPort;
+                while (true)
                 {
-                    tempport++;
+                    try
+                    {
+                        IPEndPoint tMypoint = new IPEndPoint(IPAddress.Any, tempport);
+                        mSocket.Bind(tMypoint);
+                        mLocalPort = tempport;
+
+                        break;
+                    }
+                    catch
+                    {
+                        tempport++;
+                    }
                 }
+                mStartThread = true;
+                CreatSendAndRecThread();
+                mState = TcpState.Connected;
+                AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.Connected, mNetTag + "建立连接完成."));
             }
-
-            CreatSendAndRecThread();
+            catch (Exception ex)
+            {
+                DLog.LogError(ex);
+                mState = TcpState.Closed;
+                AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.ConectError, mNetTag + "建立连接失败. " + ex.Message));
+            }
 
         }
 
         protected void CreatSend()
         {
             mSendThread = new Thread(SendMessageThread);
+            mSendThread.IsBackground = true;
             mSendThread.Start();
         }
 
         protected void CreatRec()
         {
             mRecThread = new Thread(ReceiveMessage);
+            mRecThread.IsBackground = true;
             mRecThread.Start();
         }
 
         virtual protected void CreatSendAndRecThread()
         {
-            CreatSend();
+            //CreatSend();
             CreatRec();
             DLog.Log(mNetTag + "建立连接完成");
         }
@@ -112,11 +105,25 @@ namespace LitEngine.Net
                 DLog.LogError("试图添加一个空对象到发送队列!AddSend");
                 return;
             }
-            if (!mStartThread) return;
-            mSendDataList.Enqueue(_data);
+            var ar = mSocket.BeginSendTo(_data.Data, 0, _data.SendLen, SocketFlags.None, mTargetPoint,SendAsyncCallback, _data);
+
+            //if (!mStartThread) return;
+            //mSendDataList.Enqueue(_data);
         }
 
         #region thread send
+        void SendAsyncCallback(IAsyncResult result)
+        {
+            if(result.IsCompleted)
+            {
+                SendData tadata = result.AsyncState as SendData;
+                DebugMsg(tadata.Cmd, tadata.Data, 0, tadata.SendLen, "UdpSend");
+            }
+            else
+            {
+
+            }
+        }
         virtual protected void SendMessageThread()
         {
             while (mStartThread)
