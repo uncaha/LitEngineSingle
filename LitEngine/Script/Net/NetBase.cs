@@ -94,7 +94,7 @@ namespace LitEngine.Net
         protected UpdateObject updateObject;
         #endregion
         #region 日志
-        public bool IsShowDebugLog = false;
+        protected bool IsShowDebugLog = false;
         #endregion
 
         #region 回调
@@ -160,6 +160,11 @@ namespace LitEngine.Net
         static public void SetSocketTime(int _rec, int _send, int _recsize, int _sendsize, bool pNoDelay)
         {
             Instance.SetTimerOutAndBuffSize(_rec, _send, _recsize, _sendsize, pNoDelay);
+        }
+
+        static public void ShowMsgLog(bool pShow)
+        {
+            Instance.IsShowDebugLog = pShow;
         }
 
         static public void Add(SendData _data)
