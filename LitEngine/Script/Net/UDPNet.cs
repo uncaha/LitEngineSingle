@@ -110,7 +110,7 @@ namespace LitEngine.Net
             }
             if (tadata != null)
             {
-                //DebugMsg(tadata.Cmd, tadata.Data, 0,  tadata.SendLen, "UdpSend",result.IsCompleted);
+                DebugMsg(tadata.Cmd, tadata.Data, 0,  tadata.SendLen, "UdpSend",result.IsCompleted);
             }
         }
 
