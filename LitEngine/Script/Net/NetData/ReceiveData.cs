@@ -37,7 +37,6 @@ namespace LitEngine.Net
         }
         #endregion
         int mIndex;
-        object mCSLEObject;
         public ReceiveData(byte[] _buffer, int _offset)
         {
             SetBuffer(_buffer, _offset);
@@ -53,7 +52,6 @@ namespace LitEngine.Net
         public void SetBuffer(byte[] _buffer, int _offset)
         {
             DataUsed = false;
-            mCSLEObject = null;
             mIndex = 0;
             int tindex = _offset;
             int tlen = BufferBase.SReadInt(_buffer, tindex);

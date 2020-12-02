@@ -42,58 +42,6 @@ namespace LitEngine.Net
         }
         #endregion
 
-        #region static
-        static public void DisposeNet()
-        {
-            if (Instance == null) return;
-            Instance.Dispose();
-        }
-
-        static public void DisConnect()
-        {
-            if (Instance == null) return;
-            Instance._DisConnect();
-        }
-
-        static public void ClearNetBuffer()
-        {
-            if (Instance == null) return;
-            Instance.ClearBuffer();
-        }
-
-        static public void ClearMsgHandler()
-        {
-            Instance.mMsgHandlerList.Clear();
-        }
-        static public void Init(string _hostname, int _port)
-        {
-            Instance.InitSocket(_hostname, _port);
-        }
-
-        static public void Connect()
-        {
-            Instance.ConnectToServer();
-        }
-
-        static public void SetSocketTime(int _rec, int _send, int _recsize, int _sendsize, bool pNoDelay)
-        {
-            Instance.SetTimerOutAndBuffSize(_rec, _send, _recsize, _sendsize, pNoDelay);
-        }
-
-        static public void Add(SendData _data)
-        {
-            Instance.AddSend(_data);
-        }
-        static public void Reg(int msgid, System.Action<ReceiveData> func)
-        {
-            Instance._Reg(msgid, func);
-        }
-
-        static public void UnReg(int msgid, System.Action<ReceiveData> func)
-        {
-            Instance._UnReg(msgid, func);
-        }
-        #endregion
 
         #region 建立Socket
         override public void ConnectToServer()
