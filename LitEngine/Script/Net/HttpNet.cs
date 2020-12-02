@@ -10,7 +10,7 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using LitEngine.UpdateSpace;
 
-namespace LitEngine.NetTool
+namespace LitEngine.Net
 {
     public class HttpData : System.IDisposable
     {

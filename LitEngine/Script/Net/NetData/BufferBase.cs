@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Runtime.InteropServices;
-namespace LitEngine.NetTool
+namespace LitEngine.Net
 {
     public class BufferBase
     {

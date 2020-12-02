@@ -7,7 +7,7 @@ using System.Net.NetworkInformation;
 using System.Collections.Generic;
 using LitEngine.UpdateSpace;
 using LitEngine.Method;
-namespace LitEngine.NetTool
+namespace LitEngine.Net
 {
     #region 回调消息
     public enum MSG_RECALL

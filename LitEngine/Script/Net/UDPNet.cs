@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Threading;
 using LitEngine.UpdateSpace;
-namespace LitEngine.NetTool
+namespace LitEngine.Net
 {
     public class UDPNet : NetBase
     {

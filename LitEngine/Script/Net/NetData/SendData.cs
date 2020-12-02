@@ -2,7 +2,7 @@
 using UnityEngine;
 using System.Text;
 using LitEngine.CodeTool;
-namespace LitEngine.NetTool
+namespace LitEngine.Net
 {
     public class SendData
     {

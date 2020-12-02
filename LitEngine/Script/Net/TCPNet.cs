@@ -4,7 +4,7 @@ using System.Net.Sockets;
 using System;
 using System.Threading;
 using System.Net;
-namespace LitEngine.NetTool
+namespace LitEngine.Net
 {
     public class TCPNet : NetBase
     {

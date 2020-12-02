@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Collections;
 using System.Text;
 using System.IO;
-namespace LitEngine.NetTool
+namespace LitEngine.Net
 {
     public struct SocketDataBase
     {
