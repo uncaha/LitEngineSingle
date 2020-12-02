@@ -229,6 +229,7 @@
     <Compile Include="Script\Loader\LoadTool\LoadGroup.cs" />
     <Compile Include="Script\Net\KCP\kcp.cs" />
     <Compile Include="Script\Net\KCP\switch_queue.cs" />
+    <Compile Include="Script\Net\KCPNet.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />

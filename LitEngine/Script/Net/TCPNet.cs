@@ -6,24 +6,8 @@ using System.Threading;
 using System.Net;
 namespace LitEngine.Net
 {
-    public class TCPNet : NetBase
+    public class TCPNet : NetBase<TCPNet>
     {
-        static private TCPNet sInstance = null;
-        static private TCPNet Instance
-        {
-            get
-            {
-                if (sInstance == null)
-                {
-                    GameObject tobj = new GameObject();
-                    DontDestroyOnLoad(tobj);
-                    sInstance = tobj.AddComponent<TCPNet>();
-                    sInstance.InitNet();
-                    tobj.name = sInstance.mNetTag + "-Object";
-                }
-                return sInstance;
-            }
-        }
 
         #region 构造析构
         private TCPNet() : base()

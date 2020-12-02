@@ -7,42 +7,21 @@ using System.Threading;
 using LitEngine.UpdateSpace;
 namespace LitEngine.Net
 {
-    public class UDPNet : NetBase
+    public class UDPNet : NetBase<UDPNet>
     {
         #region socket属性
         static public bool IsPushPackage = false;
-        static private UDPNet sInstance = null;
         protected IPEndPoint mTargetPoint;//目标地址
         protected EndPoint mRecPoint;
         protected string mServerIP;
 
-        protected SendData mNowSendData;
-        protected bool mSendFinished = true;
-        protected bool mSended = false;
-        protected bool mStartRec = false;
         #endregion
         protected int mLocalPort = 10186;
         #region 构造析构
 
-        static private UDPNet Instance
-        {
-            get
-            {
-                if (sInstance == null)
-                {
-                    GameObject tobj = new GameObject();
-                    DontDestroyOnLoad(tobj);
-                    sInstance = tobj.AddComponent<UDPNet>();
-                    sInstance.InitNet();
-                    tobj.name = sInstance.mNetTag + "-Object";
-                }
-                return sInstance;
-            }
-        }
-
         private UDPNet() : base()
         {
-            mNetTag = "UDPAsync";
+            mNetTag = "UDP";
         }
         override protected void OnDestroy()
         {

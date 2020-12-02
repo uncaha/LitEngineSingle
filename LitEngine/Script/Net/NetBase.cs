@@ -50,7 +50,8 @@ namespace LitEngine.Net
     }
     #endregion
     #region Net基类
-    public abstract class NetBase : MonoBehaviour
+
+    public abstract class NetBase<T> : MonoBehaviour where T : NetBase<T>
     {
         #region socket属性
         public enum IPTYPE
@@ -106,6 +107,23 @@ namespace LitEngine.Net
         protected bool mStartThread = false; //线程开关
         protected bool mDisposed = false;
         #endregion
+
+        static protected T sInstance;
+        static protected T Instance
+        {
+            get
+            {
+                if (sInstance == null)
+                {
+                    GameObject tobj = new GameObject();
+                    DontDestroyOnLoad(tobj);
+                    sInstance = tobj.AddComponent<T>();
+                    sInstance.InitNet();
+                    tobj.name = sInstance.mNetTag + "-Object";
+                }
+                return sInstance;
+            }
+        }
 
         protected NetBase()
         {
