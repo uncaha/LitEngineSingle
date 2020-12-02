@@ -14,7 +14,7 @@ namespace LitEngine.Net
         protected IPEndPoint mTargetPoint;//目标地址
         protected EndPoint mRecPoint;
         protected string mServerIP;
-        protected int mLocalPort = 10186;
+        protected int mLocalPort = 30379;
         #endregion
 
         #region 构造析构
@@ -31,10 +31,11 @@ namespace LitEngine.Net
             try
             {
                 var ips = GetServerIpAddress(mHostName);
-                mServerIP = ips[0].ToString();
-                mSocket = new Socket(IPAddress.Parse(mServerIP).AddressFamily, SocketType.Dgram, ProtocolType.Udp);
-                mTargetPoint = new IPEndPoint(IPAddress.Parse(mServerIP), mPort);
-
+                IPAddress ipaddress = ips[0];
+                mServerIP = ipaddress.ToString();
+                mSocket = new Socket(ipaddress.AddressFamily, SocketType.Dgram, ProtocolType.Udp);
+                mTargetPoint = new IPEndPoint(ipaddress, mPort);
+                mRecPoint = new IPEndPoint(ipaddress, mPort);
                 int tempport = mLocalPort;
                 while (true)
                 {
@@ -65,13 +66,6 @@ namespace LitEngine.Net
 
         }
 
-        protected void CreatSend()
-        {
-            mSendThread = new Thread(SendMessageThread);
-            mSendThread.IsBackground = true;
-            mSendThread.Start();
-        }
-
         protected void CreatRec()
         {
             mRecThread = new Thread(ReceiveMessage);
@@ -81,7 +75,6 @@ namespace LitEngine.Net
 
         virtual protected void CreatSendAndRecThread()
         {
-            //CreatSend();
             CreatRec();
             DLog.Log(mNetTag + "建立连接完成");
         }
@@ -105,49 +98,23 @@ namespace LitEngine.Net
                 DLog.LogError("试图添加一个空对象到发送队列!AddSend");
                 return;
             }
-            var ar = mSocket.BeginSendTo(_data.Data, 0, _data.SendLen, SocketFlags.None, mTargetPoint,SendAsyncCallback, _data);
-
-            //if (!mStartThread) return;
-            //mSendDataList.Enqueue(_data);
+            var ar = mSocket.BeginSendTo(_data.Data, 0, _data.SendLen, SocketFlags.None, mTargetPoint, SendAsyncCallback, _data);
         }
 
         #region thread send
         void SendAsyncCallback(IAsyncResult result)
         {
-            if(result.IsCompleted)
+            mSocket.EndSendTo(result);
+            SendData tadata = result.AsyncState as SendData;
+            if (result.IsCompleted)
             {
-                SendData tadata = result.AsyncState as SendData;
-                DebugMsg(tadata.Cmd, tadata.Data, 0, tadata.SendLen, "UdpSend");
             }
-            else
+            if (tadata != null)
             {
-
-            }
-        }
-        virtual protected void SendMessageThread()
-        {
-            while (mStartThread)
-            {
-                try
-                {
-                    if (mSendDataList.Count == 0)
-                        continue;
-                    SendThread((SendData)mSendDataList.Dequeue());
-                }
-                catch (Exception e)
-                {
-                    DLog.LogError(mNetTag + e.ToString());
-                }
+                DebugMsg(tadata.Cmd, tadata.Data, 0, tadata.SendLen, "UdpSend", result.IsCompleted);
             }
         }
 
-        virtual protected void SendThread(SendData _data)
-        {
-            if (_data == null) return;
-            int tsend = mSocket.SendTo(_data.Data, _data.SendLen, SocketFlags.None, mTargetPoint);
-            DebugMsg(_data.Cmd, _data.Data, 0, _data.SendLen, "UdpSend");
-
-        }
         #endregion
         #endregion
 
@@ -189,6 +156,7 @@ namespace LitEngine.Net
                 {
                     ReceiveData tssdata = new ReceiveData(_buffer, 0);
                     mResultDataList.Enqueue(tssdata);
+                    DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
                 }
                 else
                 {
