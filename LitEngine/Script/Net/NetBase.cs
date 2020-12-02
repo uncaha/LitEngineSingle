@@ -491,7 +491,7 @@ namespace LitEngine.Net
         #endregion
 
         #region 发送和接收
-        virtual protected void DebugMsg(int _cmd, byte[] _buffer, int offset, int _len, string _title)
+        virtual protected void DebugMsg(int _cmd, byte[] _buffer, int offset, int _len, string _title, bool pIsComplete = true)
         {
             if (IsShowDebugLog)
             {
@@ -505,7 +505,14 @@ namespace LitEngine.Net
                 }
                 bufferstr.Append("}");
                 string tmsg = string.Format("{0}-cmd:{1} title:{2}  长度:{3}  内容:{4}", mNetTag, _cmd, _title, _len, bufferstr);
-                DLog.Log(tmsg);
+                if (pIsComplete)
+                {
+                    DLog.Log(tmsg);
+                }
+                else
+                {
+                    DLog.LOGColor(DLogType.Log, tmsg, LogColor.YELLO);
+                }
             }
         }
         #region 发送
