@@ -17,11 +17,6 @@ namespace LitEngine.Net
 
         #endregion
 
-        override protected void OnDestroy()
-        {
-            sInstance = null;
-            base.OnDestroy();
-        }
         #region static
         static public void DisposeNet()
         {

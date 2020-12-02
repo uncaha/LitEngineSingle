@@ -14,19 +14,14 @@ namespace LitEngine.Net
         protected IPEndPoint mTargetPoint;//目标地址
         protected EndPoint mRecPoint;
         protected string mServerIP;
-
-        #endregion
         protected int mLocalPort = 10186;
+        #endregion
+
         #region 构造析构
 
         private UDPNet() : base()
         {
             mNetTag = "UDP";
-        }
-        override protected void OnDestroy()
-        {
-            sInstance = null;
-            base.OnDestroy();
         }
         #endregion
 

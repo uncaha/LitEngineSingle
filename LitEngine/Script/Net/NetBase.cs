@@ -138,6 +138,7 @@ namespace LitEngine.Net
 
         virtual protected void OnDestroy()
         {
+            sInstance = null;
             updateObject.Dispose();
             Dispose(true);
             if (MessageDelgate != null)
