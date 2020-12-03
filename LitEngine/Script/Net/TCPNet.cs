@@ -123,6 +123,7 @@ namespace LitEngine.Net
                 DLog.LogError("试图添加一个空对象到发送队列!AddSend");
                 return false;
             }
+            DebugMsg(_data.Cmd, _data.Data, 0, _data.SendLen, "TCPSend");
             return Send(_data.Data, _data.SendLen);
         }
 

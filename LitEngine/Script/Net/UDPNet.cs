@@ -99,7 +99,7 @@ namespace LitEngine.Net
                 DLog.LogError("试图添加一个空对象到发送队列!AddSend");
                 return false;
             }
-
+            DebugMsg(_data.Cmd, _data.Data, 0, _data.SendLen, "UDPSend");
             return Send(_data.Data, _data.SendLen);
         }
         override public bool Send(byte[] pBuffer, int pSize)
