@@ -119,6 +119,7 @@ namespace LitEngine.Net
                 DLog.LogError("试图添加一个空对象到发送队列!AddSend");
                 return false;
             }
+            DebugMsg(_data.Cmd, _data.Data, 0, _data.SendLen, "KCPSend");
             return Send(_data.Data, _data.SendLen);
         }
 
@@ -144,13 +145,8 @@ namespace LitEngine.Net
         void SendAsyncCallback(IAsyncResult result)
         {
             int tlen = mSocket.EndSendTo(result);
-            byte[] tbuff = result.AsyncState as byte[];
             if (result.IsCompleted)
             {
-            }
-            if (tbuff != null)
-            {
-                DebugMsg(-1, tbuff, 0, tlen, "KCPSend", result.IsCompleted);
             }
         }
 
