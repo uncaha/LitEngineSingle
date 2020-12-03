@@ -5,7 +5,7 @@ namespace LitEngine.Net
 {
     public class BufferBase
     {
-        const int maxLen = 1024 * 1024 * 100;
+        public const int maxLen = 1024 * 1024 * 100;
         static public bool IsHDate = false;
         private byte[] mBuffer = null;
         private int mIndex = 0;

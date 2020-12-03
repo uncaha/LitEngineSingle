@@ -55,6 +55,9 @@ namespace LitEngine.Net
             mIndex = 0;
             int tindex = _offset;
             int tlen = BufferBase.SReadInt(_buffer, tindex);
+
+            if (tlen > BufferBase.maxLen || tlen < 0) throw new System.ArgumentOutOfRangeException("数据长度超出了限制 len = " + tlen);
+
             mLen = tlen - SocketDataBase.mPackageTopLen;
             tindex += sizeof(int);
             mCmd = BufferBase.SReadInt(_buffer, tindex);
