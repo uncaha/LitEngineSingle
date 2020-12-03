@@ -111,20 +111,20 @@ namespace LitEngine.Net
 
         #region 收发
         #region 发送  
-        override public void AddSend(SendData _data)
+        override public bool Send(SendData _data)
         {
-            if (mSocket == null) return;
+            if (mSocket == null) return false;
             if (_data == null)
             {
                 DLog.LogError("试图添加一个空对象到发送队列!AddSend");
-                return;
+                return false;
             }
-            AddSend(_data.Data, _data.SendLen);
+            return Send(_data.Data, _data.SendLen);
         }
 
-        public bool AddSend(byte[] buff, int size)
+        override public bool Send(byte[] pBuffer, int pSize)
         {
-            return kcpObject.Send(buff, size) >= 0;
+            return kcpObject.Send(pBuffer, pSize) >= 0;
         }
 
         private void HandleKcpSend(byte[] buff, int size)
@@ -143,14 +143,14 @@ namespace LitEngine.Net
         #region thread send
         void SendAsyncCallback(IAsyncResult result)
         {
-            mSocket.EndSendTo(result);
+            int tlen = mSocket.EndSendTo(result);
             byte[] tbuff = result.AsyncState as byte[];
             if (result.IsCompleted)
             {
             }
             if (tbuff != null)
             {
-                DebugMsg(-1, tbuff, 0, tbuff.Length, "KCPSend", result.IsCompleted);
+                DebugMsg(-1, tbuff, 0, tlen, "KCPSend", result.IsCompleted);
             }
         }
 

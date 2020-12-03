@@ -116,36 +116,43 @@ namespace LitEngine.Net
 
         #region 发送
 
-        override public void AddSend(SendData _data)
+        override public bool Send(SendData _data)
         {
             if (_data == null)
             {
                 DLog.LogError("试图添加一个空对象到发送队列!AddSend");
-                return;
+                return false;
             }
+            return Send(_data.Data, _data.SendLen);
+        }
 
+        override public bool Send(byte[] pBuffer, int pSize)
+        {
+            if (mSocket == null) return false;
             try
             {
                 SocketError errorCode = SocketError.Success;
-                var ar = mSocket.BeginSend(_data.Data, 0, _data.SendLen, SocketFlags.None, out errorCode, sendCallBack, _data);
+                var ar = mSocket.BeginSend(pBuffer, 0, pSize, SocketFlags.None, out errorCode, sendCallBack, pBuffer);
                 if (errorCode != SocketError.Success)
                 {
                     DLog.LogErrorFormat("TCP Send Error.{0}", errorCode);
                 }
+                return errorCode == SocketError.Success;
             }
             catch (System.Exception erro)
             {
                 DLog.LogFormat("TCP Send Error.{0}", erro);
             }
+            return false;
         }
 
         void SendAsyncCallback(IAsyncResult result)
         {
             int tsendLen = mSocket.EndSend(result);
-            SendData tadata = result.AsyncState as SendData;
+            byte[] tadata = result.AsyncState as byte[];
             if (tadata != null)
             {
-                DebugMsg(tadata.Cmd, tadata.Data, 0, tsendLen, "TCPSend", result.IsCompleted);
+                DebugMsg(-1, tadata, 0, tsendLen, "TCPSend", result.IsCompleted);
             }
             if (result.IsCompleted == false)
             {

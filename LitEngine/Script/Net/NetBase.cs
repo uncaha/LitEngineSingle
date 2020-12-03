@@ -95,7 +95,7 @@ namespace LitEngine.Net
 
         #region 输出到外部
         public delegate void OutputEvent(byte[] pBuffer,int pSize);
-        public OutputEvent receiveOutput = null;
+        protected OutputEvent receiveOutput = null;
         #endregion
 
         #region 日志
@@ -172,14 +172,24 @@ namespace LitEngine.Net
             Instance.SetTimerOutAndBuffSize(_rec, _send, _recsize, _sendsize, pNoDelay);
         }
 
+        static public void SetOutputDelgate(OutputEvent pEvent)
+        {
+            Instance.receiveOutput = pEvent;
+        }
+
         static public void ShowMsgLog(bool pShow)
         {
             Instance.IsShowDebugLog = pShow;
         }
 
-        static public void Add(SendData _data)
+        static public bool SendObject(SendData pData)
         {
-            Instance.AddSend(_data);
+            return Instance.Send(pData);
+        }
+
+        static public bool SendBytes(byte[] pBuffer,int pSize)
+        {
+            return Instance.Send(pBuffer, pSize);
         }
         static public void Reg(int msgid, System.Action<object> func)
         {
@@ -471,7 +481,7 @@ namespace LitEngine.Net
         virtual public void UpdateRecMsg()
         {
             if (StopUpdateRecMsg) return;
-
+            if (receiveOutput != null) return;
             int i = mResultDataList.Count > OneFixedUpdateChoseCount ? OneFixedUpdateChoseCount : mResultDataList.Count;
 
             while (i > 0)
@@ -548,9 +558,13 @@ namespace LitEngine.Net
             }
         }
         #region 发送
-        virtual public void AddSend(SendData _data)
+        virtual public bool Send(SendData _data)
         {
-
+            return false;
+        }
+        virtual public bool Send(byte[] pBuffer,int pSize)
+        {
+            return false;
         }
         #endregion
 

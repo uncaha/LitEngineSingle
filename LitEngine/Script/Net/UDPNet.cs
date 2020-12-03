@@ -92,35 +92,40 @@ namespace LitEngine.Net
 
         #region 收发
         #region 发送  
-        override public void AddSend(SendData _data)
+        override public bool Send(SendData _data)
         {
             if (_data == null)
             {
                 DLog.LogError("试图添加一个空对象到发送队列!AddSend");
-                return;
+                return false;
             }
+
+            return Send(_data.Data, _data.SendLen);
+        }
+        override public bool Send(byte[] pBuffer, int pSize)
+        {
             try
             {
-                var ar = mSocket.BeginSendTo(_data.Data, 0, _data.SendLen, SocketFlags.None, mTargetPoint, sendCallBack, _data);
+                var ar = mSocket.BeginSendTo(pBuffer, 0, pSize, SocketFlags.None, mTargetPoint, sendCallBack, pBuffer);
+                return true;
             }
             catch (System.Exception erro)
             {
                 DLog.LogFormat("UDP Send Error.{0}", erro);
             }
-
+            return false;
         }
-
         #region thread send
         void SendAsyncCallback(IAsyncResult result)
         {
-            mSocket.EndSendTo(result);
-            SendData tadata = result.AsyncState as SendData;
+            int tlen = mSocket.EndSendTo(result);
+            byte[] tadata = result.AsyncState as byte[];
             if (result.IsCompleted)
             {
             }
             if (tadata != null)
             {
-                DebugMsg(tadata.Cmd, tadata.Data, 0, tadata.SendLen, "UdpSend", result.IsCompleted);
+                DebugMsg(-1, tadata, 0, tlen, "UdpSend", result.IsCompleted);
             }
         }
 
