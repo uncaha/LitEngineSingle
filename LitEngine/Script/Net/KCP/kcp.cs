@@ -1,5 +1,5 @@
 ﻿using System;
-namespace LitEngine.Net.KCP
+namespace LitEngine.Net.KCPCommand
 {
     //感谢https://github.com/RainsSoft/kcp-csharp
     public class KCP
@@ -234,6 +234,11 @@ namespace LitEngine.Net.KCP
             output = output_;
         }
 
+        public void Dispose()
+        {
+            output = null;
+        }
+
         // check the size of next message in the recv queue
         public int PeekSize()
         {
@@ -318,17 +323,17 @@ namespace LitEngine.Net.KCP
         }
 
         // user/upper level send, returns below zero for error
-        public int Send(byte[] buffer)
+        public int Send(byte[] buffer, int bufferSize)
         {
 
-            if (0 == buffer.Length) return -1;
+            if (0 == bufferSize) return -1;
 
             var count = 0;
 
-            if (buffer.Length < mss)
+            if (bufferSize < mss)
                 count = 1;
             else
-                count = (int)(buffer.Length + mss - 1) / (int)mss;
+                count = (int)(bufferSize + mss - 1) / (int)mss;
 
             if (255 < count) return -2;
 
@@ -339,10 +344,10 @@ namespace LitEngine.Net.KCP
             for (var i = 0; i < count; i++)
             {
                 var size = 0;
-                if (buffer.Length - offset > mss)
+                if (bufferSize > mss)
                     size = (int)mss;
                 else
-                    size = buffer.Length - offset;
+                    size = bufferSize - offset;
 
                 var seg = new Segment(size);
                 Array.Copy(buffer, offset, seg.data, 0, size);
@@ -776,7 +781,7 @@ namespace LitEngine.Net.KCP
                     segment.una = rcv_nxt;
 
                     var need = IKCP_OVERHEAD + segment.data.Length;
-                    if (offset + need > mtu)
+                    if (offset + need >= mtu)
                     {
                         output(buffer, offset);
                         //Array.Clear(buffer, 0, offset);
@@ -985,4 +990,5 @@ namespace LitEngine.Net.KCP
             return snd_buf.Length + snd_queue.Length;
         }
     }
+
 }

@@ -88,7 +88,7 @@ namespace LitEngine.Net
         #endregion
         #region 分发
         static public int OneFixedUpdateChoseCount = 60;
-        protected SafeMap<int, SafeList<System.Action<ReceiveData>>> mMsgHandlerList = new SafeMap<int, SafeList<System.Action<ReceiveData>>>();//消息注册列表
+        protected SafeMap<int, SafeList<System.Action<object>>> mMsgHandlerList = new SafeMap<int, SafeList<System.Action<object>>>();//消息注册列表
         protected SafeQueue<MSG_RECALL_DATA> mToMainThreadMsgList = new SafeQueue<MSG_RECALL_DATA>();//给主线程发送通知
         protected UpdateObject updateObject;
         #endregion
@@ -175,12 +175,12 @@ namespace LitEngine.Net
         {
             Instance.AddSend(_data);
         }
-        static public void Reg(int msgid, System.Action<ReceiveData> func)
+        static public void Reg(int msgid, System.Action<object> func)
         {
             Instance._Reg(msgid, func);
         }
 
-        static public void UnReg(int msgid, System.Action<ReceiveData> func)
+        static public void UnReg(int msgid, System.Action<object> func)
         {
             Instance._UnReg(msgid, func);
         }
@@ -398,32 +398,32 @@ namespace LitEngine.Net
 
         #region 消息注册与分发
 
-        virtual public void _Reg(int msgid, System.Action<ReceiveData> func)
+        virtual public void _Reg(int msgid, System.Action<object> func)
         {
-            SafeList<System.Action<ReceiveData>> tlist = null;
+            SafeList<System.Action<object>> tlist = null;
             if (mMsgHandlerList.ContainsKey(msgid))
             {
                 tlist = mMsgHandlerList[msgid];
             }
             else
             {
-                tlist = new SafeList<System.Action<ReceiveData>>();
+                tlist = new SafeList<System.Action<object>>();
                 mMsgHandlerList.Add(msgid, tlist);
             }
             if (!tlist.Contains(func))
                 tlist.Add(func);
         }
-        virtual public void _UnReg(int msgid, System.Action<ReceiveData> func)
+        virtual public void _UnReg(int msgid, System.Action<object> func)
         {
             if (!mMsgHandlerList.ContainsKey(msgid)) return;
-            SafeList<System.Action<ReceiveData>> tlist = mMsgHandlerList[msgid];
+            SafeList<System.Action<object>> tlist = mMsgHandlerList[msgid];
             if (tlist.Contains(func))
                 tlist.Remove(func);
             if (tlist.Count == 0)
                 mMsgHandlerList.Remove(msgid);
         }
 
-        virtual public void Call(int _msgid, ReceiveData _msg)
+        virtual public void Call(int _msgid, object _msg)
         {
 #if LITDEBUG
             try
@@ -431,7 +431,7 @@ namespace LitEngine.Net
 #endif
                 if (mMsgHandlerList.ContainsKey(_msgid))
                 {
-                    SafeList<System.Action<ReceiveData>> tlist = mMsgHandlerList[_msgid];
+                    SafeList<System.Action<object>> tlist = mMsgHandlerList[_msgid];
                     int tlen = tlist.Count;
                     for (int i = tlen - 1; i >= 0; i--)
                         tlist[i](_msg);
