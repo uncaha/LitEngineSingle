@@ -186,27 +186,9 @@ namespace LitEngine.Net
         {
             try
             {
-                DebugMsg(-1, _buffer, 0, _len, "接收-bytes");
                 byte[] dst = new byte[_len];
                 Buffer.BlockCopy(_buffer, 0, dst, 0, _len);
                 recvQueue.Push(dst);
-                //recvQueue
-                // if (!IsPushPackage)
-                // {
-                //     ReceiveData tssdata = new ReceiveData(_buffer, 0);
-                //     mResultDataList.Enqueue(tssdata);
-                //     DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
-                // }
-                // else
-                // {
-                //     mBufferData.Push(_buffer, _len);
-                //     while (mBufferData.IsFullData())
-                //     {
-                //         ReceiveData tssdata = mBufferData.GetReceiveData();
-                //         mResultDataList.Enqueue(tssdata);
-                //         DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
-                //     }
-                // }
             }
             catch (Exception e)
             {
@@ -214,12 +196,79 @@ namespace LitEngine.Net
             }
 
         }
+
+        protected void PushRecData(byte[] pRecbuf, int pSize)
+        {
+            DebugMsg(-1, pRecbuf, 0, pSize, "接收-bytes");
+            if (!IsPushPackage)
+            {
+                ReceiveData tssdata = new ReceiveData(pRecbuf, 0);
+                mResultDataList.Enqueue(tssdata);
+                DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
+            }
+            else
+            {
+                mBufferData.Push(pRecbuf, pSize);
+                while (mBufferData.IsFullData())
+                {
+                    ReceiveData tssdata = mBufferData.GetReceiveData();
+                    mResultDataList.Enqueue(tssdata);
+                    DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
+                }
+            }
+        }
         #endregion
 
+        private void HandleRecvQueue()
+        {
+            recvQueue.Switch();
+            while (!recvQueue.Empty())
+            {
+                var recvBufferRaw = recvQueue.Pop();
+                int ret = kcpObject.Input(recvBufferRaw);
+
+                //收到的不是一个正确的KCP包
+                if (ret < 0)
+                {
+                    string str = System.Text.Encoding.UTF8.GetString(recvBufferRaw, 0, recvBufferRaw.Length);
+                    DLog.LogFormat("收到了错误的kcp包: {0}", str);
+                    return;
+                }
+
+                needKcpUpdateFlag = true;
+
+                for (int size = kcpObject.PeekSize(); size > 0; size = kcpObject.PeekSize())
+                {
+                    var recvBuffer = new byte[size];
+                    int treclen = kcpObject.Recv(recvBuffer);
+                    if (treclen > 0)
+                    {
+                        PushRecData(recvBuffer, treclen);
+                    }
+                }
+            }
+        }
+
+        private static readonly DateTime UTCTimeBegin = new DateTime(1970, 1, 1);
+        public static UInt32 GetClockMS()
+        {
+            return (UInt32)(Convert.ToInt64(DateTime.UtcNow.Subtract(UTCTimeBegin).TotalMilliseconds) & 0xffffffff);
+        }
+
+        private bool needKcpUpdateFlag = false;
+        private uint nextKcpUpdateTime = 0;
         override protected void MainThreadUpdate()
         {
-            UpdateReCalledMsg();
-            UpdateRecMsg();
+            // UpdateReCalledMsg();
+            // UpdateRecMsg();
+            uint currentTimeMS = GetClockMS();
+            HandleRecvQueue();
+            if (needKcpUpdateFlag || currentTimeMS >= nextKcpUpdateTime)
+            {
+                kcpObject.Update(currentTimeMS);
+                nextKcpUpdateTime = kcpObject.Check(currentTimeMS);
+                needKcpUpdateFlag = false;
+            }
         }
 
         #endregion
