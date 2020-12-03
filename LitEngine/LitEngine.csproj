@@ -232,6 +232,7 @@
     <Compile Include="Script\Net\KCPNet.cs" />
     <Compile Include="Script\Net\TestServer\ServerTestTCP.cs" />
     <Compile Include="Script\Net\TestServer\ServerTestUDP.cs" />
+    <Compile Include="Script\Net\TestServer\ServerTestKCP.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />
