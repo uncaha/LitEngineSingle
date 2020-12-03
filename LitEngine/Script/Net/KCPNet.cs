@@ -30,6 +30,16 @@ namespace LitEngine.Net
         }
         #endregion
 
+        static public void NoDelay(int nodelay_, int interval_, int resend_, int nc_)
+        {
+            Instance.kcpObject.NoDelay(nodelay_,interval_,resend_,nc_);
+        }
+
+        static public void WndSize(int sndwnd, int rcvwnd)
+        {
+            Instance.kcpObject.WndSize(sndwnd,rcvwnd);
+        }
+
         override public void Dispose()
         {
             if (kcpObject != null)
