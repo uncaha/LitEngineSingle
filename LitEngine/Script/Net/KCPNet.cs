@@ -11,7 +11,6 @@ namespace LitEngine.Net
     public class KCPNet : NetBase<KCPNet>
     {
         #region socket属性
-        static public bool IsPushPackage = false;
         protected IPEndPoint mTargetPoint;//目标地址
         protected EndPoint mRecPoint;
         protected IPAddress mServerIP;
@@ -205,21 +204,15 @@ namespace LitEngine.Net
         protected void PushRecData(byte[] pRecbuf, int pSize)
         {
             DebugMsg(-1, pRecbuf, 0, pSize, "接收-bytes");
-            if (!IsPushPackage)
+            try
             {
                 ReceiveData tssdata = new ReceiveData(pRecbuf, 0);
                 Call(tssdata.Cmd, tssdata);
                 DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
             }
-            else
+            catch (System.Exception error)
             {
-                mBufferData.Push(pRecbuf, pSize);
-                while (mBufferData.IsFullData())
-                {
-                    ReceiveData tssdata = mBufferData.GetReceiveData();
-                    Call(tssdata.Cmd, tssdata);
-                    DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
-                }
+                DLog.LogError(error);
             }
         }
         #endregion

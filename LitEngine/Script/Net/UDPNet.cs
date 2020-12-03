@@ -10,7 +10,6 @@ namespace LitEngine.Net
     public class UDPNet : NetBase<UDPNet>
     {
         #region socket属性
-        static public bool IsPushPackage = false;
         protected IPEndPoint mTargetPoint;//目标地址
         protected EndPoint mRecPoint;
         protected IPAddress mServerIP;
@@ -163,22 +162,9 @@ namespace LitEngine.Net
             try
             {
                 DebugMsg(-1, _buffer, 0, _len, "接收-bytes");
-                if (!IsPushPackage)
-                {
-                    ReceiveData tssdata = new ReceiveData(_buffer, 0);
-                    mResultDataList.Enqueue(tssdata);
-                    DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
-                }
-                else
-                {
-                    mBufferData.Push(_buffer, _len);
-                    while (mBufferData.IsFullData())
-                    {
-                        ReceiveData tssdata = mBufferData.GetReceiveData();
-                        mResultDataList.Enqueue(tssdata);
-                        DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
-                    }
-                }
+                ReceiveData tssdata = new ReceiveData(_buffer, 0);
+                mResultDataList.Enqueue(tssdata);
+                DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
             }
             catch (Exception e)
             {

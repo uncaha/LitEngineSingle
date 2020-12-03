@@ -159,10 +159,7 @@ namespace LitEngine.Net
 
         protected void ReceiveMessage()
         {
-            if (IsShowDebugLog)
-            {
-                DLog.Log("Start ReceiveMessage");
-            }
+            DLog.Log("TCP Start ReceiveMessage");
             try
             {
                 while (mStartThread)
@@ -188,30 +185,19 @@ namespace LitEngine.Net
                     AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.ReceiveError, mNetTag + "-" + e.ToString()));
                 }
             }
-            if (IsShowDebugLog)
-            {
-                DLog.Log("End ReceiveMessage");
-            }
+            DLog.Log("TCP End ReceiveMessage");
         }
 
         override protected void Processingdata(int _len, byte[] _buffer)
         {
-            try
+            DebugMsg(-1, _buffer, 0, _len, "接收-bytes");
+            mBufferData.Push(_buffer, _len);
+            while (mBufferData.IsFullData())
             {
-                DebugMsg(-1, _buffer, 0, _len, "接收-bytes");
-                mBufferData.Push(_buffer, _len);
-                while (mBufferData.IsFullData())
-                {
-                    ReceiveData tssdata = mBufferData.GetReceiveData();
-                    mResultDataList.Enqueue(tssdata);
-                    DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
-                }
+                ReceiveData tssdata = mBufferData.GetReceiveData();
+                mResultDataList.Enqueue(tssdata);
+                DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
             }
-            catch (Exception e)
-            {
-                DLog.LogError(mNetTag + ":Processingdata->" + e.ToString());
-            }
-
         }
 
         #endregion

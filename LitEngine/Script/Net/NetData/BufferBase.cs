@@ -5,6 +5,7 @@ namespace LitEngine.Net
 {
     public class BufferBase
     {
+        const int maxLen = 1024 * 1024 * 100;
         static public bool IsHDate = false;
         private byte[] mBuffer = null;
         private int mIndex = 0;
@@ -68,6 +69,7 @@ namespace LitEngine.Net
         {
             if (mIndex - mPos < SocketDataBase.mPackageTopLen) return false;
             int tlen = SReadInt(mBuffer, mPos);
+            if (tlen > maxLen || tlen < 0) throw new System.ArgumentOutOfRangeException("数据长度超出了限制 len = " + tlen);
             if (mIndex - mPos < tlen) return false;
             return true;
         }
