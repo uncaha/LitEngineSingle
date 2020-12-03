@@ -94,6 +94,11 @@ namespace LitEngine.Net
             DLog.Log(mNetTag + "建立连接完成");
         }
 
+        override protected void CloseSocket()
+        {
+            base.CloseSocket();
+        }
+
         #endregion
 
 
@@ -203,7 +208,7 @@ namespace LitEngine.Net
             if (!IsPushPackage)
             {
                 ReceiveData tssdata = new ReceiveData(pRecbuf, 0);
-                mResultDataList.Enqueue(tssdata);
+                Call(tssdata.Cmd, tssdata);
                 DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
             }
             else
@@ -212,7 +217,7 @@ namespace LitEngine.Net
                 while (mBufferData.IsFullData())
                 {
                     ReceiveData tssdata = mBufferData.GetReceiveData();
-                    mResultDataList.Enqueue(tssdata);
+                    Call(tssdata.Cmd, tssdata);
                     DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
                 }
             }
@@ -257,10 +262,12 @@ namespace LitEngine.Net
 
         private bool needKcpUpdateFlag = false;
         private uint nextKcpUpdateTime = 0;
+
         override protected void MainThreadUpdate()
         {
-            // UpdateReCalledMsg();
-            // UpdateRecMsg();
+            UpdateReCalledMsg();
+            if (mState != TcpState.Connected) return;
+
             uint currentTimeMS = GetClockMS();
             HandleRecvQueue();
             if (needKcpUpdateFlag || currentTimeMS >= nextKcpUpdateTime)
