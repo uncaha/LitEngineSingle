@@ -8,14 +8,14 @@ using LitEngine.UpdateSpace;
 using LitEngine.Net.KCPCommand;
 namespace LitEngine.Net
 {
-    public class KCPNet : NetBase<KCPNet>
+    public sealed class KCPNet : NetBase<KCPNet>
     {
         #region socket属性
-        protected IPEndPoint mTargetPoint;//目标地址
-        protected EndPoint mRecPoint;
-        protected IPAddress mServerIP;
-        protected int mLocalPort = 30379;
-        protected AsyncCallback sendCallBack;
+        private IPEndPoint mTargetPoint;//目标地址
+        private EndPoint mRecPoint;
+        private IPAddress mServerIP;
+        private int mLocalPort = 30379;
+        private AsyncCallback sendCallBack;
         private KCP kcpObject;
         private SwitchQueue<byte[]> recvQueue = new SwitchQueue<byte[]>(128);
         #endregion
@@ -26,6 +26,7 @@ namespace LitEngine.Net
             kcpObject = new KCP(1, HandleKcpSend);
             kcpObject.NoDelay(1, 10, 2, 1);
             kcpObject.WndSize(128, 128);
+            sendCallBack = SendAsyncCallback;
         }
         #endregion
 
@@ -80,14 +81,14 @@ namespace LitEngine.Net
 
         }
 
-        protected void CreatRec()
+        private void CreatRec()
         {
             mRecThread = new Thread(ReceiveMessage);
             mRecThread.IsBackground = true;
             mRecThread.Start();
         }
 
-        virtual protected void CreatSendAndRecThread()
+        private void CreatSendAndRecThread()
         {
             CreatRec();
             DLog.Log(mNetTag + "建立连接完成");
@@ -102,7 +103,7 @@ namespace LitEngine.Net
 
 
         #region 属性设置方法
-        virtual public void ChangetTargetPoint(IPEndPoint _tar)
+        public void ChangetTargetPoint(IPEndPoint _tar)
         {
             mTargetPoint = _tar;
         }
@@ -160,7 +161,7 @@ namespace LitEngine.Net
         #region　接收
 
         #region thread rec
-        virtual protected void ReceiveMessage()
+        private void ReceiveMessage()
         {
             while (mStartThread)
             {
@@ -201,12 +202,24 @@ namespace LitEngine.Net
 
         }
 
-        protected void PushRecData(byte[] pRecbuf, int pSize)
+        private void PopRecData(byte[] pRecbuf, int pSize)
         {
             DebugMsg(-1, pRecbuf, 0, pSize, "接收-bytes");
+            if (receiveOutput == null)
+            {
+                PushRecData(pRecbuf, pSize);
+            }
+            else
+            {
+                OutputToDelgate(pRecbuf, pSize);
+            }
+        }
+
+        override protected void PushRecData(byte[] pBuffer, int pSize)
+        {
             try
             {
-                ReceiveData tssdata = new ReceiveData(pRecbuf, 0);
+                ReceiveData tssdata = new ReceiveData(pBuffer, 0);
                 Call(tssdata.Cmd, tssdata);
                 DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
             }
@@ -241,7 +254,7 @@ namespace LitEngine.Net
                     int treclen = kcpObject.Recv(recvBuffer);
                     if (treclen > 0)
                     {
-                        PushRecData(recvBuffer, treclen);
+                        PopRecData(recvBuffer, treclen);
                     }
                 }
             }

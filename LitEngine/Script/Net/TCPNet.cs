@@ -6,9 +6,9 @@ using System.Threading;
 using System.Net;
 namespace LitEngine.Net
 {
-    public class TCPNet : NetBase<TCPNet>
+    public sealed class TCPNet : NetBase<TCPNet>
     {
-        protected AsyncCallback sendCallBack;
+        private AsyncCallback sendCallBack;
         #region 构造析构
         private TCPNet() : base()
         {
@@ -39,7 +39,7 @@ namespace LitEngine.Net
             System.Threading.Tasks.Task.Run(ThreatConnect);
         }
 
-        virtual protected bool TCPConnect()
+        private bool TCPConnect()
         {
             bool ret = false;
             List<IPAddress> tipds = GetServerIpAddress(mHostName);
@@ -66,7 +66,7 @@ namespace LitEngine.Net
             return ret;
         }
 
-        protected void ThreatConnect()
+        private void ThreatConnect()
         {
 
             bool tok = TCPConnect();
@@ -105,7 +105,7 @@ namespace LitEngine.Net
 
         }
 
-        protected void CreatRec()
+        private void CreatRec()
         {
             mRecThread = new Thread(ReceiveMessage);
             mRecThread.IsBackground = true;
@@ -157,7 +157,7 @@ namespace LitEngine.Net
 
         #region　接收
 
-        protected void ReceiveMessage()
+        private void ReceiveMessage()
         {
             DLog.Log("TCP Start ReceiveMessage");
             try
@@ -190,8 +190,12 @@ namespace LitEngine.Net
 
         override protected void Processingdata(int _len, byte[] _buffer)
         {
-            DebugMsg(-1, _buffer, 0, _len, "接收-bytes");
-            mBufferData.Push(_buffer, _len);
+            base.Processingdata(_len, _buffer);
+        }
+
+        override protected void PushRecData(byte[] pBuffer, int pSize)
+        {
+            mBufferData.Push(pBuffer, pSize);
             while (mBufferData.IsFullData())
             {
                 ReceiveData tssdata = mBufferData.GetReceiveData();

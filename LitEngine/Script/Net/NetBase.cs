@@ -92,6 +92,12 @@ namespace LitEngine.Net
         protected SafeQueue<MSG_RECALL_DATA> mToMainThreadMsgList = new SafeQueue<MSG_RECALL_DATA>();//给主线程发送通知
         protected UpdateObject updateObject;
         #endregion
+
+        #region 输出到外部
+        public delegate void OutputEvent(byte[] pBuffer,int pSize);
+        public OutputEvent receiveOutput = null;
+        #endregion
+
         #region 日志
         protected bool IsShowDebugLog = false;
         #endregion
@@ -489,7 +495,30 @@ namespace LitEngine.Net
         #region 处理接收到的数据
         virtual protected void Processingdata(int _len, byte[] _buffer)
         {
-            DebugMsg(0, _buffer, 0, _len, "接收");
+            DebugMsg(-1, _buffer, 0, _len, "接收-bytes");
+            if (receiveOutput == null)
+            {
+                PushRecData(_buffer, _len);
+            }
+            else
+            {
+                OutputToDelgate(_buffer, _len);
+            }
+        }
+        virtual protected void PushRecData(byte[] pBuffer,int pSize)
+        {
+
+        }
+        virtual protected void OutputToDelgate(byte[] pBuffer, int pSize)
+        {
+            try
+            {
+                receiveOutput(pBuffer, pSize);
+            }
+            catch (Exception ex)
+            {
+                DLog.LogError(ex);
+            }  
         }
         #endregion
 
