@@ -571,7 +571,11 @@ namespace LitEngine.Net
 
         private void FixedUpdate()
         {
-            MainThreadUpdate();
+            UpdateReCalledMsg();
+            if (isConnected)
+            {
+                MainThreadUpdate();
+            }
         }
 
         virtual protected void MainThreadUpdate()

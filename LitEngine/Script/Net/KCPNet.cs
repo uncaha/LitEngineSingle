@@ -277,9 +277,6 @@ namespace LitEngine.Net
 
         override protected void MainThreadUpdate()
         {
-            UpdateReCalledMsg();
-            if (mState != TcpState.Connected) return;
-
             uint currentTimeMS = GetClockMS();
             HandleRecvQueue();
             if (needKcpUpdateFlag || currentTimeMS >= nextKcpUpdateTime)

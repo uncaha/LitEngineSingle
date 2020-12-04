@@ -180,7 +180,6 @@ namespace LitEngine.Net
 
         override protected void MainThreadUpdate()
         {
-            UpdateReCalledMsg();
             UpdateRecMsg();
         }
 
