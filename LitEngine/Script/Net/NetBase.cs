@@ -113,8 +113,8 @@ namespace LitEngine.Net
         #endregion
 
         #region cacheData
-        private System.Collections.Queue cacheRecDatas = System.Collections.Queue.Synchronized(new System.Collections.Queue());//cache
-        private int cacheObjectLength = 1024 * 10;
+        protected System.Collections.Queue cacheRecDatas = System.Collections.Queue.Synchronized(new System.Collections.Queue());//cache
+        protected int cacheObjectLength = 1024 * 10;
         #endregion
 
         #region static
@@ -229,7 +229,7 @@ namespace LitEngine.Net
             cacheObjectLength = pSize;
             for (int i = 0; i < pCount; i++)
             {
-                ReceiveData tdata = new ReceiveData(pSize);
+                ReceiveData tdata = new ReceiveData(pSize) { useCache = true };
                 cacheRecDatas.Enqueue(tdata);
             }
         }
@@ -511,6 +511,10 @@ namespace LitEngine.Net
                     ReceiveData trecdata = (ReceiveData)mResultDataList.Dequeue();
                     Call(trecdata.Cmd, trecdata);
                     i--;
+                    if(trecdata.useCache)
+                    {
+                        cacheRecDatas.Enqueue(trecdata);
+                    }
                 }
                 catch (Exception _error)
                 {

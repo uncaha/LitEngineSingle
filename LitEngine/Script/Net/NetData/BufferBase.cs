@@ -74,6 +74,11 @@ namespace LitEngine.Net
             return true;
         }
 
+        public int GetFirstDataLength()
+        {
+            return SReadInt(mBuffer, mPos);
+        }
+
         public ReceiveData GetReceiveData()
         {
             ReceiveData ret = new ReceiveData();

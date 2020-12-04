@@ -6,6 +6,7 @@ namespace LitEngine.Net
 {
     public class ReceiveData
     {
+        public bool useCache = false;
         #region 属性
         public byte[] Data { get; private set; }
         public int RecLen { get; private set; }

@@ -207,7 +207,28 @@ namespace LitEngine.Net
             mBufferData.Push(pBuffer, pSize);
             while (mBufferData.IsFullData())
             {
-                ReceiveData tssdata = mBufferData.GetReceiveData();
+                ReceiveData tssdata = null;
+                int tfirstLength = mBufferData.GetFirstDataLength();
+                if (cacheRecDatas.Count > 0 && tfirstLength < cacheObjectLength)
+                {
+                    tssdata = (ReceiveData)cacheRecDatas.Dequeue();
+                    mBufferData.SetReceiveData(tssdata);
+                }
+                else
+                {
+                    if(tfirstLength < cacheObjectLength)
+                    {
+                        tssdata = new ReceiveData(cacheObjectLength);
+                    }
+                    else
+                    {
+                        tssdata = mBufferData.GetReceiveData();
+                    }
+                    
+                    
+                    tssdata.useCache = tfirstLength < cacheObjectLength;
+                }
+
                 mResultDataList.Enqueue(tssdata);
                 DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
             }
