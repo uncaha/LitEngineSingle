@@ -8,6 +8,7 @@ namespace LitEngine.Net
     {
         #region 属性
         public byte[] Data { get; private set; }
+        public int RecLen { get; private set; }
         public int Len { get; private set; }
         public int Cmd { get; private set; }
 
@@ -25,36 +26,15 @@ namespace LitEngine.Net
         {
         }
 
-        public void SetBuffer(byte[] _buffer, int _offset)
-        {
-            mIndex = 0;
-            int tindex = _offset;
-            int tlen = BufferBase.SReadInt(_buffer, tindex);
-
-            if (tlen > BufferBase.maxLen || tlen < 0) throw new System.ArgumentOutOfRangeException("数据长度超出了限制 len = " + tlen);
-
-            Len = tlen - SocketDataBase.mPackageTopLen;
-            tindex += sizeof(int);
-            Cmd = BufferBase.SReadInt(_buffer, tindex);
-            tindex += sizeof(int);
-            if (Data == null || Len > Data.Length)
-                Data = new byte[Len];
-            else
-                Data.Initialize();
-
-            mIndex = 0;
-            Buffer.BlockCopy(_buffer, tindex, Data, 0, Len);
-        }
-
         public void CopyBuffer(byte[] _buffer, int _offset)
         {
             mIndex = 0;
             int tindex = _offset;
-            int tlen = BufferBase.SReadInt(_buffer, tindex);
+            RecLen = BufferBase.SReadInt(_buffer, tindex);
 
-            if (tlen > BufferBase.maxLen || tlen < 0) throw new System.ArgumentOutOfRangeException("数据长度超出了限制 len = " + tlen);
+            if (RecLen > BufferBase.maxLen || RecLen < 0) throw new System.ArgumentOutOfRangeException("数据长度超出了限制 len = " + RecLen);
 
-            Len = tlen - SocketDataBase.mPackageTopLen;
+            Len = RecLen - SocketDataBase.mPackageTopLen;
             tindex += sizeof(int);
             Cmd = BufferBase.SReadInt(_buffer, tindex);
             tindex += sizeof(int);

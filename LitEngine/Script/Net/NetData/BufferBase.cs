@@ -83,7 +83,7 @@ namespace LitEngine.Net
 
         public void SetReceiveData(ReceiveData _data)
         {
-            int tlen = SReadInt(mBuffer, mPos);
+            int tlen = SReadInt(mBuffer, mPos);//外部读取,保证独立性
             _data.CopyBuffer(mBuffer, mPos);
             mPos += tlen;
         }
