@@ -90,7 +90,6 @@ namespace LitEngine.Net
         static public int OneFixedUpdateChoseCount = 60;
         protected SafeMap<int, SafeList<System.Action<object>>> mMsgHandlerList = new SafeMap<int, SafeList<System.Action<object>>>();//消息注册列表
         protected SafeQueue<MSG_RECALL_DATA> mToMainThreadMsgList = new SafeQueue<MSG_RECALL_DATA>();//给主线程发送通知
-        protected UpdateObject updateObject;
         #endregion
 
         #region 输出到外部
@@ -107,7 +106,7 @@ namespace LitEngine.Net
         #endregion
 
         #region 控制
-        public bool isConnected { get { return mState == TcpState.Connected && mSocket != null && mSocket.Connected; } }
+        virtual public bool isConnected { get { return mState == TcpState.Connected && mSocket != null; } }
         protected TcpState mState = TcpState.None;
         protected bool mStartThread = false; //线程开关
         protected bool mDisposed = false;
@@ -184,11 +183,13 @@ namespace LitEngine.Net
 
         static public bool SendObject(SendData pData)
         {
+            if (!Instance.isConnected) return false;
             return Instance.Send(pData);
         }
 
         static public bool SendBytes(byte[] pBuffer,int pSize)
         {
+            if (!Instance.isConnected) return false;
             return Instance.Send(pBuffer, pSize);
         }
         static public void Reg(int msgid, System.Action<object> func)
@@ -209,14 +210,12 @@ namespace LitEngine.Net
 
         virtual protected void InitNet()
         {
-            updateObject = new UpdateObject(mNetTag, new Method_Action(MainThreadUpdate), this);
-            GameUpdateManager.InsertUpdate(0, updateObject);
+
         }
 
         virtual protected void OnDestroy()
         {
             sInstance = null;
-            updateObject.Dispose();
             Dispose(true);
             if (MessageDelgate != null)
                 MessageDelgate(GetMsgReCallData(MSG_RECALL.Destoryed, mNetTag + "- 删除Net对象完成."));
@@ -569,6 +568,11 @@ namespace LitEngine.Net
         #endregion
 
         #endregion
+
+        private void FixedUpdate()
+        {
+            MainThreadUpdate();
+        }
 
         virtual protected void MainThreadUpdate()
         {

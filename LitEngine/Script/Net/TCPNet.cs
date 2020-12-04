@@ -8,6 +8,7 @@ namespace LitEngine.Net
 {
     public sealed class TCPNet : NetBase<TCPNet>
     {
+        override public bool isConnected { get { return base.isConnected && mSocket.Connected; } }
         private AsyncCallback sendCallBack;
         #region 构造析构
         private TCPNet() : base()
