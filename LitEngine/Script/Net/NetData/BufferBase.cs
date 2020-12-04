@@ -84,7 +84,7 @@ namespace LitEngine.Net
         public void SetReceiveData(ReceiveData _data)
         {
             int tlen = SReadInt(mBuffer, mPos);
-            _data.SetBuffer(mBuffer, mPos);
+            _data.CopyBuffer(mBuffer, mPos);
             mPos += tlen;
         }
         #endregion

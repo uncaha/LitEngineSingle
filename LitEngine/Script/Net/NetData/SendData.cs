@@ -6,72 +6,40 @@ namespace LitEngine.Net
 {
     public class SendData
     {
-        int mCmd;
-        int mLen;
-
         byte[] mData;
         int mIndex;
         bool mIsEnd;
-        public bool Sended;
         #region 属性
-        public byte[] Data
-        {
-            get
-            {
-                return GetData();
-            }
-        }
-        public int Len
-        {
-            get
-            {
-                return mLen;
-            }
-        }
-
-        public int SendLen
-        {
-            get
-            {
-                return mIndex;
-            }
-        }
-
-        public int Cmd
-        {
-            get
-            {
-                return mCmd;
-            }
-        }
+        public byte[] Data { get { return GetData(); } }
+        public int Len{get;private set;}
+        public int SendLen { get { return mIndex; } }
+        public int Cmd {get;private set;}
         #endregion
         public SendData(int _cmd)
         {
-            mData = new byte[256];
-            mCmd = _cmd;
-            mLen = 0;
+            mData = new byte[128];
+            Cmd = _cmd;
+            Len = 0;
             mIndex = 0;
             mIsEnd = false;
-            Sended = false;
-            AddInt(mLen);
-            AddInt(mCmd);
+            AddInt(Len);
+            AddInt(Cmd);
         }
         public void Rest()
         {
-            mLen = 0;
+            Len = 0;
             mIndex = SocketDataBase.mPackageTopLen;
             mIsEnd = false;
-            Sended = false;
         }
         private byte[] GetData()
         {
             lock (this)
             {
                 if (mIsEnd) return mData;
-                mLen = mIndex;
+                Len = mIndex;
                 int tbackupindex = mIndex;
                 mIndex = 0;
-                AddInt(mLen);
+                AddInt(Len);
                 mIndex = tbackupindex;
                 mIsEnd = true;
                 return mData;

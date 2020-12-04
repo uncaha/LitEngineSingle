@@ -6,44 +6,20 @@ namespace LitEngine.Net
 {
     public class ReceiveData
     {
-        public int ArrayIndex = 0;
-        int mCmd;
-        int mLen;
-
-        byte[] mData;
-
-        public bool DataUsed;
         #region 属性
-        public byte[] Data
-        {
-            get
-            {
-                return mData;
-            }
-        }
-        public int Len
-        {
-            get
-            {
-                return mLen;
-            }
-        }
-        public int Cmd
-        {
-            get
-            {
-                return mCmd;
-            }
-        }
+        public byte[] Data { get; private set; }
+        public int Len { get; private set; }
+        public int Cmd { get; private set; }
+
         #endregion
         int mIndex;
         public ReceiveData(byte[] _buffer, int _offset)
         {
-            SetBuffer(_buffer, _offset);
+            CopyBuffer(_buffer, _offset);
         }
         public ReceiveData(int _len)
         {
-            mData = new byte[_len];
+            Data = new byte[_len];
         }
         public ReceiveData()
         {
@@ -51,39 +27,55 @@ namespace LitEngine.Net
 
         public void SetBuffer(byte[] _buffer, int _offset)
         {
-            DataUsed = false;
             mIndex = 0;
             int tindex = _offset;
             int tlen = BufferBase.SReadInt(_buffer, tindex);
 
             if (tlen > BufferBase.maxLen || tlen < 0) throw new System.ArgumentOutOfRangeException("数据长度超出了限制 len = " + tlen);
 
-            mLen = tlen - SocketDataBase.mPackageTopLen;
+            Len = tlen - SocketDataBase.mPackageTopLen;
             tindex += sizeof(int);
-            mCmd = BufferBase.SReadInt(_buffer, tindex);
+            Cmd = BufferBase.SReadInt(_buffer, tindex);
             tindex += sizeof(int);
-            if (mData == null || mLen > mData.Length)
-                mData = new byte[mLen];
+            if (Data == null || Len > Data.Length)
+                Data = new byte[Len];
             else
-                mData.Initialize();
+                Data.Initialize();
 
             mIndex = 0;
-            Array.Copy(_buffer, tindex, mData, 0, mLen);
+            Buffer.BlockCopy(_buffer, tindex, Data, 0, Len);
         }
-        public byte[] GetData()
+
+        public void CopyBuffer(byte[] _buffer, int _offset)
         {
-            return mData;
+            mIndex = 0;
+            int tindex = _offset;
+            int tlen = BufferBase.SReadInt(_buffer, tindex);
+
+            if (tlen > BufferBase.maxLen || tlen < 0) throw new System.ArgumentOutOfRangeException("数据长度超出了限制 len = " + tlen);
+
+            Len = tlen - SocketDataBase.mPackageTopLen;
+            tindex += sizeof(int);
+            Cmd = BufferBase.SReadInt(_buffer, tindex);
+            tindex += sizeof(int);
+            if (Data == null || Len > Data.Length)
+                Data = new byte[Len];
+            else
+                Data.Initialize();
+
+            mIndex = 0;
+            Array.Copy(_buffer, tindex, Data, 0, Len);
         }
 
         #region 读取
 
         public byte ReadByte()
         {
-            return mData[mIndex++];
+            return Data[mIndex++];
         }
         public byte[] ReadBytes(int count)
         {
-            byte[] ret = BufferBase.SReadBytes(mData, mIndex, count);
+            byte[] ret = BufferBase.SReadBytes(Data, mIndex, count);
             mIndex += count;
             return ret;
         }
@@ -91,7 +83,7 @@ namespace LitEngine.Net
         unsafe public short ReadShort()
         {
             short u = 0;
-            BufferBase.GetNetValue((byte*)&u, mData, mIndex, sizeof(short));
+            BufferBase.GetNetValue((byte*)&u, Data, mIndex, sizeof(short));
             mIndex += sizeof(short);
             return u;
         }
@@ -99,7 +91,7 @@ namespace LitEngine.Net
         unsafe public int ReadInt()
         {
             int u = 0;
-            BufferBase.GetNetValue((byte*)&u, mData, mIndex, sizeof(int));
+            BufferBase.GetNetValue((byte*)&u, Data, mIndex, sizeof(int));
             mIndex += sizeof(int);
             return u;
         }
@@ -107,7 +99,7 @@ namespace LitEngine.Net
         unsafe public long ReadLong()
         {
             long u = 0;
-            BufferBase.GetNetValue((byte*)&u, mData, mIndex, sizeof(long));
+            BufferBase.GetNetValue((byte*)&u, Data, mIndex, sizeof(long));
             mIndex += sizeof(long);
             return u;
         }
@@ -115,7 +107,7 @@ namespace LitEngine.Net
         unsafe public float ReadFloat()
         {
             float u = 0;
-            BufferBase.GetNetValue((byte*)&u, mData, mIndex, sizeof(float));
+            BufferBase.GetNetValue((byte*)&u, Data, mIndex, sizeof(float));
             mIndex += sizeof(float);
             return u;
         }
@@ -124,7 +116,7 @@ namespace LitEngine.Net
         {
             bool u = false;
             byte* pdata = (byte*)&u;
-            *pdata = mData[mIndex++];
+            *pdata = Data[mIndex++];
             return u;
         }
 
