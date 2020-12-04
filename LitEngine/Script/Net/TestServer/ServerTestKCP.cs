@@ -165,7 +165,7 @@ namespace LitEngine.Net.TestServer
                 for (int size = kcpObject.PeekSize(); size > 0; size = kcpObject.PeekSize())
                 {
                     var recvBuffer = new byte[size];
-                    int treclen = kcpObject.Recv(recvBuffer);
+                    int treclen = kcpObject.Recv(recvBuffer, recvBuffer.Length);
                     if (treclen > 0)
                     {
                         PushRecData(recvBuffer, treclen);

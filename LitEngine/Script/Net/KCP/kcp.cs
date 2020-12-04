@@ -264,7 +264,7 @@ namespace LitEngine.Net.KCPCommand
         }
 
         // user/upper level recv: returns size, returns below zero for EAGAIN
-        public int Recv(byte[] buffer)
+        public int Recv(byte[] buffer,int pLength)
         {
 
             if (0 == rcv_queue.Length) return -1;
@@ -272,7 +272,7 @@ namespace LitEngine.Net.KCPCommand
             var peekSize = PeekSize();
             if (0 > peekSize) return -2;
 
-            if (peekSize > buffer.Length) return -3;
+            if (peekSize > pLength) return -3;
 
             var fast_recover = false;
             if (rcv_queue.Length >= rcv_wnd) fast_recover = true;

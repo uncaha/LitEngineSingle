@@ -4,6 +4,7 @@ using System.Net;
 using System;
 using System.Collections;
 using System.Threading;
+using System.Runtime.InteropServices;
 using LitEngine.UpdateSpace;
 using LitEngine.Net.KCPCommand;
 namespace LitEngine.Net
@@ -18,6 +19,7 @@ namespace LitEngine.Net
         private AsyncCallback sendCallBack;
         private KCP kcpObject;
         private SwitchQueue<byte[]> recvQueue = new SwitchQueue<byte[]>(128);
+        private byte[] kcpRecvBuffer = new byte[4096];
         #endregion
         #region 初始化
         private KCPNet() : base()
@@ -275,11 +277,20 @@ namespace LitEngine.Net
 
                 for (int size = kcpObject.PeekSize(); size > 0; size = kcpObject.PeekSize())
                 {
-                    var recvBuffer = new byte[size];
-                    int treclen = kcpObject.Recv(recvBuffer);
+                    if(kcpRecvBuffer.Length < size)
+                    {
+                        int tnewlen = size + kcpRecvBuffer.Length;
+                        kcpRecvBuffer = new byte[tnewlen];
+                    }
+                    else
+                    {
+                        kcpRecvBuffer.Initialize();
+                    }
+                    
+                    int treclen = kcpObject.Recv(kcpRecvBuffer, size);
                     if (treclen > 0)
                     {
-                        PopRecData(recvBuffer, treclen);
+                        PopRecData(kcpRecvBuffer, treclen);
                     }
                 }
             }
