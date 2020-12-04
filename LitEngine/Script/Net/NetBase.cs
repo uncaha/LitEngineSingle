@@ -112,6 +112,11 @@ namespace LitEngine.Net
         protected bool mDisposed = false;
         #endregion
 
+        #region cacheData
+        private System.Collections.Queue cacheRecDatas = System.Collections.Queue.Synchronized(new System.Collections.Queue());//cache
+        private int cacheObjectLength = 1024 * 10;
+        #endregion
+
         #region static
         static protected T sInstance = null;
         static protected T Instance
@@ -174,6 +179,11 @@ namespace LitEngine.Net
         static public void SetOutputDelgate(OutputEvent pEvent)
         {
             Instance.receiveOutput = pEvent;
+            Instance.SetCacheRecData(0,0);
+        }
+        static public void SetCacheRecObject(int pCount,int pSize)
+        {
+            Instance.SetCacheRecData(pCount, pSize);
         }
 
         static public void ShowMsgLog(bool pShow)
@@ -210,7 +220,18 @@ namespace LitEngine.Net
 
         virtual protected void InitNet()
         {
+            SetCacheRecData(30,cacheObjectLength);
+        }
 
+        virtual public void SetCacheRecData(int pCount,int pSize)
+        {
+            cacheRecDatas.Clear();
+            cacheObjectLength = pSize;
+            for (int i = 0; i < pCount; i++)
+            {
+                ReceiveData tdata = new ReceiveData(pSize);
+                cacheRecDatas.Enqueue(tdata);
+            }
         }
 
         virtual protected void OnDestroy()
