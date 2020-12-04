@@ -225,8 +225,24 @@ namespace LitEngine.Net
         {
             try
             {
-                ReceiveData tssdata = new ReceiveData(pBuffer, 0);
+                ReceiveData tssdata = null;
+                if (cacheRecDatas.Count > 0 && pSize < cacheObjectLength)
+                {
+                    tssdata = (ReceiveData)cacheRecDatas.Dequeue();
+                    mBufferData.SetReceiveData(tssdata);
+                }
+                else
+                {
+                    tssdata = new ReceiveData(cacheObjectLength);
+                    tssdata.useCache = pSize < cacheObjectLength;
+                }
                 Call(tssdata.Cmd, tssdata);
+
+                if (tssdata.useCache)
+                {
+                    cacheRecDatas.Enqueue(tssdata);
+                }
+
                 DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
             }
             catch (System.Exception error)

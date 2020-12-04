@@ -527,6 +527,7 @@ namespace LitEngine.Net
         #endregion
 
         #region 处理接收到的数据
+
         virtual protected void Processingdata(int _len, byte[] _buffer)
         {
             DebugMsg(-1, _buffer, 0, _len, "接收-bytes");
