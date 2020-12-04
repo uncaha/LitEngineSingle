@@ -167,17 +167,18 @@ namespace LitEngine.Net
             try
             {
                 ReceiveData tssdata = null;
-                if (cacheRecDatas.Count > 0 && pSize < cacheObjectLength)
+                bool tissmall = pSize <= cacheObjectLength;
+                if (cacheRecDatas.Count > 0 && tissmall)
                 {
                     tssdata = (ReceiveData)cacheRecDatas.Dequeue();
-                    mBufferData.SetReceiveData(tssdata);
                 }
                 else
                 {
-                    tssdata = new ReceiveData(cacheObjectLength);
-                    tssdata.useCache = pSize < cacheObjectLength;
+                    int tlen = tissmall ? cacheObjectLength : pSize;
+                    tssdata = new ReceiveData(tlen);
+                    tssdata.useCache = tissmall;
                 }
-
+                tssdata.CopyBuffer(pBuffer, 0);
                 mResultDataList.Enqueue(tssdata);
                 DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
             }
