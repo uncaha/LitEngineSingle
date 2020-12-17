@@ -83,11 +83,9 @@ namespace LitEngine.Net
         protected byte[] mRecbuffer = new byte[mReadMaxLen];
 
         protected BufferBase mBufferData = new BufferBase(1024 * 400);
-        protected System.Collections.Queue mSendDataList = System.Collections.Queue.Synchronized(new System.Collections.Queue());//发送数据队列
-        protected System.Collections.Queue mResultDataList = System.Collections.Queue.Synchronized(new System.Collections.Queue());//已接收的消息队列             
+        protected SafeSwitchQueue<ReceiveData> mResultDataList = new SafeSwitchQueue<ReceiveData>();          
         #endregion
         #region 分发
-        static public int OneFixedUpdateChoseCount = 60;
         protected SafeMap<int, SafeList<System.Action<object>>> mMsgHandlerList = new SafeMap<int, SafeList<System.Action<object>>>();//消息注册列表
         protected SafeQueue<MSG_RECALL_DATA> mToMainThreadMsgList = new SafeQueue<MSG_RECALL_DATA>();//给主线程发送通知
         #endregion
@@ -113,8 +111,8 @@ namespace LitEngine.Net
         #endregion
 
         #region cacheData
-        protected System.Collections.Queue cacheRecDatas = System.Collections.Queue.Synchronized(new System.Collections.Queue());//cache
-        protected int cacheObjectLength = 1024 * 10;
+        protected CacheSwitchQueue<ReceiveData> cacheRecDatas = new CacheSwitchQueue<ReceiveData>();
+        protected int cacheObjectLength = 1024 * 2;
         #endregion
 
         #region static
@@ -220,7 +218,7 @@ namespace LitEngine.Net
 
         virtual protected void InitNet()
         {
-            SetCacheRecData(30,cacheObjectLength);
+            SetCacheRecData(60,cacheObjectLength);
         }
 
         virtual public void SetCacheRecData(int pCount,int pSize)
@@ -344,10 +342,18 @@ namespace LitEngine.Net
         }
         virtual protected void ClearQueue()
         {
-            mSendDataList.Clear();
             mBufferData.Clear();
-            mResultDataList.Clear();
 
+            var tlist = mResultDataList.DequeueAll();
+            for (int i = 0 ,max = tlist.Count; i < max; i++)
+            {
+                ReceiveData trecdata = tlist[i];
+                if (trecdata.useCache)
+                {
+                    cacheRecDatas.Enqueue(trecdata);
+                }
+            }
+            //mResultDataList.Clear();
         }
         virtual protected void WaitThreadJoin(Thread _thread)
         {
@@ -502,7 +508,10 @@ namespace LitEngine.Net
         {
             if (StopUpdateRecMsg) return;
             if (receiveOutput != null) return;
-            int i = mResultDataList.Count > OneFixedUpdateChoseCount ? OneFixedUpdateChoseCount : mResultDataList.Count;
+
+            mResultDataList.Switch();
+
+            int i = mResultDataList.PopCount;
 
             while (i > 0)
             {

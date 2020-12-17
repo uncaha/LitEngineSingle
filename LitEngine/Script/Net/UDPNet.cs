@@ -168,9 +168,15 @@ namespace LitEngine.Net
             {
                 ReceiveData tssdata = null;
                 bool tissmall = pSize <= cacheObjectLength;
-                if (cacheRecDatas.Count > 0 && tissmall)
+
+                if(tissmall && cacheRecDatas.PopCount <= 0)
                 {
-                    tssdata = (ReceiveData)cacheRecDatas.Dequeue();
+                    cacheRecDatas.Switch();
+                }
+
+                if (cacheRecDatas.PopCount > 0 && tissmall)
+                {
+                    tssdata = cacheRecDatas.Dequeue();
                 }
                 else
                 {

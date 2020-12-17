@@ -233,6 +233,8 @@
     <Compile Include="Script\Net\TestServer\ServerTestTCP.cs" />
     <Compile Include="Script\Net\TestServer\ServerTestUDP.cs" />
     <Compile Include="Script\Net\TestServer\ServerTestKCP.cs" />
+    <Compile Include="Script\Net\NetData\SafeSwitchQueue.cs" />
+    <Compile Include="Script\Net\NetData\CacheSwitchQueue.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />
