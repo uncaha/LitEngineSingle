@@ -339,6 +339,10 @@ namespace LitEngine.Net
 
                 for (int size = kcpObject.PeekSize(); size > 0; size = kcpObject.PeekSize())
                 {
+                    if(size > 1048576)
+                    {
+                        DLog.LogErrorFormat("The size is too long.size = {0}", size);
+                    }
                     if(kcpRecvBuffer.Length < size)
                     {
                         int tnewlen = size + kcpRecvBuffer.Length;
