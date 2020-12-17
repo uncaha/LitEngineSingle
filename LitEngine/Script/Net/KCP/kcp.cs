@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 namespace LitEngine.Net.KCPCommand
 {
     //感谢https://github.com/RainsSoft/kcp-csharp
@@ -163,10 +164,37 @@ namespace LitEngine.Net.KCPCommand
             internal UInt32 fastack = 0;
             internal UInt32 xmit = 0;
             internal byte[] data;
-
+            internal int Length = 0;
             internal Segment(int size)
             {
                 this.data = new byte[size];
+                Length = size;
+            }
+
+            internal void Rest(int pLen)
+            {
+                conv = 0;
+                cmd = 0;
+                frg = 0;
+                wnd = 0;
+                ts = 0;
+                sn = 0;
+                una = 0;
+                resendts = 0;
+                rto = 0;
+                fastack = 0;
+                xmit = 0;
+                data = new byte[pLen];
+                if (data == null || pLen > data.Length)
+                {
+                    data = new byte[pLen];
+                }
+                else
+                {
+                    data.Initialize();
+                }
+
+                Length = pLen;
             }
 
             // encode a segment into buffer
@@ -182,7 +210,7 @@ namespace LitEngine.Net.KCPCommand
                 offset += ikcp_encode32u(ptr, offset, ts);
                 offset += ikcp_encode32u(ptr, offset, sn);
                 offset += ikcp_encode32u(ptr, offset, una);
-                offset += ikcp_encode32u(ptr, offset, (UInt32)data.Length);
+                offset += ikcp_encode32u(ptr, offset, (UInt32)Length);
 
                 return offset - offset_;
             }
@@ -213,6 +241,7 @@ namespace LitEngine.Net.KCPCommand
         // buffer, size
         Action<byte[], int> output;
 
+        Queue<Segment> segCacheQue = new Queue<Segment>();
         // create a new kcp control object, 'conv' must equal in two endpoint
         // from the same connection.
         public KCP(UInt32 conv_, Action<byte[], int> output_)
@@ -232,6 +261,13 @@ namespace LitEngine.Net.KCPCommand
             dead_link = IKCP_DEADLINK;
             buffer = new byte[(mtu + IKCP_OVERHEAD) * 3];
             output = output_;
+
+            for (int i = 0; i < 30; i++)
+            {
+                var tseg = new Segment(2048);
+                segCacheQue.Enqueue(tseg);
+            }
+
         }
 
         public void Dispose()
@@ -247,7 +283,7 @@ namespace LitEngine.Net.KCPCommand
 
             var seq = rcv_queue[0];
 
-            if (0 == seq.frg) return seq.data.Length;
+            if (0 == seq.frg) return seq.Length;
 
             if (rcv_queue.Length < seq.frg + 1) return -1;
 
@@ -255,7 +291,7 @@ namespace LitEngine.Net.KCPCommand
 
             foreach (var item in rcv_queue)
             {
-                length += item.data.Length;
+                length += item.Length;
                 if (0 == item.frg)
                     break;
             }
@@ -264,7 +300,7 @@ namespace LitEngine.Net.KCPCommand
         }
 
         // user/upper level recv: returns size, returns below zero for EAGAIN
-        public int Recv(byte[] buffer,int pLength)
+        public int Recv(byte[] buffer, int pLength)
         {
 
             if (0 == rcv_queue.Length) return -1;
@@ -282,8 +318,11 @@ namespace LitEngine.Net.KCPCommand
             var n = 0;
             foreach (var seg in rcv_queue)
             {
-                Array.Copy(seg.data, 0, buffer, n, seg.data.Length);
-                n += seg.data.Length;
+                Array.Copy(seg.data, 0, buffer, n, seg.Length);
+
+                segCacheQue.Enqueue(seg);
+
+                n += seg.Length;
                 count++;
                 if (0 == seg.frg) break;
             }
@@ -490,8 +529,22 @@ namespace LitEngine.Net.KCPCommand
             }
         }
 
+        Segment GetSegment()
+        {
+            Segment ret = null;
+            if (segCacheQue.Count > 0)
+            {
+                ret = segCacheQue.Dequeue();
+            }
+            else
+            {
+                ret = new Segment(2048);
+            }
+            return ret;
+        }
+
         // when you received a low level packet (eg. UDP packet), call it
-        public int Input(byte[] data,int plength)
+        public int Input(byte[] data, int plength)
         {
 
             var s_una = snd_una;
@@ -559,7 +612,9 @@ namespace LitEngine.Net.KCPCommand
                         ack_push(sn, ts);
                         if (_itimediff(sn, rcv_nxt) >= 0)
                         {
-                            var seg = new Segment((int)length);
+                            var seg = GetSegment();
+                            seg.Rest((int)length);
+
                             seg.conv = conv_;
                             seg.cmd = (UInt32)cmd;
                             seg.frg = (UInt32)frg;
@@ -780,7 +835,7 @@ namespace LitEngine.Net.KCPCommand
                     segment.wnd = seg.wnd;
                     segment.una = rcv_nxt;
 
-                    var need = IKCP_OVERHEAD + segment.data.Length;
+                    var need = IKCP_OVERHEAD + segment.Length;
                     if (offset + need >= mtu)
                     {
                         output(buffer, offset);
@@ -789,10 +844,10 @@ namespace LitEngine.Net.KCPCommand
                     }
 
                     offset += segment.encode(buffer, offset);
-                    if (segment.data.Length > 0)
+                    if (segment.Length > 0)
                     {
-                        Array.Copy(segment.data, 0, buffer, offset, segment.data.Length);
-                        offset += segment.data.Length;
+                        Array.Copy(segment.data, 0, buffer, offset, segment.Length);
+                        offset += segment.Length;
                     }
 
                     if (segment.xmit >= dead_link)
