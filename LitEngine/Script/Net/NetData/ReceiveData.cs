@@ -48,6 +48,22 @@ namespace LitEngine.Net
             Array.Copy(_buffer, tindex, Data, 0, Len);
         }
 
+        override public string ToString()
+        {
+            System.Text.StringBuilder bufferstr = new System.Text.StringBuilder();
+            bufferstr.AppendFormat("length = {0},bytes = ", Len);
+            bufferstr.Append("{");
+            for (int i = 0; i < Len; i++)
+            {
+                if (i != 0)
+                    bufferstr.Append(",");
+                bufferstr.Append(Data[i]);
+            }
+            bufferstr.Append("}");
+
+            return bufferstr.ToString();
+        }
+
         #region 读取
 
         public byte ReadByte()

@@ -11,6 +11,34 @@ namespace LitEngine.Net
 {
     public sealed class KCPNet : NetBase<KCPNet>
     {
+        public class CacheByteObject
+        {
+            public byte[] bytes;
+            public int length;
+            public void Initialize()
+            {
+                if(bytes != null)
+                {
+                    bytes.Initialize();
+                }
+                length = 0;
+            }
+            override public string ToString()
+            {
+                System.Text.StringBuilder bufferstr = new System.Text.StringBuilder();
+                bufferstr.AppendFormat("length = {0},bytes = ", length);
+                bufferstr.Append("{");
+                for (int i = 0; i < length; i++)
+                {
+                    if (i != 0)
+                        bufferstr.Append(",");
+                    bufferstr.Append(bytes[i]);
+                }
+                bufferstr.Append("}");
+
+                return bufferstr.ToString();
+            }
+        }
         #region socket属性
         private IPEndPoint mTargetPoint;//目标地址
         private EndPoint mRecPoint;
@@ -18,8 +46,11 @@ namespace LitEngine.Net
         private int mLocalPort = 30379;
         private AsyncCallback sendCallBack;
         private KCP kcpObject;
-        private SwitchQueue<byte[]> recvQueue = new SwitchQueue<byte[]>(128);
+        private SwitchQueue<CacheByteObject> recvQueue = new SwitchQueue<CacheByteObject>(128);
         private byte[] kcpRecvBuffer = new byte[4096];
+
+        private int cacheByteLen = 2048;
+        private CacheSwitchQueue<CacheByteObject> cacheBytesQue = new CacheSwitchQueue<CacheByteObject>(60);
         #endregion
         #region 初始化
         private KCPNet() : base()
@@ -29,6 +60,11 @@ namespace LitEngine.Net
             kcpObject.NoDelay(1, 10, 2, 1);
             kcpObject.WndSize(128, 128);
             sendCallBack = SendAsyncCallback;
+
+            for (int i = 0; i < 60; i++)
+            {
+                cacheBytesQue.Enqueue(new CacheByteObject(){ bytes = new byte[cacheByteLen]});
+            }
         }
         #endregion
 
@@ -177,7 +213,7 @@ namespace LitEngine.Net
                 {
                     if (mSocket.Available != 0)
                     {
-                        int receiveNumber = mSocket.ReceiveFrom(mRecbuffer, SocketFlags.None, ref mRecPoint);
+                        int receiveNumber = mSocket.ReceiveFrom(mRecbuffer, cacheByteLen, SocketFlags.None, ref mRecPoint);
                         IPEndPoint tremot = (IPEndPoint)mRecPoint;
 
                         if (receiveNumber > 0 && tremot.Address.Equals(mServerIP))
@@ -199,8 +235,24 @@ namespace LitEngine.Net
         {
             try
             {
-                byte[] dst = new byte[_len];
-                Buffer.BlockCopy(_buffer, 0, dst, 0, _len);
+                if (cacheBytesQue.PopCount <= 0)
+                {
+                    cacheBytesQue.Switch();
+                }
+
+                CacheByteObject dst = null;
+                if (cacheBytesQue.PopCount > 0)
+                {
+                    dst = cacheBytesQue.Dequeue();
+                    dst.Initialize();
+                    
+                }
+                else
+                {
+                    dst = new CacheByteObject() { bytes = new byte[cacheByteLen]};
+                }
+                dst.length = _len;
+                Buffer.BlockCopy(_buffer, 0, dst.bytes, 0, _len);
                 recvQueue.Push(dst);
             }
             catch (Exception e)
@@ -268,14 +320,18 @@ namespace LitEngine.Net
             recvQueue.Switch();
             while (!recvQueue.Empty())
             {
-                var recvBufferRaw = recvQueue.Pop();
-                int ret = kcpObject.Input(recvBufferRaw);
+                var recvobject = recvQueue.Pop();
+                int ret = kcpObject.Input(recvobject.bytes, recvobject.length);
 
-                //收到的不是一个正确的KCP包
+                cacheBytesQue.Enqueue(recvobject);
+
                 if (ret < 0)
                 {
-                    string str = System.Text.Encoding.UTF8.GetString(recvBufferRaw, 0, recvBufferRaw.Length);
-                    DLog.LogFormat("收到了错误的kcp包: {0}", str);
+                    //收到的不是一个正确的KCP包
+                    if(IsShowDebugLog)
+                    {
+                        DLog.Log("Error kcp package.");
+                    }
                     return;
                 }
 

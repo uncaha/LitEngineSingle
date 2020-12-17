@@ -150,7 +150,7 @@ namespace LitEngine.Net.TestServer
             while (!recvQueue.Empty())
             {
                 var recvBufferRaw = recvQueue.Pop();
-                int ret = kcpObject.Input(recvBufferRaw);
+                int ret = kcpObject.Input(recvBufferRaw, recvBufferRaw.Length);
 
                 //收到的不是一个正确的KCP包
                 if (ret < 0)

@@ -491,11 +491,11 @@ namespace LitEngine.Net.KCPCommand
         }
 
         // when you received a low level packet (eg. UDP packet), call it
-        public int Input(byte[] data)
+        public int Input(byte[] data,int plength)
         {
 
             var s_una = snd_una;
-            if (data.Length < IKCP_OVERHEAD) return 0;
+            if (plength < IKCP_OVERHEAD) return 0;
 
             var offset = 0;
 
@@ -512,7 +512,7 @@ namespace LitEngine.Net.KCPCommand
                 byte cmd = 0;
                 byte frg = 0;
 
-                if (data.Length - offset < IKCP_OVERHEAD) break;
+                if (plength - offset < IKCP_OVERHEAD) break;
 
                 offset += ikcp_decode32u(data, offset, ref conv_);
 
@@ -526,7 +526,7 @@ namespace LitEngine.Net.KCPCommand
                 offset += ikcp_decode32u(data, offset, ref una);
                 offset += ikcp_decode32u(data, offset, ref length);
 
-                if (data.Length - offset < length) return -2;
+                if (plength - offset < length) return -2;
 
                 switch (cmd)
                 {
