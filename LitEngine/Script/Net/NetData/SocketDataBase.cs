@@ -116,15 +116,15 @@ namespace LitEngine.Net
             switch (pType.Name)
             {
                 case "Int16":
-                    lenType = SocketDataHeadType.type_short;
+                    ret = SocketDataHeadType.type_short;
                     pSize = 2;
                     break;
                 case "UInt16":
-                    lenType = SocketDataHeadType.type_ushort;
+                    ret = SocketDataHeadType.type_ushort;
                     pSize = 2;
                     break;
                 case "Int32":
-                    lenType = SocketDataHeadType.type_int;
+                    ret = SocketDataHeadType.type_int;
                     pSize = 4;
                     break;
                 default:
