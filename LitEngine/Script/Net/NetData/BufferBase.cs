@@ -94,6 +94,22 @@ namespace LitEngine.Net
         }
         #endregion
 
+        #region 工具方法
+        public static int ReadHeadLen(byte[] pBuffer,int pOffset)
+        {
+            int ret = -1;
+            //switch (SocketDataBase.mFirstLen)
+            //{
+            //    case 4;
+            //    default:
+            //        break;
+            //}
+            ret = SReadInt(pBuffer, pOffset);
+
+            return ret;
+        }
+        #endregion
+
         #region 读取工具
         unsafe public static void GetNetValue(byte* pdata, byte[] _buffer, int _startindex, int _length)
         {
