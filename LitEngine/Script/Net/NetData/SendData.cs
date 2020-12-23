@@ -1,7 +1,6 @@
 ﻿using System;
 using UnityEngine;
-using System.Text;
-using LitEngine.CodeTool;
+
 namespace LitEngine.Net
 {
     public class SendData

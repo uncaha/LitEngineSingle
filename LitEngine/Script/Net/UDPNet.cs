@@ -2,9 +2,7 @@
 using System.Net.Sockets;
 using System.Net;
 using System;
-using System.Collections;
 using System.Threading;
-using LitEngine.UpdateSpace;
 namespace LitEngine.Net
 {
     public sealed class UDPNet : NetBase<UDPNet>

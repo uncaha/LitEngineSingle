@@ -5,8 +5,7 @@ using System.Threading;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Collections.Generic;
-using LitEngine.UpdateSpace;
-using LitEngine.Method;
+
 namespace LitEngine.Net
 {
     #region 回调消息

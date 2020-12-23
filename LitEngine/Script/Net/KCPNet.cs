@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Threading;
 using System.Runtime.InteropServices;
-using LitEngine.UpdateSpace;
+
 using LitEngine.Net.KCPCommand;
 namespace LitEngine.Net
 {
