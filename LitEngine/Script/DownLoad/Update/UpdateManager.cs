@@ -13,6 +13,8 @@ namespace LitEngine.UpdateTool
         public const string checkfile = "checkInfoData.txt";
         public const string downloadedfile = "downloadedData.txt";
         public const string upateMgrData = "updateData";
+
+        public static System.Func<string> getServerUrlDelgate = null;
         private static object lockobj = new object();
         private static UpdateManager sInstance = null;
         private static UpdateManager Instance
@@ -554,8 +556,10 @@ namespace LitEngine.UpdateTool
         }
         public string GetServerUrl(string pFile)
         {
+            string serverUrl = getServerUrlDelgate != null ? getServerUrlDelgate() : "";
             string tkey = GetPlatformPath();
-            return string.Format("{0}/{1}/{2}/{3}", updateData.server, tkey, updateData.version, pFile);
+            string ret = string.Format("{0}{1}/{2}/{3}/{4}", serverUrl,updateData.server, tkey, updateData.version, pFile);
+            return ret;
         }
     }
 }
