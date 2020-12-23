@@ -9,51 +9,134 @@ namespace LitEngine.Net
     public enum SocketDataHeadType
     {
         none = 0,
-        type_uint,
         type_int,
         type_short,
         type_ushort,
     }
 
-    public class DataHeadBase
+    public class DataHead
     {
-        public SocketDataHeadType type = SocketDataHeadType.type_int;
-        public int dataLen = -1;
-    }
-    public class SocketDataHead<T> : DataHeadBase
-    {
-        public SocketDataHead()
+        public SocketDataHeadType lenType = SocketDataHeadType.type_int;
+        public int lenSize { get; protected set; }
+
+        public SocketDataHeadType cmdType = SocketDataHeadType.type_int;
+        public int cmdSize { get; protected set; }
+
+        public int packageHeadLen { get; protected set; }
+
+        private int ReadByType(SocketDataHeadType pType, byte[] pBuffer, int pOffset)
         {
-            System.Type ttype = typeof(T);
-            switch (ttype.Name)
+            int ret = -1;
+            switch (pType)
             {
-                case "Int16":
-                    type = SocketDataHeadType.type_short;
-                    dataLen = 2;
+                case SocketDataHeadType.type_short:
+                    ret = BufferBase.SReadShort(pBuffer, pOffset);
                     break;
-                case "UInt16":
-                    type = SocketDataHeadType.type_ushort;
-                    dataLen = 2;
+                case SocketDataHeadType.type_ushort:
+                    ret = BufferBase.SReadUShort(pBuffer, pOffset);
                     break;
-                case "Int32":
-                    type = SocketDataHeadType.type_int;
-                    dataLen = 4;
-                    break;
-                case "UInt32":
-                    type = SocketDataHeadType.type_uint;
-                    dataLen = 4;
+                case SocketDataHeadType.type_int:
+                    ret = BufferBase.SReadInt(pBuffer, pOffset);
                     break;
                 default:
+                    DLog.LogErrorFormat("ReadByType -> Type error : {0}", pType);
                     break;
             }
+
+            return ret;
+        }
+
+        public int ReadHeadLen(byte[] pBuffer, int pOffset)
+        {
+            int ret = ReadByType(lenType, pBuffer, pOffset);
+            return ret;
+        }
+
+        public int ReadCmd(byte[] pBuffer, int pOffset)
+        {
+            int ret = ReadByType(cmdType, pBuffer, pOffset + lenSize);
+            return ret;
+        }
+
+        public byte[] GetByte(SocketDataHeadType pType,int pSrc)
+        {
+            byte[] ret = null;
+            switch (pType)
+            {
+                case SocketDataHeadType.type_short:
+                    ret = BufferBase.GetBuffer((short)pSrc);
+                    break;
+                case SocketDataHeadType.type_ushort:
+                    ret = BufferBase.GetBuffer((ushort)pSrc);
+                    break;
+                case SocketDataHeadType.type_int:
+                    ret = BufferBase.GetBuffer((int)pSrc);
+                    break;
+                default:
+                    DLog.LogErrorFormat("SocketData GetByte -> Type error : {0}", pType);
+                    break;
+            }
+
+            return ret;
+        }
+
+        public int WriteHead(int pLen, byte[] pBuffer, int pOffset)
+        {
+            byte[]  tsrc = GetByte(lenType, pLen);
+            Array.Copy(tsrc, 0, pBuffer, pOffset, tsrc.Length);
+            return tsrc.Length;
+        }
+        public int WriteCmd(int pCmd,byte[] pBuffer, int pOffset)
+        {
+            byte[] tsrc = GetByte(cmdType, pCmd);
+            Array.Copy(tsrc, 0, pBuffer, pOffset, tsrc.Length);
+            return tsrc.Length;
         }
     }
-    public class SocketDataBase
+    public class SocketDataHead<T,K> : DataHead
     {
-        
-        static public int mFirstLen = 4;//包头长度占位
-        static public int mCmdLen = 4;//cmd占位
-        static public int mPackageTopLen = mFirstLen + mCmdLen;
+        //T:Len Type    K:cmd Type
+        public SocketDataHead()
+        {
+            int tlensize, tcmdSize;
+
+            lenType = GetTypeAndSize(typeof(T),out tlensize);
+            cmdType = GetTypeAndSize(typeof(K),out tcmdSize);
+
+            lenSize = tlensize;
+            cmdSize = tcmdSize;
+
+            packageHeadLen = lenSize + cmdSize;
+        }
+
+        public SocketDataHeadType GetTypeAndSize(System.Type pType,out int pSize)
+        {
+            SocketDataHeadType ret = SocketDataHeadType.none;
+ 
+            switch (pType.Name)
+            {
+                case "Int16":
+                    lenType = SocketDataHeadType.type_short;
+                    pSize = 2;
+                    break;
+                case "UInt16":
+                    lenType = SocketDataHeadType.type_ushort;
+                    pSize = 2;
+                    break;
+                case "Int32":
+                    lenType = SocketDataHeadType.type_int;
+                    pSize = 4;
+                    break;
+                default:
+                    pSize = -1;
+                    DLog.LogErrorFormat("GetTypeAndSize -> Type error : {0}", pType.Name);
+                    break;
+            }
+
+            return ret;
+        }
+
+       
     }
 }
 

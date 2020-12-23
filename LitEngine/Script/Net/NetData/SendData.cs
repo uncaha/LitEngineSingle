@@ -22,13 +22,14 @@ namespace LitEngine.Net
             Len = 0;
             mIndex = 0;
             mIsEnd = false;
-            AddInt(Len);
-            AddInt(Cmd);
+
+            mIndex += BufferBase.headInfo.WriteHead(Len,mData, mIndex);
+            mIndex += BufferBase.headInfo.WriteCmd(Cmd,mData, mIndex);
         }
         public void Rest()
         {
             Len = 0;
-            mIndex = SocketDataBase.mPackageTopLen;
+            mIndex = BufferBase.headInfo.packageHeadLen;
             mIsEnd = false;
         }
         private byte[] GetData()
@@ -37,10 +38,7 @@ namespace LitEngine.Net
             {
                 if (mIsEnd) return mData;
                 Len = mIndex;
-                int tbackupindex = mIndex;
-                mIndex = 0;
-                AddInt(Len);
-                mIndex = tbackupindex;
+                BufferBase.headInfo.WriteHead(Len, mData, 0);
                 mIsEnd = true;
                 return mData;
             }
@@ -48,7 +46,7 @@ namespace LitEngine.Net
 
         #region　添加数据
 
-        private void ChoseDataLen(short _len)
+        private void ChoseDataLen(int _len)
         {
             if ((_len + mIndex) < mData.Length) return;
             int tlen = mData.Length;
@@ -66,7 +64,7 @@ namespace LitEngine.Net
         public void AddBytes(byte[] _src)
         {
             if (_src == null) return;
-            short tlen = (short)_src.Length;
+            int tlen = _src.Length;
             ChoseDataLen(tlen);
             Array.Copy(_src, 0, mData, mIndex, tlen);
             mIndex += tlen;

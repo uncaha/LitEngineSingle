@@ -31,14 +31,15 @@ namespace LitEngine.Net
         {
             mIndex = 0;
             int tindex = _offset;
-            RecLen = BufferBase.SReadInt(_buffer, tindex);
+            RecLen = BufferBase.headInfo.ReadHeadLen(_buffer, tindex);
 
             if (RecLen > BufferBase.maxLen || RecLen < 0) throw new System.ArgumentOutOfRangeException("数据长度超出了限制 len = " + RecLen);
 
-            Len = RecLen - SocketDataBase.mPackageTopLen;
-            tindex += sizeof(int);
-            Cmd = BufferBase.SReadInt(_buffer, tindex);
-            tindex += sizeof(int);
+            Len = RecLen - BufferBase.headInfo.packageHeadLen;
+            Cmd = BufferBase.headInfo.ReadCmd(_buffer, tindex);
+
+            tindex += BufferBase.headInfo.packageHeadLen;
+
             if (Data == null || Len > Data.Length)
                 Data = new byte[Len];
             else

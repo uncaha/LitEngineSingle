@@ -7,15 +7,19 @@ namespace LitEngine.Net
     {
         public const int maxLen = 1024 * 1024 * 100;
         static public bool IsHDate = false;
+        static public DataHead headInfo = new SocketDataHead<int, int>();
+
         private byte[] mBuffer = null;
         private int mIndex = 0;
         private int mPos = 0;
         private int mSize = 0;
+
         public BufferBase(int _bufferlen)
         {
             mSize = _bufferlen;
             mBuffer = new byte[mSize];
         }
+
         #region 缓存处理
         public void Clear()
         {
@@ -67,8 +71,8 @@ namespace LitEngine.Net
         }
         public bool IsFullData()
         {
-            if (mIndex - mPos < SocketDataBase.mPackageTopLen) return false;
-            int tlen = SReadInt(mBuffer, mPos);
+            if (mIndex - mPos < headInfo.packageHeadLen) return false;
+            int tlen = headInfo.ReadHeadLen(mBuffer, mPos);
             if (tlen > maxLen || tlen < 0) throw new System.ArgumentOutOfRangeException("数据长度超出了限制 len = " + tlen);
             if (mIndex - mPos < tlen) return false;
             return true;
@@ -94,21 +98,6 @@ namespace LitEngine.Net
         }
         #endregion
 
-        #region 工具方法
-        public static int ReadHeadLen(byte[] pBuffer,int pOffset)
-        {
-            int ret = -1;
-            //switch (SocketDataBase.mFirstLen)
-            //{
-            //    case 4;
-            //    default:
-            //        break;
-            //}
-            ret = SReadInt(pBuffer, pOffset);
-
-            return ret;
-        }
-        #endregion
 
         #region 读取工具
         unsafe public static void GetNetValue(byte* pdata, byte[] _buffer, int _startindex, int _length)
@@ -150,10 +139,24 @@ namespace LitEngine.Net
             return u;
         }
 
+        unsafe public static ushort SReadUShort(byte[] _buffer, int _startindex)
+        {
+            ushort u = 0;
+            GetNetValue((byte*)&u, _buffer, _startindex, sizeof(ushort));
+            return u;
+        }
+
         unsafe public static int SReadInt(byte[] _buffer, int _startindex)
         {
             int u = 0;
             GetNetValue((byte*)&u, _buffer, _startindex, sizeof(int));
+            return u;
+        }
+
+        unsafe public static uint SReadUInt(byte[] _buffer, int _startindex)
+        {
+            uint u = 0;
+            GetNetValue((byte*)&u, _buffer, _startindex, sizeof(uint));
             return u;
         }
 
@@ -215,6 +218,10 @@ namespace LitEngine.Net
         unsafe public static byte[] GetBuffer(short _src)
         {
             return SetNetValue((byte*)&_src, sizeof(short));
+        }
+        unsafe public static byte[] GetBuffer(ushort _src)
+        {
+            return SetNetValue((byte*)&_src, sizeof(ushort));
         }
         unsafe public static byte[] GetBuffer(long _src)
         {
