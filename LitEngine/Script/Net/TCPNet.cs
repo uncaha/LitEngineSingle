@@ -36,64 +36,69 @@ namespace LitEngine.Net
                 DLog.LogError(mNetTag + string.Format("[{0}] Connected now.", mNetTag));
                 return;
             }
-            mState = TcpState.Connecting;
-            System.Threading.Tasks.Task.Run(ThreatConnect);
+            
+            TCPConnect();
         }
 
         private bool TCPConnect()
         {
+            mState = TcpState.Connecting;
             bool ret = false;
             List<IPAddress> tipds = GetServerIpAddress(mHostName);
             if (tipds.Count == 0) DLog.LogError("IPAddress List.Count = 0!");
-
-            foreach (IPAddress tip in tipds)
+            try
             {
-                try
-                {
-                    DLog.Log(string.Format("[Start Connect]" + " HostName:{0} IpAddress:{1} AddressFamily:{2}", mHostName, tip.ToString(), tip.AddressFamily.ToString()));
-                    mSocket = new Socket(tip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                    RestSocketInfo();
-                    mSocket.Connect(tip, mPort);
-                    DLog.Log("Connected!");
-                    ret = true;
-                    break;
-                }
-                catch (Exception e)
-                {
-                    DLog.LogError(string.Format("[Connect Error]" + " HostName:{0} IpAddress:{1} AddressFamily:{2} ErrorMessage:{3}", mHostName, tip.ToString(), tip.AddressFamily.ToString(), e.ToString()));
-                }
+                IPAddress tip = tipds[0];
+                DLog.Log(string.Format("[Start Connect]" + " HostName:{0} IpAddress:{1} AddressFamily:{2}", mHostName, tip.ToString(), tip.AddressFamily.ToString()));
+                mSocket = new Socket(tip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                RestSocketInfo();
+                mSocket.BeginConnect(tip,mPort,ConnectCallback,mSocket);
+                ret = true;
+            }
+            catch (Exception e)
+            {
+                string terror = e.ToString();
+                DLog.LogError(terror);
+                mState = TcpState.Closed;
+                AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.ConectError, mNetTag + "Connect fail. error:" + terror));
             }
 
             return ret;
         }
 
-        private void ThreatConnect()
+        private void ConnectCallback(IAsyncResult async)
         {
-            bool tok = TCPConnect();
+            bool isOK = false;
             string tmsg = "";
-            if (tok)
+            try
             {
-                try
+                Socket client = (Socket)async.AsyncState;
+                client.EndConnect(async);
+                if (client.Connected)
                 {
                     mStartThread = true;
 
                     #region 接收;
                     CreatRec();
                     #endregion
-
-                    DLog.Log("收发线程启动!");
+                    DLog.Log("TCP Connected!");
+                    isOK = true;
                 }
-                catch (Exception e)
+                else
                 {
-                    tmsg = e.ToString();
-                    CloseSRThread();
-                    tok = false;
+                    isOK = false;
+                    tmsg = "Connect fail.try again.";
                 }
 
             }
-
-            if (!tok)
+            catch (Exception e)
             {
+                tmsg = e.ToString();
+            }
+
+            if (!isOK)
+            {
+                CloseSRThread();
                 mState = TcpState.Closed;
                 AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.ConectError, mNetTag + "Connect fail. " + tmsg));
             }
@@ -102,7 +107,6 @@ namespace LitEngine.Net
                 mState = TcpState.Connected;
                 AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.Connected, mNetTag + " Connected."));
             }
-
         }
 
         private void CreatRec()
