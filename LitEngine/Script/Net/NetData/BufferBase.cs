@@ -193,6 +193,36 @@ namespace LitEngine.Net
         #endregion
 
         #region 写入工具
+
+        #region 写入buffer
+
+        unsafe public static void WriteValue(byte* pdata, int plength,byte[] pDst,int pOffset)
+        {
+            if (IsHDate)
+            {
+                int i = pOffset +  plength - 1;
+                for (; i >= 0; i--)
+                    pDst[i] = *pdata++;
+            }
+            else
+            {
+                for (int i = 0; i < plength; i++)
+                    pDst[i] = *pdata++;
+            }
+        }
+
+        unsafe public static int WriteToBuffer(int _src, byte[] pDst, int pOffset)
+        {
+            int tlen = sizeof(int);
+            WriteValue((byte*)&_src, sizeof(int), pDst, pOffset);
+
+            return tlen;
+        }
+
+        //写入buffer
+        #endregion
+
+        #region getbuffer
         unsafe public static byte[] SetNetValue(byte* pdata, int _length)
         {
             byte[] retbuffer = new byte[_length];
@@ -251,6 +281,9 @@ namespace LitEngine.Net
 
             return ret;
         }
+        #endregion
+        
+        //写入
         #endregion
     }
 }
