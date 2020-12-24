@@ -14,7 +14,7 @@ namespace LitEngine.Net
         type_ushort,
     }
 
-    public class DataHead
+    public abstract class DataHead
     {
         public SocketDataHeadType lenType = SocketDataHeadType.type_int;
         public int lenSize { get; protected set; }

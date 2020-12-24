@@ -183,6 +183,12 @@ namespace LitEngine.Net
             Instance.SetCacheRecData(pCount, pSize);
         }
 
+        static public void SetHeadInfo(DataHead pInfo)
+        {
+            if (pInfo == null) return;
+            BufferBase.headInfo = pInfo;
+        }
+
         static public void ShowMsgLog(bool pShow)
         {
             Instance.IsShowDebugLog = pShow;
