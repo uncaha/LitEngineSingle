@@ -22,18 +22,14 @@ namespace LitEngine.TemPlate.Event
 
         public void Call(object pObject)
         {
-#if LITDEBUG
             try
             {
-#endif
                 EventDelgate(pObject);
-#if LITDEBUG
             }
             catch (System.Exception _e)
             {
                 DLog.LogError(_e.ToString());
             }
-#endif
         }
 
     }

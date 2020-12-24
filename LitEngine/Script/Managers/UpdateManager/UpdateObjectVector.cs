@@ -64,20 +64,15 @@ namespace LitEngine.UpdateSpace
 
         private void RunUpdate(UpdateBase _runobj)
         {
-#if LITDEBUG
             try
             {
-#endif
                 _runobj.RunDelgete();
-#if LITDEBUG
             }
             catch (System.Exception _erro)
             {
                 DLog.LogError(string.Format("[{0}] [{1}]{2}", mUpdateType.ToString(), _runobj.Key, _erro.ToString()));
                 _runobj.UnRegToOwner();
             }
-#endif
-
         }
 
         public void Update()

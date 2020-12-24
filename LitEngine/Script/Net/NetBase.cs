@@ -466,10 +466,8 @@ namespace LitEngine.Net
 
         virtual public void Call(int _msgid, object _msg)
         {
-#if LITDEBUG
             try
             {
-#endif
                 if (mMsgHandlerList.ContainsKey(_msgid))
                 {
                     SafeList<System.Action<object>> tlist = mMsgHandlerList[_msgid];
@@ -477,13 +475,11 @@ namespace LitEngine.Net
                     for (int i = tlen - 1; i >= 0; i--)
                         tlist[i](_msg);
                 }
-#if LITDEBUG
             }
             catch (Exception _error)
             {
                 DLog.LogError(_error.ToString());
             }
-#endif
         }
 
         #endregion

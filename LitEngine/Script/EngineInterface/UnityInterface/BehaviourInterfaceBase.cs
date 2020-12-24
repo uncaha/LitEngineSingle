@@ -172,41 +172,33 @@ namespace LitEngine
 
             virtual public void CallFunctionVoid(string _FunctionName)
             {
-#if LITDEBUG
                 try
                 {
-#endif
                     if (mObject == null || mScriptType == null || mCodeTool == null) return;
                     MethodBase tmethod = GetMethod(_FunctionName);
                     if (tmethod == null) return;
                     tmethod.Call();
-#if LITDEBUG
                 }
                 catch (Exception _erro)
                 {
                     DLog.LogError(string.Format("[{0}->{1}] [GameObject:{2}] Error:{3}", mScriptClass, _FunctionName, gameObject.name, _erro.ToString()));
                 }
-#endif
             }
 
             virtual public object CallScriptFunctionByNameParams(string _FunctionName, params object[] _prams)
             {
-#if LITDEBUG
                 try
                 {
-#endif
                     if (mObject == null || mScriptType == null || mCodeTool == null) return null;
                     int tpramcount = _prams != null ? _prams.Length : 0;
                     MethodBase tmethod = GetMethod(_FunctionName, tpramcount);
                     if (tmethod == null) return null;
                     return tmethod.Invoke(_prams);
-#if LITDEBUG
                 }
                 catch (Exception _erro)
                 {
                     DLog.LogError(string.Format("[{0}->{1}] [GameObject:{2}] Error:{3}", mScriptClass, _FunctionName, gameObject.name, _erro.ToString()));
                 }
-#endif
                 return null;
             }
 
