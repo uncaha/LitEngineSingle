@@ -185,8 +185,8 @@ namespace LitEngine.Net
 
         public static string SReadString(byte[] _buffer, int _startindex)
         {
-            short len = SReadShort(_buffer, _startindex);
-            _startindex += sizeof(short);
+            ushort len = SReadUShort(_buffer, _startindex);
+            _startindex += sizeof(ushort);
             byte[] tarry = SReadBytes(_buffer, _startindex, len);
             return Encoding.UTF8.GetString(tarry);
         }
@@ -201,7 +201,7 @@ namespace LitEngine.Net
             if (IsHDate)
             {
                 int i = pOffset +  plength - 1;
-                for (; i >= 0; i--)
+                for (; i >= pOffset; i--)
                     pDst[i] = *pdata++;
             }
             else
@@ -211,12 +211,75 @@ namespace LitEngine.Net
             }
         }
 
-        unsafe public static int WriteToBuffer(int _src, byte[] pDst, int pOffset)
+        unsafe public static int WriteToBuffer(byte pSrc, byte[] pDst, int pOffset)
         {
-            int tlen = sizeof(int);
-            WriteValue((byte*)&_src, sizeof(int), pDst, pOffset);
+            pDst[pOffset] = pSrc;
+            return sizeof(byte);
+        }
 
-            return tlen;
+        unsafe public static int WriteToBuffer(byte[] pSrc, byte[] pDst, int pOffset)
+        {
+            Buffer.BlockCopy(pSrc, 0, pDst, pOffset, pSrc.Length);
+            return pSrc.Length;
+        }
+
+        unsafe public static int WriteToBuffer(bool pSrc, byte[] pDst, int pOffset)
+        {
+            return WriteToBuffer((byte*)&pSrc,sizeof(bool),pDst, pOffset);
+        }
+
+        unsafe public static int WriteToBuffer(float pSrc, byte[] pDst, int pOffset)
+        {
+            return WriteToBuffer((byte*)&pSrc,sizeof(float),pDst, pOffset);
+        }
+
+        unsafe public static int WriteToBuffer(int pSrc, byte[] pDst, int pOffset)
+        {
+            return WriteToBuffer((byte*)&pSrc,sizeof(int),pDst, pOffset);
+        }
+
+        unsafe public static int WriteToBuffer(uint pSrc, byte[] pDst, int pOffset)
+        {
+            return WriteToBuffer((byte*)&pSrc, sizeof(uint), pDst, pOffset);
+        }
+
+        unsafe public static int WriteToBuffer(short pSrc, byte[] pDst, int pOffset)
+        {
+            return WriteToBuffer((byte*)&pSrc,sizeof(short),pDst, pOffset);
+        }
+
+        unsafe public static int WriteToBuffer(ushort pSrc, byte[] pDst, int pOffset)
+        {
+            return WriteToBuffer((byte*)&pSrc, sizeof(ushort), pDst, pOffset);
+        }
+
+        unsafe public static int WriteToBuffer(long pSrc, byte[] pDst, int pOffset)
+        {
+            return WriteToBuffer((byte*)&pSrc, sizeof(long), pDst, pOffset);
+        }
+
+        unsafe public static int WriteToBuffer(ulong pSrc, byte[] pDst, int pOffset)
+        {
+            return WriteToBuffer((byte*)&pSrc, sizeof(ulong), pDst, pOffset);
+        }
+
+        unsafe public static int WriteToBuffer(byte* pSrc,int pLen, byte[] pDst, int pOffset)
+        {
+            WriteValue(pSrc, pLen, pDst, pOffset);
+            return pLen;
+        }
+
+        unsafe public static int WriteToBuffer(string pSrc, byte[] pDst, int pOffset)
+        {
+            byte[] strbyte = Encoding.UTF8.GetBytes(pSrc);
+            int ttypelen = sizeof(ushort);
+            int retlen = strbyte.Length + ttypelen;
+
+            int twritePos = pOffset;
+            twritePos += WriteToBuffer((ushort)strbyte.Length, pDst, twritePos);
+            twritePos += WriteToBuffer(strbyte, pDst, twritePos);
+
+            return retlen;
         }
 
         //写入buffer
@@ -272,7 +335,7 @@ namespace LitEngine.Net
         public static byte[] GetBuffer(string _src)
         {
             byte[] strbyte = Encoding.UTF8.GetBytes(_src);
-            byte[] lenbyte = BufferBase.GetBuffer((short)strbyte.Length);
+            byte[] lenbyte = BufferBase.GetBuffer((ushort)strbyte.Length);
             byte[] ret = new byte[strbyte.Length + lenbyte.Length];
 
             lenbyte.CopyTo(ret, 0);

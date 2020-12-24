@@ -45,58 +45,84 @@ namespace LitEngine.Net
 
         #region　添加数据
 
-        private void ChoseDataLen(int _len)
+        private void ChoseDataLen(int pLen)
         {
-            if ((_len + mIndex) < mData.Length) return;
+            if ((pLen + mIndex) < mData.Length) return;
             int tlen = mData.Length;
-            byte[] tdata = new byte[_len + tlen * 2];
-            Array.Copy(mData, tdata, tlen);
+            byte[] tdata = new byte[pLen + tlen * 2];
+            Buffer.BlockCopy(mData, 0, tdata, 0, tlen);
             mData = tdata;
         }
-        public void AddByte(byte _src)
+        public void AddByte(byte pSrc)
         {
             ChoseDataLen(1);
-            mData[mIndex] = _src;
+            mData[mIndex] = pSrc;
             mIndex++;
         }
 
-        public void AddBytes(byte[] _src)
+        public void AddBytes(byte[] pSrc)
         {
-            if (_src == null) return;
-            int tlen = _src.Length;
-            ChoseDataLen(tlen);
-            Array.Copy(_src, 0, mData, mIndex, tlen);
-            mIndex += tlen;
+            if (pSrc == null) return;
+            ChoseDataLen(pSrc.Length);
+            mIndex += BufferBase.WriteToBuffer(pSrc,mData,mIndex);
         }
 
-        public void AddShort(short _src)
+        public void AddShort(short pSrc)
         {
-            AddBytes(BufferBase.GetBuffer(_src));
+            ChoseDataLen(sizeof(short));
+            mIndex += BufferBase.WriteToBuffer(pSrc,mData,mIndex);
         }
 
-        public void AddInt(int _src)
+        public void AddUShort(ushort pSrc)
         {
-            AddBytes(BufferBase.GetBuffer(_src));
+            ChoseDataLen(sizeof(ushort));
+            mIndex += BufferBase.WriteToBuffer(pSrc,mData,mIndex);
         }
 
-        public void AddLong(long _src)
+        public void AddInt(int pSrc)
         {
-            AddBytes(BufferBase.GetBuffer(_src));
+            ChoseDataLen(sizeof(int));
+            mIndex += BufferBase.WriteToBuffer(pSrc,mData,mIndex);
         }
 
-        public void AddFloat(float _src)
+        public void AddUInt(uint pSrc)
         {
-            AddBytes(BufferBase.GetBuffer(_src));
+            ChoseDataLen(sizeof(uint));
+            mIndex += BufferBase.WriteToBuffer(pSrc,mData,mIndex);
         }
 
-        public void AddBool(bool _src)
+        public void AddULong(ulong pSrc)
         {
-            AddByte(BufferBase.GetBuffer(_src));
+            ChoseDataLen(sizeof(ulong));
+            mIndex += BufferBase.WriteToBuffer(pSrc,mData,mIndex);
         }
 
-        public void AddString(string _src)
+        public void AddLong(long pSrc)
         {
-            AddBytes(BufferBase.GetBuffer(_src));
+            ChoseDataLen(sizeof(long));
+            mIndex += BufferBase.WriteToBuffer(pSrc,mData,mIndex);
+        }
+
+        public void AddFloat(float pSrc)
+        {
+            ChoseDataLen(sizeof(float));
+            mIndex += BufferBase.WriteToBuffer(pSrc,mData,mIndex);
+        }
+
+        public void AddBool(bool pSrc)
+        {
+            ChoseDataLen(sizeof(bool));
+            mIndex += BufferBase.WriteToBuffer(pSrc,mData,mIndex);
+        }
+
+        public void AddString(string pSrc)
+        {
+            byte[] strbyte = System.Text.Encoding.UTF8.GetBytes(pSrc);
+            int ttypelen = sizeof(ushort);
+            int retlen = strbyte.Length + ttypelen;
+            ChoseDataLen(retlen);
+            mIndex += BufferBase.WriteToBuffer((ushort)strbyte.Length,mData,mIndex);
+            mIndex += BufferBase.WriteToBuffer(strbyte,mData,mIndex);
         }
 
 
