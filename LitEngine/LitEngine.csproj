@@ -152,7 +152,6 @@
     <Compile Include="Script\Loader\Bundle\AssetsBundleFromFile.cs" />
     <Compile Include="Script\Loader\Bundle\BaseBundle.cs" />
     <Compile Include="Script\Loader\Bundle\BundleVector.cs" />
-    <Compile Include="Script\Net\HttpNet.cs" />
     <Compile Include="Script\Net\NetBase.cs" />
     <Compile Include="Script\Net\NetData\ReceiveData.cs" />
     <Compile Include="Script\Net\NetData\SendData.cs" />
