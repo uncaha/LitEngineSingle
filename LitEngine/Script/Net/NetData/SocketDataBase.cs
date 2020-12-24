@@ -24,6 +24,12 @@ namespace LitEngine.Net
 
         public int packageHeadLen { get; protected set; }
 
+        public bool IsCmdFirst { get; protected set; } = false;
+
+        public DataHead(bool pIsCmdFirst)
+        {
+            IsCmdFirst = pIsCmdFirst;
+        }
         private int ReadByType(SocketDataHeadType pType, byte[] pBuffer, int pOffset)
         {
             int ret = -1;
@@ -48,38 +54,16 @@ namespace LitEngine.Net
 
         public int ReadHeadLen(byte[] pBuffer, int pOffset)
         {
-            int ret = ReadByType(lenType, pBuffer, pOffset);
+            int ret = ReadByType(lenType, pBuffer, IsCmdFirst ? pOffset + cmdSize : pOffset);
             return ret;
         }
 
         public int ReadCmd(byte[] pBuffer, int pOffset)
         {
-            int ret = ReadByType(cmdType, pBuffer, pOffset + lenSize);
+            int ret = ReadByType(cmdType, pBuffer, IsCmdFirst ? pOffset : pOffset + lenSize);
             return ret;
         }
-
-        public byte[] GetByte(SocketDataHeadType pType,int pSrc)
-        {
-            byte[] ret = null;
-            switch (pType)
-            {
-                case SocketDataHeadType.type_short:
-                    ret = BufferBase.GetBuffer((short)pSrc);
-                    break;
-                case SocketDataHeadType.type_ushort:
-                    ret = BufferBase.GetBuffer((ushort)pSrc);
-                    break;
-                case SocketDataHeadType.type_int:
-                    ret = BufferBase.GetBuffer((int)pSrc);
-                    break;
-                default:
-                    DLog.LogErrorFormat("SocketData GetByte -> Type error : {0}", pType);
-                    break;
-            }
-
-            return ret;
-        }
-
+        
         public int WriteByType(SocketDataHeadType pType,int pSrc,byte[] pBuffer, int pOffset)
         {
             int ret = 0;
@@ -103,17 +87,17 @@ namespace LitEngine.Net
 
         public int WriteHead(int pLen, byte[] pBuffer, int pOffset)
         {
-            return WriteByType(lenType,pLen,pBuffer,pOffset);
+            return WriteByType(lenType, pLen, pBuffer, IsCmdFirst ? pOffset + cmdSize : pOffset);
         }
-        public int WriteCmd(int pCmd,byte[] pBuffer, int pOffset)
+        public int WriteCmd(int pCmd, byte[] pBuffer, int pOffset)
         {
-            return WriteByType(cmdType, pCmd, pBuffer, pOffset + lenSize);
+            return WriteByType(cmdType, pCmd, pBuffer, IsCmdFirst ? pOffset : pOffset + lenSize);
         }
     }
     public class SocketDataHead<T,K> : DataHead
     {
         //T:Len Type    K:cmd Type
-        public SocketDataHead()
+        public SocketDataHead(bool pIsCmdFirst) : base(pIsCmdFirst)
         {
             int tlensize, tcmdSize;
 

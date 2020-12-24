@@ -7,7 +7,7 @@ namespace LitEngine.Net
     {
         public const int maxLen = 1024 * 1024 * 100;
         static public bool IsHDate = false;
-        static public DataHead headInfo = new SocketDataHead<int, int>();
+        static public DataHead headInfo = new SocketDataHead<int, int>(false);
 
         private byte[] mBuffer = null;
         private int mIndex = 0;
