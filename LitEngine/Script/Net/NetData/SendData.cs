@@ -22,8 +22,9 @@ namespace LitEngine.Net
             mIndex = 0;
             mIsEnd = false;
 
-            mIndex += BufferBase.headInfo.WriteHead(Len,mData, mIndex);
-            mIndex += BufferBase.headInfo.WriteCmd(Cmd,mData, mIndex);
+            BufferBase.headInfo.WriteHead(Len,mData, 0);
+            BufferBase.headInfo.WriteCmd(Cmd,mData, 0);
+            mIndex = BufferBase.headInfo.packageHeadLen;
         }
         public void Rest()
         {

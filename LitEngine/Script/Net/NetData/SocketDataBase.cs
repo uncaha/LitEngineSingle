@@ -80,17 +80,34 @@ namespace LitEngine.Net
             return ret;
         }
 
+        public int WriteByType(SocketDataHeadType pType,int pSrc,byte[] pBuffer, int pOffset)
+        {
+            int ret = 0;
+            switch (pType)
+            {
+                case SocketDataHeadType.type_short:
+                    ret = BufferBase.WriteToBuffer((short)pSrc,pBuffer,pOffset);
+                    break;
+                case SocketDataHeadType.type_ushort:
+                    ret = BufferBase.WriteToBuffer((ushort)pSrc,pBuffer,pOffset);
+                    break;
+                case SocketDataHeadType.type_int:
+                    ret = BufferBase.WriteToBuffer((int)pSrc,pBuffer,pOffset);
+                    break;
+                default:
+                    DLog.LogErrorFormat("SocketData GetByte -> Type error : {0}", pType);
+                    break;
+            }
+            return ret;
+        }
+
         public int WriteHead(int pLen, byte[] pBuffer, int pOffset)
         {
-            byte[]  tsrc = GetByte(lenType, pLen);
-            Array.Copy(tsrc, 0, pBuffer, pOffset, tsrc.Length);
-            return tsrc.Length;
+            return WriteByType(lenType,pLen,pBuffer,pOffset);
         }
         public int WriteCmd(int pCmd,byte[] pBuffer, int pOffset)
         {
-            byte[] tsrc = GetByte(cmdType, pCmd);
-            Array.Copy(tsrc, 0, pBuffer, pOffset, tsrc.Length);
-            return tsrc.Length;
+            return WriteByType(cmdType, pCmd, pBuffer, pOffset + lenSize);
         }
     }
     public class SocketDataHead<T,K> : DataHead
