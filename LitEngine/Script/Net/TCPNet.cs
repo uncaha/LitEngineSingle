@@ -27,13 +27,13 @@ namespace LitEngine.Net
         {
             if (IsCOrD())
             {
-                DLog.LogError(mNetTag + string.Format("[{0}]Closing或Connecting状态下不可执行.", mNetTag));
+                DLog.LogError(mNetTag + string.Format("[{0}]Closing or Connecting.", mNetTag));
                 return;
             }
 
             if (isConnected)
             {
-                AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.ConectError, mNetTag + "重复建立连接"));
+                DLog.LogError(mNetTag + string.Format("[{0}] Connected now.", mNetTag));
                 return;
             }
             mState = TcpState.Connecting;
@@ -50,17 +50,17 @@ namespace LitEngine.Net
             {
                 try
                 {
-                    DLog.Log(string.Format("[开始连接]" + " HostName:{0} IpAddress:{1} AddressFamily:{2}", mHostName, tip.ToString(), tip.AddressFamily.ToString()));
+                    DLog.Log(string.Format("[Start Connect]" + " HostName:{0} IpAddress:{1} AddressFamily:{2}", mHostName, tip.ToString(), tip.AddressFamily.ToString()));
                     mSocket = new Socket(tip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                     RestSocketInfo();
                     mSocket.Connect(tip, mPort);
-                    DLog.Log("连接成功!");
+                    DLog.Log("Connected!");
                     ret = true;
                     break;
                 }
                 catch (Exception e)
                 {
-                    DLog.LogError(string.Format("[网络连接异常]" + " HostName:{0} IpAddress:{1} AddressFamily:{2} ErrorMessage:{3}", mHostName, tip.ToString(), tip.AddressFamily.ToString(), e.ToString()));
+                    DLog.LogError(string.Format("[Connect Error]" + " HostName:{0} IpAddress:{1} AddressFamily:{2} ErrorMessage:{3}", mHostName, tip.ToString(), tip.AddressFamily.ToString(), e.ToString()));
                 }
             }
 
@@ -69,7 +69,6 @@ namespace LitEngine.Net
 
         private void ThreatConnect()
         {
-
             bool tok = TCPConnect();
             string tmsg = "";
             if (tok)
@@ -96,12 +95,12 @@ namespace LitEngine.Net
             if (!tok)
             {
                 mState = TcpState.Closed;
-                AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.ConectError, mNetTag + "建立连接失败. " + tmsg));
+                AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.ConectError, mNetTag + "Connect fail. " + tmsg));
             }
             else
             {
                 mState = TcpState.Connected;
-                AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.Connected, mNetTag + "建立连接完成."));
+                AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.Connected, mNetTag + " Connected."));
             }
 
         }

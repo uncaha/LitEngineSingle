@@ -289,7 +289,7 @@ namespace LitEngine.Net
             }
             catch (Exception e)
             {
-                DLog.LogError(string.Format("[获取IPAddress失败]" + " HostName:{0} IP:{1} ErrorMessage:{2}", mHostName, ret.Count, e.ToString()));
+                DLog.LogError(string.Format("[Get IPAddress error]" + " HostName:{0} IP:{1} ErrorMessage:{2}", mHostName, ret.Count, e.ToString()));
             }
             return ret;
         }
