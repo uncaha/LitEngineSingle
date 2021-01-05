@@ -99,7 +99,12 @@ namespace LitEngine.Net
         #endregion
 
         #region 回调
-        public event System.Action<NetMessage> MessageDelgate = null;
+        protected System.Action<NetMessage> MessageDelgate = null;
+
+        static public System.Action<NetMessage> NetMessageDelage
+        {
+            set { Instance.MessageDelgate = value; }
+        }
         #endregion
 
         #region 控制
@@ -153,9 +158,10 @@ namespace LitEngine.Net
         {
             Instance.mMsgHandlerList.Clear();
         }
-        static public void Init(string _hostname, int _port)
+        static public void Init(string _hostname, int _port, System.Action<NetMessage> pMsgDelgate = null)
         {
             Instance.InitSocket(_hostname, _port);
+            Instance.MessageDelgate = pMsgDelgate;
         }
 
         static public void Connect()
