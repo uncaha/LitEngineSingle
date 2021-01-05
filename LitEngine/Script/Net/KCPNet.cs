@@ -118,13 +118,13 @@ namespace LitEngine.Net
                 mStartThread = true;
                 CreatSendAndRecThread();
                 mState = TcpState.Connected;
-                AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.Connected, mNetTag + "建立连接完成."));
+                AddMainThreadMsgReCall(GetMsgReCallData(MessageType.Connected, mNetTag + "建立连接完成."));
             }
             catch (Exception ex)
             {
                 DLog.LogError(ex);
                 mState = TcpState.Closed;
-                AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.ConectError, mNetTag + "建立连接失败. " + ex.Message));
+                AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ConectError, mNetTag + "建立连接失败. " + ex.Message));
             }
 
         }

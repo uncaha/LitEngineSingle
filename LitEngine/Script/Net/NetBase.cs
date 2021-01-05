@@ -9,7 +9,7 @@ using System.Collections.Generic;
 namespace LitEngine.Net
 {
     #region 回调消息
-    public enum MSG_RECALL
+    public enum MessageType
     {
         Created = 1,//建立socket
         Connected,//连接并建立发送接收逻辑完成
@@ -22,12 +22,12 @@ namespace LitEngine.Net
     #endregion
 
     #region 回调对象
-    public class MSG_RECALL_DATA
+    public class NetMessage
     {
-        public MSG_RECALL mCmd;
+        public MessageType mCmd;
         public string mMsg;
         public object data;
-        public MSG_RECALL_DATA(MSG_RECALL _cmd, string _msg, object pdata = null)
+        public NetMessage(MessageType _cmd, string _msg, object pdata = null)
         {
             mCmd = _cmd;
             mMsg = _msg;
@@ -86,7 +86,7 @@ namespace LitEngine.Net
         #endregion
         #region 分发
         protected SafeMap<int, SafeList<System.Action<object>>> mMsgHandlerList = new SafeMap<int, SafeList<System.Action<object>>>();//消息注册列表
-        protected SafeQueue<MSG_RECALL_DATA> mToMainThreadMsgList = new SafeQueue<MSG_RECALL_DATA>();//给主线程发送通知
+        protected SafeQueue<NetMessage> mToMainThreadMsgList = new SafeQueue<NetMessage>();//给主线程发送通知
         #endregion
 
         #region 输出到外部
@@ -99,7 +99,7 @@ namespace LitEngine.Net
         #endregion
 
         #region 回调
-        public event System.Action<MSG_RECALL_DATA> MessageDelgate = null;
+        public event System.Action<NetMessage> MessageDelgate = null;
         #endregion
 
         #region 控制
@@ -242,7 +242,7 @@ namespace LitEngine.Net
             sInstance = null;
             Dispose(true);
             if (MessageDelgate != null)
-                MessageDelgate(GetMsgReCallData(MSG_RECALL.Destoryed, mNetTag + "- 删除Net对象完成."));
+                MessageDelgate(GetMsgReCallData(MessageType.Destoryed, mNetTag + "- 删除Net对象完成."));
         }
 
         virtual public void Dispose()
@@ -409,7 +409,7 @@ namespace LitEngine.Net
 
             if (!mDisposed)
             {
-                AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.DisConnected, mNetTag + "- 断开连接完成."));
+                AddMainThreadMsgReCall(GetMsgReCallData(MessageType.DisConnected, mNetTag + "- 断开连接完成."));
             }
 
         }
@@ -429,12 +429,12 @@ namespace LitEngine.Net
 
         #region 通知类
 
-        virtual protected MSG_RECALL_DATA GetMsgReCallData(MSG_RECALL _cmd, string _msg = "")
+        virtual protected NetMessage GetMsgReCallData(MessageType _cmd, string _msg = "")
         {
-            return new MSG_RECALL_DATA(_cmd, _msg);
+            return new NetMessage(_cmd, _msg);
         }
 
-        virtual protected void AddMainThreadMsgReCall(MSG_RECALL_DATA _recall)
+        virtual protected void AddMainThreadMsgReCall(NetMessage _recall)
         {
             if (MessageDelgate == null) return;
             mToMainThreadMsgList.Enqueue(_recall);

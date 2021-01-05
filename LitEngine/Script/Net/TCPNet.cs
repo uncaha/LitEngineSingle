@@ -60,7 +60,7 @@ namespace LitEngine.Net
                 string terror = e.ToString();
                 DLog.LogError(terror);
                 mState = TcpState.Closed;
-                AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.ConectError, mNetTag + "Connect fail. error:" + terror));
+                AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ConectError, mNetTag + "Connect fail. error:" + terror));
             }
 
             return ret;
@@ -100,12 +100,12 @@ namespace LitEngine.Net
             {
                 CloseSRThread();
                 mState = TcpState.Closed;
-                AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.ConectError, mNetTag + "Connect fail. " + tmsg));
+                AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ConectError, mNetTag + "Connect fail. " + tmsg));
             }
             else
             {
                 mState = TcpState.Connected;
-                AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.Connected, mNetTag + " Connected."));
+                AddMainThreadMsgReCall(GetMsgReCallData(MessageType.Connected, mNetTag + " Connected."));
             }
         }
 
@@ -161,7 +161,7 @@ namespace LitEngine.Net
             }
             if (result.IsCompleted == false)
             {
-                AddMainThreadMsgReCall(new MSG_RECALL_DATA(MSG_RECALL.SendError, mNetTag + "-" + result.IsCompleted));
+                AddMainThreadMsgReCall(new NetMessage(MessageType.SendError, mNetTag + "-" + result.IsCompleted));
             }
         }
 
@@ -194,7 +194,7 @@ namespace LitEngine.Net
                 {
                     DLog.LogError(mNetTag + ":ReceiveMessage->" + e.ToString());
                     CloseSRThread();
-                    AddMainThreadMsgReCall(GetMsgReCallData(MSG_RECALL.ReceiveError, mNetTag + "-" + e.ToString()));
+                    AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ReceiveError, mNetTag + "-" + e.ToString()));
                 }
             }
             DLog.Log("TCP End ReceiveMessage");
