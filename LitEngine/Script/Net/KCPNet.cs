@@ -123,6 +123,7 @@ namespace LitEngine.Net
             catch (Exception ex)
             {
                 DLog.LogError(ex);
+                CloseSRThread();
                 mState = TcpState.Closed;
                 AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ConectError, mNetTag + "建立连接失败. " + ex.Message));
             }
