@@ -44,7 +44,7 @@ namespace LitEngine.Net
             lock (this)
             {
                 if (mIsEnd) return mData;
-                Len = mIndex;
+                Len = BufferBase.headInfo.GetDataLen(mIndex);
                 BufferBase.headInfo.WriteHead(Len, mData, 0);
                 mIsEnd = true;
                 return mData;

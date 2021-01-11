@@ -7,7 +7,7 @@ namespace LitEngine.Net
     {
         public const int maxLen = 1024 * 1024 * 100;
         static public bool IsHDate = false;
-        static public DataHead headInfo = new SocketDataHead<int, int>(false);
+        static public DataHead headInfo = new SocketDataHead<int, int>(DataHead.CmdPosType.lenFirst, DataHead.ByteLenType.allbytes);
 
         private byte[] mBuffer = null;
         private int mIndex = 0;
@@ -73,6 +73,7 @@ namespace LitEngine.Net
         {
             if (mIndex - mPos < headInfo.packageHeadLen) return false;
             int tlen = headInfo.ReadHeadLen(mBuffer, mPos);
+            tlen = headInfo.GetFullDataLen(tlen);
             if (tlen > maxLen || tlen < 0) throw new System.ArgumentOutOfRangeException("数据长度超出了限制 len = " + tlen);
             if (mIndex - mPos < tlen) return false;
             return true;
@@ -206,7 +207,7 @@ namespace LitEngine.Net
             }
             else
             {
-                for (int i = 0; i < plength; i++)
+                for (int i = pOffset; i < plength; i++)
                     pDst[i] = *pdata++;
             }
         }

@@ -16,6 +16,20 @@ namespace LitEngine.Net
 
     public abstract class DataHead
     {
+        public enum CmdPosType
+        {
+            none = 0,
+            cmdFirst,
+            lenFirst,
+        }
+
+        public enum ByteLenType
+        {
+            none = 0,
+            allbytes,
+            onlyContent,
+        }
+
         public SocketDataHeadType lenType = SocketDataHeadType.type_int;
         public int lenSize { get; protected set; }
 
@@ -24,11 +38,15 @@ namespace LitEngine.Net
 
         public int packageHeadLen { get; protected set; }
 
-        public bool IsCmdFirst { get; protected set; } = false;
+        public CmdPosType cmdPos { get; protected set; } = CmdPosType.lenFirst;
+        public ByteLenType byteLenType { get; protected set; } = ByteLenType.allbytes;
 
-        public DataHead(bool pIsCmdFirst)
+        public bool IsCmdFirst { get { return cmdPos == CmdPosType.cmdFirst; } }
+
+        public DataHead(CmdPosType pCmdPos, ByteLenType pLenType)
         {
-            IsCmdFirst = pIsCmdFirst;
+            cmdPos = pCmdPos;
+            byteLenType = pLenType;
         }
         private int ReadByType(SocketDataHeadType pType, byte[] pBuffer, int pOffset)
         {
@@ -93,11 +111,49 @@ namespace LitEngine.Net
         {
             return WriteByType(cmdType, pCmd, pBuffer, IsCmdFirst ? pOffset : pOffset + lenSize);
         }
+
+        public int GetDataLen(int pSize)
+        {
+            switch (BufferBase.headInfo.byteLenType)
+            {
+                case DataHead.ByteLenType.allbytes:
+                    return pSize;
+                case DataHead.ByteLenType.onlyContent:
+                    return pSize - BufferBase.headInfo.packageHeadLen;
+                default:
+                    return pSize;
+            }
+        }
+        public int GetContectLen(int pSize)
+        {
+            switch (BufferBase.headInfo.byteLenType)
+            {
+                case DataHead.ByteLenType.allbytes:
+                    return pSize - BufferBase.headInfo.packageHeadLen;
+                case DataHead.ByteLenType.onlyContent:
+                    return pSize;
+                default:
+                    return pSize;
+            }
+        }
+
+        public int GetFullDataLen(int pLen)
+        {
+            switch (BufferBase.headInfo.byteLenType)
+            {
+                case DataHead.ByteLenType.allbytes:
+                    return pLen;
+                case DataHead.ByteLenType.onlyContent:
+                    return pLen + BufferBase.headInfo.packageHeadLen;
+                default:
+                    return pLen;
+            }
+        }
     }
     public class SocketDataHead<T,K> : DataHead
     {
         //T:Len Type    K:cmd Type
-        public SocketDataHead(bool pIsCmdFirst) : base(pIsCmdFirst)
+        public SocketDataHead(CmdPosType pCmdPos, ByteLenType pLenType) : base(pCmdPos, pLenType)
         {
             int tlensize, tcmdSize;
 
