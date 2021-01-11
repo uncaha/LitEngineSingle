@@ -131,7 +131,7 @@ namespace LitEngine.Net
                     {
                         var tdata = mSendDataList.Dequeue();
                         int tsendlen = ThreadSend(tdata.Data, tdata.SendLen);
-                        DebugMsg(tdata.Cmd, tdata.Data, 0, tsendlen, "TCPSend");
+                        DebugMsg(tdata.Cmd, tdata.Data, 0, tsendlen, "UDPSend");
                     }
                     Thread.Sleep(10);
                 }

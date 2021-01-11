@@ -44,7 +44,6 @@ namespace LitEngine.Net
         private EndPoint mRecPoint;
         private IPAddress mServerIP;
         private int mLocalPort = 30379;
-        private AsyncCallback sendCallBack;
         private KCP kcpObject;
         private SwitchQueue<CacheByteObject> recvQueue = new SwitchQueue<CacheByteObject>(128);
         private byte[] kcpRecvBuffer = new byte[4096];
@@ -59,7 +58,6 @@ namespace LitEngine.Net
             kcpObject = new KCP(1, HandleKcpSend);
             kcpObject.NoDelay(1, 10, 2, 1);
             kcpObject.WndSize(128, 128);
-            sendCallBack = SendAsyncCallback;
 
             for (int i = 0; i < 60; i++)
             {
@@ -90,6 +88,25 @@ namespace LitEngine.Net
 
         #region 建立Socket
         override public void ConnectToServer()
+        {
+
+            if (IsCOrD())
+            {
+                DLog.LogError(mNetTag + string.Format("[{0}]Closing or Connecting.", mNetTag));
+                return;
+            }
+
+            if (isConnected)
+            {
+                DLog.LogError(mNetTag + string.Format("[{0}] Connected now.", mNetTag));
+                return;
+            }
+
+            mState = TcpState.Connecting;
+            System.Threading.Tasks.Task.Run(KCPConnect);
+        }
+
+        private void KCPConnect()
         {
             try
             {
@@ -127,19 +144,27 @@ namespace LitEngine.Net
                 mState = TcpState.Closed;
                 AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ConectError, mNetTag + "建立连接失败. " + ex.Message));
             }
-
         }
 
         private void CreatRec()
         {
             mRecThread = new Thread(ReceiveMessage);
             mRecThread.IsBackground = true;
+            mRecThread.Priority = System.Threading.ThreadPriority.Lowest;
             mRecThread.Start();
+        }
+        private void CreatSend()
+        {
+            mSendThread = new Thread(SendMessageThread);
+            mSendThread.IsBackground = true;
+            mSendThread.Priority = System.Threading.ThreadPriority.Lowest;
+            mSendThread.Start();
         }
 
         private void CreatSendAndRecThread()
         {
             CreatRec();
+            CreatSend();
             DLog.Log(mNetTag + "建立连接完成");
         }
 
@@ -160,16 +185,50 @@ namespace LitEngine.Net
 
         #region 收发
         #region 发送  
-        override public bool Send(SendData _data)
+
+        private void SendMessageThread()
         {
-            if (mSocket == null) return false;
-            if (_data == null)
+            while (mStartThread)
             {
-                DLog.LogError("试图添加一个空对象到发送队列!AddSend");
-                return false;
+                try
+                {
+
+                    if (mSendDataList.PushCount == 0) continue;
+
+                    mSendDataList.Switch();
+                    for (int i = 0, length = mSendDataList.PopCount; i < length; i++)
+                    {
+                        var tdata = mSendDataList.Dequeue();
+                        int tsendlen = ThreadSend(tdata.Data, tdata.SendLen);
+                        DebugMsg(tdata.Cmd, tdata.Data, 0, tsendlen, "KCPSend");
+                    }
+                    Thread.Sleep(10);
+                }
+                catch (Exception e)
+                {
+                    if (mStartThread)
+                    {
+                        DLog.LogError(mNetTag + ":SendMessageThread->" + e.ToString());
+                        CloseSRThread();
+                        AddMainThreadMsgReCall(new NetMessage(MessageType.SendError, mNetTag + "-" + e.ToString()));
+                        return;
+                    }
+                }
+
             }
-            DebugMsg(_data.Cmd, _data.Data, 0, _data.SendLen, "KCPSend");
-            return Send(_data.Data, _data.SendLen);
+
+        }
+
+        private int ThreadSend(byte[] pBuffer, int pSize)
+        {
+            if (mSocket == null) return 0;
+            return mSocket.SendTo(pBuffer, 0, pSize, SocketFlags.None, mTargetPoint);
+        }
+
+        override public bool Send(SendData pData)
+        {
+            if (mSocket == null || pData == null) return false;
+            return Send(pData.Data, pData.SendLen);
         }
 
         override public bool Send(byte[] pBuffer, int pSize)
@@ -180,26 +239,9 @@ namespace LitEngine.Net
         private void HandleKcpSend(byte[] buff, int size)
         {
             if (mSocket == null) return;
-            try
-            {
-                var ar = mSocket.BeginSendTo(buff, 0, size, SocketFlags.None, mTargetPoint, sendCallBack, buff);
-            }
-            catch (System.Exception erro)
-            {
-                DLog.LogFormat("KCP Send Error.{0}", erro);
-            }
+            SendData tdata = new SendData(-1, buff, size);
+            mSendDataList.Enqueue(tdata);
         }
-
-        #region thread send
-        void SendAsyncCallback(IAsyncResult result)
-        {
-            int tlen = mSocket.EndSendTo(result);
-            if (result.IsCompleted)
-            {
-            }
-        }
-
-        #endregion
         #endregion
 
 
