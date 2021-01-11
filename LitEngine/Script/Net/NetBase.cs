@@ -282,7 +282,7 @@ namespace LitEngine.Net
             List<IPAddress> ret = new List<IPAddress>();
             try
             {
-                IPAddress[] tips = Dns.GetHostEntry(mHostName).AddressList;
+                IPAddress[] tips = Dns.GetHostAddresses(mHostName);
                 DLog.Log("HostName: " + mHostName + " Length:" + tips.Length);
                 for (int i = 0; i < tips.Length; i++)
                 {
