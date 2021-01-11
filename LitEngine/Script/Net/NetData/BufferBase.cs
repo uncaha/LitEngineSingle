@@ -72,16 +72,23 @@ namespace LitEngine.Net
         public bool IsFullData()
         {
             if (mIndex - mPos < headInfo.packageHeadLen) return false;
-            int tlen = headInfo.ReadHeadLen(mBuffer, mPos);
-            tlen = headInfo.GetFullDataLen(tlen);
+            int tlen = GetFullDataLen();
             if (tlen > maxLen || tlen < 0) throw new System.ArgumentOutOfRangeException("数据长度超出了限制 len = " + tlen);
             if (mIndex - mPos < tlen) return false;
             return true;
         }
 
+        public int GetFullDataLen()
+        {
+            int ret = headInfo.ReadHeadLen(mBuffer, mPos);
+            ret = headInfo.GetFullDataLen(ret);
+            return ret;
+        }
+
         public int GetFirstDataLength()
         {
-            return SReadInt(mBuffer, mPos);
+            int ret = headInfo.ReadHeadLen(mBuffer, mPos);
+            return ret;
         }
 
         public ReceiveData GetReceiveData()
@@ -93,7 +100,7 @@ namespace LitEngine.Net
 
         public void SetReceiveData(ReceiveData _data)
         {
-            int tlen = SReadInt(mBuffer, mPos);//外部读取,保证独立性
+            int tlen = GetFullDataLen();
             _data.CopyBuffer(mBuffer, mPos);
             mPos += tlen;
         }
@@ -207,7 +214,7 @@ namespace LitEngine.Net
             }
             else
             {
-                for (int i = pOffset; i < plength; i++)
+                for (int i = pOffset,max = pOffset + plength; i < max; i++)
                     pDst[i] = *pdata++;
             }
         }

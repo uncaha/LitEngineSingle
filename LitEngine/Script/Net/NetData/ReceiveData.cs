@@ -36,7 +36,7 @@ namespace LitEngine.Net
             if (RecLen > BufferBase.maxLen || RecLen < 0) throw new System.ArgumentOutOfRangeException("数据长度超出了限制 len = " + RecLen);
             
             Cmd = BufferBase.headInfo.ReadCmd(_buffer, tindex);
-            Len = BufferBase.headInfo.GetContectLen(RecLen);
+            Len = BufferBase.headInfo.GetContectLenByRecLen(RecLen);
             
             tindex += BufferBase.headInfo.packageHeadLen;
 

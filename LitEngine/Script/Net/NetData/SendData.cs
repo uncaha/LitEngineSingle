@@ -7,7 +7,7 @@ namespace LitEngine.Net
     {
         byte[] mData;
         int mIndex;
-        bool mIsEnd;
+        bool mIsEnd = false;
         #region 属性
         public byte[] Data { get { return GetData(); } }
         public int Len{get;private set;}
@@ -31,7 +31,6 @@ namespace LitEngine.Net
             Cmd = pCmd;
             mData = pData;
             mIndex = pSize;
-            mIsEnd = true;
         }
         public void Rest()
         {
@@ -42,9 +41,9 @@ namespace LitEngine.Net
         private byte[] GetData()
         {
             lock (this)
-            {
+            { 
                 if (mIsEnd) return mData;
-                Len = BufferBase.headInfo.GetDataLen(mIndex);
+                Len = BufferBase.headInfo.GetContectLenByIndex(mIndex);
                 BufferBase.headInfo.WriteHead(Len, mData, 0);
                 mIsEnd = true;
                 return mData;

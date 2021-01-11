@@ -112,19 +112,21 @@ namespace LitEngine.Net
             return WriteByType(cmdType, pCmd, pBuffer, IsCmdFirst ? pOffset : pOffset + lenSize);
         }
 
-        public int GetDataLen(int pSize)
+        //pSize写入数据的长度
+        public int GetContectLenByIndex(int pIndex)
         {
             switch (BufferBase.headInfo.byteLenType)
             {
                 case DataHead.ByteLenType.allbytes:
-                    return pSize;
+                    return pIndex;
                 case DataHead.ByteLenType.onlyContent:
-                    return pSize - BufferBase.headInfo.packageHeadLen;
+                    return pIndex - BufferBase.headInfo.packageHeadLen;
                 default:
-                    return pSize;
+                    return pIndex;
             }
         }
-        public int GetContectLen(int pSize)
+        //pSize接收到的长度
+        public int GetContectLenByRecLen(int pSize)
         {
             switch (BufferBase.headInfo.byteLenType)
             {
@@ -137,6 +139,7 @@ namespace LitEngine.Net
             }
         }
 
+        //pLen接收到的长度
         public int GetFullDataLen(int pLen)
         {
             switch (BufferBase.headInfo.byteLenType)
