@@ -62,7 +62,7 @@ namespace LitEngine.Net
         }
 
         protected Thread mRecThread;
-        // protected ManualResetEvent mWaitObject = new ManualResetEvent(false);
+        protected Thread mSendThread;
 
         protected Socket mSocket = null;
         protected string mHostName;//服务器地址
@@ -82,7 +82,8 @@ namespace LitEngine.Net
         protected byte[] mRecbuffer = new byte[mReadMaxLen];
 
         protected BufferBase mBufferData = new BufferBase(1024 * 400);
-        protected SafeSwitchQueue<ReceiveData> mResultDataList = new SafeSwitchQueue<ReceiveData>();          
+        protected SafeSwitchQueue<ReceiveData> mResultDataList = new SafeSwitchQueue<ReceiveData>();
+        protected SafeSwitchQueue<SendData> mSendDataList = new SafeSwitchQueue<SendData>();
         #endregion
         #region 分发
         protected SafeMap<int, SafeList<System.Action<object>>> mMsgHandlerList = new SafeMap<int, SafeList<System.Action<object>>>();//消息注册列表
@@ -355,6 +356,8 @@ namespace LitEngine.Net
         {
             mBufferData.Clear();
 
+            mSendDataList.DequeueAll();
+
             var tlist = mResultDataList.DequeueAll();
             for (int i = 0 ,max = tlist.Count; i < max; i++)
             {
@@ -397,6 +400,7 @@ namespace LitEngine.Net
             ClearBuffer();
             KillSocket();
             WaitThreadJoin(mRecThread);
+            WaitThreadJoin(mSendThread);
         }
         virtual protected void CloseSocketStart()
         {

@@ -12,7 +12,6 @@ namespace LitEngine.Net
         private EndPoint mRecPoint;
         private IPAddress mServerIP;
         private int mLocalPort = 30379;
-        private AsyncCallback sendCallBack;
         #endregion
 
         #region 构造析构
@@ -20,12 +19,29 @@ namespace LitEngine.Net
         private UDPNet() : base()
         {
             mNetTag = "UDP";
-            sendCallBack = SendAsyncCallback;
         }
         #endregion
 
         #region 建立Socket
         override public void ConnectToServer()
+        {
+            if (IsCOrD())
+            {
+                DLog.LogError(mNetTag + string.Format("[{0}]Closing or Connecting.", mNetTag));
+                return;
+            }
+
+            if (isConnected)
+            {
+                DLog.LogError(mNetTag + string.Format("[{0}] Connected now.", mNetTag));
+                return;
+            }
+
+            mState = TcpState.Connecting;
+            System.Threading.Tasks.Task.Run(UDPConnect);
+        }
+
+        private void UDPConnect()
         {
             try
             {
@@ -63,19 +79,28 @@ namespace LitEngine.Net
                 mState = TcpState.Closed;
                 AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ConectError, mNetTag + "建立连接失败. " + ex.Message));
             }
-
         }
 
         private void CreatRec()
         {
             mRecThread = new Thread(ReceiveMessage);
             mRecThread.IsBackground = true;
+            mRecThread.Priority = System.Threading.ThreadPriority.Lowest;
             mRecThread.Start();
+        }
+
+        private void CreatSend()
+        {
+            mSendThread = new Thread(SendMessageThread);
+            mSendThread.IsBackground = true;
+            mSendThread.Priority = System.Threading.ThreadPriority.Lowest;
+            mSendThread.Start();
         }
 
         private void CreatSendAndRecThread()
         {
             CreatRec();
+            CreatSend();
             DLog.Log(mNetTag + "建立连接完成");
         }
 
@@ -91,44 +116,61 @@ namespace LitEngine.Net
 
         #region 收发
         #region 发送  
-        override public bool Send(SendData _data)
+
+        private void SendMessageThread()
         {
-            if (_data == null)
+            while (mStartThread)
             {
-                DLog.LogError("试图添加一个空对象到发送队列!AddSend");
-                return false;
+                try
+                {
+
+                    if (mSendDataList.PushCount == 0) continue;
+
+                    mSendDataList.Switch();
+                    for (int i = 0, length = mSendDataList.PopCount; i < length; i++)
+                    {
+                        var tdata = mSendDataList.Dequeue();
+                        int tsendlen = ThreadSend(tdata.Data, tdata.SendLen);
+                        DebugMsg(tdata.Cmd, tdata.Data, 0, tsendlen, "TCPSend");
+                    }
+                    Thread.Sleep(10);
+                }
+                catch (Exception e)
+                {
+                    if (mStartThread)
+                    {
+                        DLog.LogError(mNetTag + ":SendMessageThread->" + e.ToString());
+                        CloseSRThread();
+                        AddMainThreadMsgReCall(new NetMessage(MessageType.SendError, mNetTag + "-" + e.ToString()));
+                        return;
+                    }
+                }
+
             }
-            DebugMsg(_data.Cmd, _data.Data, 0, _data.SendLen, "UDPSend");
-            return Send(_data.Data, _data.SendLen);
-        }
-        override public bool Send(byte[] pBuffer, int pSize)
-        {
-            try
-            {
-                var ar = mSocket.BeginSendTo(pBuffer, 0, pSize, SocketFlags.None, mTargetPoint, sendCallBack, pBuffer);
-                return true;
-            }
-            catch (System.Exception erro)
-            {
-                DLog.LogFormat("UDP Send Error.{0}", erro);
-            }
-            return false;
-        }
-        #region thread send
-        void SendAsyncCallback(IAsyncResult result)
-        {
-            int tlen = mSocket.EndSendTo(result);
-            byte[] tadata = result.AsyncState as byte[];
-            if (result.IsCompleted)
-            {
-            }
-            if (tadata != null)
-            {
-                DebugMsg(-1, tadata, 0, tlen, "UdpSend", result.IsCompleted);
-            }
+
         }
 
-        #endregion
+        private int ThreadSend(byte[] pBuffer, int pSize)
+        {
+            if (mSocket == null) return 0;
+            return mSocket.SendTo(pBuffer, 0, pSize, SocketFlags.None, mTargetPoint);
+        }
+
+        override public bool Send(SendData pData)
+        {
+            if (mSocket == null || pData == null) return false;
+            mSendDataList.Enqueue(pData);
+            return true;
+        }
+
+        override public bool Send(byte[] pBuffer, int pSize)
+        {
+            if (mSocket == null || pBuffer == null) return false;
+            SendData tdata = new SendData(-1, pBuffer, pSize);
+            mSendDataList.Enqueue(tdata);
+            return true;
+        }
+
         #endregion
 
 

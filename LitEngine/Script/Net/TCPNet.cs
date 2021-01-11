@@ -9,12 +9,10 @@ namespace LitEngine.Net
     public sealed class TCPNet : NetBase<TCPNet>
     {
         override public bool isConnected { get { return base.isConnected && mSocket.Connected; } }
-        private AsyncCallback sendCallBack;
         #region 构造析构
         private TCPNet() : base()
         {
             mNetTag = "TCP";
-            sendCallBack = SendAsyncCallback;
         }
 
         #endregion
@@ -36,64 +34,62 @@ namespace LitEngine.Net
                 DLog.LogError(mNetTag + string.Format("[{0}] Connected now.", mNetTag));
                 return;
             }
-            
-            TCPConnect();
+
+            mState = TcpState.Connecting;
+            System.Threading.Tasks.Task.Run(ThreatConnect);
         }
 
         private bool TCPConnect()
         {
-            mState = TcpState.Connecting;
             bool ret = false;
             List<IPAddress> tipds = GetServerIpAddress(mHostName);
             if (tipds.Count == 0) DLog.LogError("IPAddress List.Count = 0!");
-            try
+
+            foreach (IPAddress tip in tipds)
             {
-                IPAddress tip = tipds[0];
-                DLog.Log(string.Format("[Start Connect]" + " HostName:{0} IpAddress:{1} AddressFamily:{2}", mHostName, tip.ToString(), tip.AddressFamily.ToString()));
-                mSocket = new Socket(tip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                RestSocketInfo();
-                mSocket.BeginConnect(tip,mPort,ConnectCallback,mSocket);
-                ret = true;
-            }
-            catch (Exception e)
-            {
-                string terror = e.ToString();
-                DLog.LogError(terror);
-                mState = TcpState.Closed;
-                AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ConectError, mNetTag + "Connect fail. error:" + terror));
+                try
+                {
+                    DLog.Log(string.Format("[Start Connect]" + " HostName:{0} IpAddress:{1} AddressFamily:{2}", mHostName, tip.ToString(), tip.AddressFamily.ToString()));
+                    mSocket = new Socket(tip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                    RestSocketInfo();
+                    mSocket.Connect(tip, mPort);
+                    DLog.Log("Connected!");
+                    ret = true;
+                    break;
+                }
+                catch (Exception e)
+                {
+                    DLog.LogError(string.Format("[Connect Error]" + " HostName:{0} IpAddress:{1} AddressFamily:{2} ErrorMessage:{3}", mHostName, tip.ToString(), tip.AddressFamily.ToString(), e.ToString()));
+                }
             }
 
             return ret;
         }
 
-        private void ConnectCallback(IAsyncResult async)
+        private void ThreatConnect()
         {
-            bool isOK = false;
+            bool isOK = TCPConnect();
             string tmsg = "";
-            try
+            if (isOK)
             {
-                Socket client = (Socket)async.AsyncState;
-                client.EndConnect(async);
-                if (client.Connected)
+                try
                 {
                     mStartThread = true;
 
-                    #region 接收;
+                    #region 收发;
                     CreatRec();
+                    CreatSend();
                     #endregion
-                    DLog.Log("TCP Connected!");
-                    isOK = true;
+
+                    DLog.Log("收发线程启动!");
                 }
-                else
+                catch (Exception e)
                 {
+                    tmsg = e.ToString();
+                    CloseSRThread();
                     isOK = false;
-                    tmsg = "Connect fail.try again.";
                 }
 
-            }
-            catch (Exception e)
-            {
-                tmsg = e.ToString();
             }
 
             if (!isOK)
@@ -107,62 +103,81 @@ namespace LitEngine.Net
                 mState = TcpState.Connected;
                 AddMainThreadMsgReCall(GetMsgReCallData(MessageType.Connected, mNetTag + " Connected."));
             }
+
         }
 
         private void CreatRec()
         {
             mRecThread = new Thread(ReceiveMessage);
             mRecThread.IsBackground = true;
+            mRecThread.Priority = System.Threading.ThreadPriority.Lowest;
             mRecThread.Start();
+        }
+
+        private void CreatSend()
+        {
+            mSendThread = new Thread(SendMessageThread);
+            mSendThread.IsBackground = true;
+            mSendThread.Priority = System.Threading.ThreadPriority.Lowest;
+            mSendThread.Start();
         }
 
         #endregion
 
         #region 发送
 
-        override public bool Send(SendData _data)
+        private void SendMessageThread()
         {
-            if (_data == null)
+            while (mStartThread)
             {
-                DLog.LogError("试图添加一个空对象到发送队列!AddSend");
-                return false;
+                try
+                {
+
+                    if (mSendDataList.PushCount == 0) continue;
+
+                    mSendDataList.Switch();
+                    for (int i = 0, length = mSendDataList.PopCount; i < length; i++)
+                    {
+                        var tdata = mSendDataList.Dequeue();
+                        int tsendlen = ThreadSend(tdata.Data, tdata.SendLen);
+                        DebugMsg(tdata.Cmd, tdata.Data, 0, tsendlen, "TCPSend");
+                    }
+                    Thread.Sleep(10);
+                }
+                catch (Exception e)
+                {
+                    if (mStartThread)
+                    {
+                        DLog.LogError(mNetTag + ":SendMessageThread->" + e.ToString());
+                        CloseSRThread();
+                        AddMainThreadMsgReCall(new NetMessage(MessageType.SendError, mNetTag + "-" + e.ToString()));
+                        return;
+                    }
+                }
+
             }
-            DebugMsg(_data.Cmd, _data.Data, 0, _data.SendLen, "TCPSend");
-            return Send(_data.Data, _data.SendLen);
+
+        }
+
+        private int ThreadSend(byte[] pBuffer, int pSize)
+        {
+            if (mSocket == null) return 0;
+            return mSocket.Send(pBuffer, pSize, SocketFlags.None);
+        }
+
+        override public bool Send(SendData pData)
+        {
+            if (mSocket == null || pData == null) return false;
+            mSendDataList.Enqueue(pData);
+            return true;
         }
 
         override public bool Send(byte[] pBuffer, int pSize)
         {
-            if (mSocket == null) return false;
-            try
-            {
-                SocketError errorCode = SocketError.Success;
-                var ar = mSocket.BeginSend(pBuffer, 0, pSize, SocketFlags.None, out errorCode, sendCallBack, pBuffer);
-                if (errorCode != SocketError.Success)
-                {
-                    DLog.LogErrorFormat("TCP Send Error.{0}", errorCode);
-                }
-                return errorCode == SocketError.Success;
-            }
-            catch (System.Exception erro)
-            {
-                DLog.LogFormat("TCP Send Error.{0}", erro);
-            }
-            return false;
-        }
-
-        void SendAsyncCallback(IAsyncResult result)
-        {
-            int tsendLen = mSocket.EndSend(result);
-            byte[] tadata = result.AsyncState as byte[];
-            if (tadata != null)
-            {
-                DebugMsg(-1, tadata, 0, tsendLen, "TCPSend", result.IsCompleted);
-            }
-            if (result.IsCompleted == false)
-            {
-                AddMainThreadMsgReCall(new NetMessage(MessageType.SendError, mNetTag + "-" + result.IsCompleted));
-            }
+            if (mSocket == null || pBuffer == null) return false;
+            SendData tdata = new SendData(-1, pBuffer, pSize);
+            mSendDataList.Enqueue(tdata);
+            return true;
         }
 
         #endregion

@@ -26,6 +26,13 @@ namespace LitEngine.Net
             BufferBase.headInfo.WriteCmd(Cmd,mData, 0);
             mIndex = BufferBase.headInfo.packageHeadLen;
         }
+        public SendData(int pCmd,byte[] pData,int pSize)
+        {
+            Cmd = pCmd;
+            mData = pData;
+            mIndex = pSize;
+            mIsEnd = true;
+        }
         public void Rest()
         {
             Len = 0;
