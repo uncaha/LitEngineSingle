@@ -207,24 +207,7 @@ namespace LitEngine.Net
         {
             try
             {
-                ReceiveData tssdata = null;
-                bool tissmall = pSize <= cacheObjectLength;
-
-                if(tissmall && cacheRecDatas.PopCount <= 0)
-                {
-                    cacheRecDatas.Switch();
-                }
-
-                if (cacheRecDatas.PopCount > 0 && tissmall)
-                {
-                    tssdata = cacheRecDatas.Dequeue();
-                }
-                else
-                {
-                    int tlen = tissmall ? cacheObjectLength : pSize;
-                    tssdata = new ReceiveData(tlen);
-                    tssdata.useCache = tissmall;
-                }
+                ReceiveData tssdata = new ReceiveData();
                 tssdata.CopyBuffer(pBuffer, 0);
                 mResultDataList.Enqueue(tssdata);
                 DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");

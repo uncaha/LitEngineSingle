@@ -115,11 +115,6 @@ namespace LitEngine.Net
         protected bool mDisposed = false;
         #endregion
 
-        #region cacheData
-        protected CacheSwitchQueue<ReceiveData> cacheRecDatas = new CacheSwitchQueue<ReceiveData>();
-        protected int cacheObjectLength = 1024 * 2;
-        #endregion
-
         #region static
         static protected T sInstance = null;
         static protected T Instance
@@ -183,11 +178,6 @@ namespace LitEngine.Net
         static public void SetOutputDelgate(OutputEvent pEvent)
         {
             Instance.receiveOutput = pEvent;
-            Instance.SetCacheRecData(0,0);
-        }
-        static public void SetCacheRecObject(int pCount,int pSize)
-        {
-            Instance.SetCacheRecData(pCount, pSize);
         }
 
         static public void SetHeadInfo(DataHead pInfo)
@@ -230,18 +220,7 @@ namespace LitEngine.Net
 
         virtual protected void InitNet()
         {
-            SetCacheRecData(60,cacheObjectLength);
-        }
 
-        virtual public void SetCacheRecData(int pCount,int pSize)
-        {
-            cacheRecDatas.Clear();
-            cacheObjectLength = pSize;
-            for (int i = 0; i < pCount; i++)
-            {
-                ReceiveData tdata = new ReceiveData(pSize) { useCache = true };
-                cacheRecDatas.Enqueue(tdata);
-            }
         }
 
         virtual protected void OnDestroy()
@@ -356,18 +335,9 @@ namespace LitEngine.Net
         {
             mBufferData.Clear();
 
-            mSendDataList.DequeueAll();
+            mSendDataList.Clear();
 
-            var tlist = mResultDataList.DequeueAll();
-            for (int i = 0 ,max = tlist.Count; i < max; i++)
-            {
-                ReceiveData trecdata = tlist[i];
-                if (trecdata.useCache)
-                {
-                    cacheRecDatas.Enqueue(trecdata);
-                }
-            }
-            //mResultDataList.Clear();
+            mResultDataList.Clear();
         }
         virtual protected void WaitThreadJoin(Thread _thread)
         {
@@ -531,10 +501,6 @@ namespace LitEngine.Net
                     ReceiveData trecdata = (ReceiveData)mResultDataList.Dequeue();
                     Call(trecdata.Cmd, trecdata);
                     i--;
-                    if(trecdata.useCache)
-                    {
-                        cacheRecDatas.Enqueue(trecdata);
-                    }
                 }
                 catch (Exception _error)
                 {

@@ -6,7 +6,6 @@ namespace LitEngine.Net
 {
     public class ReceiveData
     {
-        public bool useCache = false;
         #region 属性
         public byte[] Data { get; private set; }
         public int RecLen { get; private set; }
@@ -18,10 +17,6 @@ namespace LitEngine.Net
         public ReceiveData(byte[] _buffer, int _offset)
         {
             CopyBuffer(_buffer, _offset);
-        }
-        public ReceiveData(int _len)
-        {
-            Data = new byte[_len];
         }
         public ReceiveData()
         {
@@ -40,13 +35,10 @@ namespace LitEngine.Net
             
             tindex += BufferBase.headInfo.packageHeadLen;
 
-            if (Data == null || Len > Data.Length)
-                Data = new byte[Len];
-            else
-                Data.Initialize();
+            Data = new byte[Len];
 
             mIndex = 0;
-            Array.Copy(_buffer, tindex, Data, 0, Len);
+            Buffer.BlockCopy(_buffer, tindex, Data, 0, Len);
         }
 
         public byte[] ToProtoArray()

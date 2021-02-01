@@ -16,7 +16,7 @@ namespace LitEngine.Net
         #endregion
         public SendData(int _cmd)
         {
-            mData = new byte[128];
+            mData = new byte[64];
             Cmd = _cmd;
             Len = 0;
             mIndex = 0;
