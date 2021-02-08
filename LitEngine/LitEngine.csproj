@@ -234,6 +234,7 @@
     <Compile Include="Script\Net\TestServer\ServerTestKCP.cs" />
     <Compile Include="Script\Net\NetData\SafeSwitchQueue.cs" />
     <Compile Include="Script\Net\NetData\CacheSwitchQueue.cs" />
+    <Compile Include="Script\Net\NetData\SwitchBufferQueue.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />

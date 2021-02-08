@@ -24,7 +24,6 @@ namespace LitEngine.Net
 
         public void CopyBuffer(byte[] _buffer, int _offset)
         {
-            mIndex = 0;
             int tindex = _offset;
             RecLen = BufferBase.headInfo.ReadHeadLen(_buffer, tindex);
 
@@ -43,9 +42,7 @@ namespace LitEngine.Net
 
         public byte[] ToProtoArray()
         {
-            byte[] ret = new byte[Len];
-            Buffer.BlockCopy(Data, 0, ret, 0, Len);
-            return ret;
+            return Data;
         }
 
         override public string ToString()
