@@ -14,10 +14,10 @@ namespace LitEngine.Net
         public int SendLen { get { return mIndex; } }
         public int Cmd {get;private set;}
         #endregion
-        public SendData(int _cmd)
+        public SendData(int pCmd,int pSize = 128)
         {
-            mData = new byte[64];
-            Cmd = _cmd;
+            mData = new byte[pSize];
+            Cmd = pCmd;
             Len = 0;
             mIndex = 0;
             mIsEnd = false;
