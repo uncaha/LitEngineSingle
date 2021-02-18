@@ -17,7 +17,7 @@ namespace LitEngine.Net
             public int length;
             public void Initialize()
             {
-                if(bytes != null)
+                if (bytes != null)
                 {
                     bytes.Initialize();
                 }
@@ -44,6 +44,7 @@ namespace LitEngine.Net
         private EndPoint mRecPoint;
         private IPAddress mServerIP;
         private int mLocalPort = 30379;
+        private AsyncCallback sendCallBack;
         private KCP kcpObject;
         private SwitchQueue<CacheByteObject> recvQueue = new SwitchQueue<CacheByteObject>(128);
         private byte[] kcpRecvBuffer = new byte[4096];
@@ -58,22 +59,23 @@ namespace LitEngine.Net
             kcpObject = new KCP(1, HandleKcpSend);
             kcpObject.NoDelay(1, 10, 2, 1);
             kcpObject.WndSize(128, 128);
+            sendCallBack = SendAsyncCallback;
 
             for (int i = 0; i < 60; i++)
             {
-                cacheBytesQue.Enqueue(new CacheByteObject(){ bytes = new byte[cacheByteLen]});
+                cacheBytesQue.Enqueue(new CacheByteObject() { bytes = new byte[cacheByteLen] });
             }
         }
         #endregion
 
         static public void NoDelay(int nodelay_, int interval_, int resend_, int nc_)
         {
-            Instance.kcpObject.NoDelay(nodelay_,interval_,resend_,nc_);
+            Instance.kcpObject.NoDelay(nodelay_, interval_, resend_, nc_);
         }
 
         static public void WndSize(int sndwnd, int rcvwnd)
         {
-            Instance.kcpObject.WndSize(sndwnd,rcvwnd);
+            Instance.kcpObject.WndSize(sndwnd, rcvwnd);
         }
 
         override public void Dispose()
@@ -88,25 +90,6 @@ namespace LitEngine.Net
 
         #region 建立Socket
         override public void ConnectToServer()
-        {
-
-            if (IsCOrD())
-            {
-                DLog.LogError(mNetTag + string.Format("[{0}]Closing or Connecting.", mNetTag));
-                return;
-            }
-
-            if (isConnected)
-            {
-                DLog.LogError(mNetTag + string.Format("[{0}] Connected now.", mNetTag));
-                return;
-            }
-
-            mState = TcpState.Connecting;
-            System.Threading.Tasks.Task.Run(KCPConnect);
-        }
-
-        private void KCPConnect()
         {
             try
             {
@@ -144,6 +127,7 @@ namespace LitEngine.Net
                 mState = TcpState.Closed;
                 AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ConectError, mNetTag + "建立连接失败. " + ex.Message));
             }
+
         }
 
         private void CreatRec()
@@ -153,18 +137,10 @@ namespace LitEngine.Net
             mRecThread.Priority = System.Threading.ThreadPriority.Lowest;
             mRecThread.Start();
         }
-        private void CreatSend()
-        {
-            mSendThread = new Thread(SendMessageThread);
-            mSendThread.IsBackground = true;
-            mSendThread.Priority = System.Threading.ThreadPriority.Lowest;
-            mSendThread.Start();
-        }
 
         private void CreatSendAndRecThread()
         {
             CreatRec();
-            CreatSend();
             DLog.Log(mNetTag + "建立连接完成");
         }
 
@@ -185,50 +161,16 @@ namespace LitEngine.Net
 
         #region 收发
         #region 发送  
-
-        private void SendMessageThread()
+        override public bool Send(SendData _data)
         {
-            while (mStartThread)
+            if (mSocket == null) return false;
+            if (_data == null)
             {
-                try
-                {
-
-                    if (mSendDataList.PushCount == 0) continue;
-
-                    mSendDataList.Switch();
-                    for (int i = 0, length = mSendDataList.PopCount; i < length; i++)
-                    {
-                        var tdata = mSendDataList.Dequeue();
-                        int tsendlen = ThreadSend(tdata.Data, tdata.SendLen);
-                        DebugMsg(tdata.Cmd, tdata.Data, 0, tsendlen, "KCPSend");
-                    }
-                    Thread.Sleep(10);
-                }
-                catch (Exception e)
-                {
-                    if (mStartThread)
-                    {
-                        DLog.LogError(mNetTag + ":SendMessageThread->" + e.ToString());
-                        CloseSRThread();
-                        AddMainThreadMsgReCall(new NetMessage(MessageType.SendError, mNetTag + "-" + e.ToString()));
-                        return;
-                    }
-                }
-
+                DLog.LogError("试图添加一个空对象到发送队列!AddSend");
+                return false;
             }
-
-        }
-
-        private int ThreadSend(byte[] pBuffer, int pSize)
-        {
-            if (mSocket == null) return 0;
-            return mSocket.SendTo(pBuffer, 0, pSize, SocketFlags.None, mTargetPoint);
-        }
-
-        override public bool Send(SendData pData)
-        {
-            if (mSocket == null || pData == null) return false;
-            return Send(pData.Data, pData.SendLen);
+            DebugMsg(_data.Cmd, _data.Data, 0, _data.SendLen, "KCPSend");
+            return Send(_data.Data, _data.SendLen);
         }
 
         override public bool Send(byte[] pBuffer, int pSize)
@@ -239,9 +181,26 @@ namespace LitEngine.Net
         private void HandleKcpSend(byte[] buff, int size)
         {
             if (mSocket == null) return;
-            SendData tdata = new SendData(-1, buff, size);
-            mSendDataList.Enqueue(tdata);
+            try
+            {
+                var ar = mSocket.BeginSendTo(buff, 0, size, SocketFlags.None, mTargetPoint, sendCallBack, buff);
+            }
+            catch (System.Exception erro)
+            {
+                DLog.LogFormat("KCP Send Error.{0}", erro);
+            }
         }
+
+        #region thread send
+        void SendAsyncCallback(IAsyncResult result)
+        {
+            int tlen = mSocket.EndSendTo(result);
+            if (result.IsCompleted)
+            {
+            }
+        }
+
+        #endregion
         #endregion
 
 
@@ -288,11 +247,11 @@ namespace LitEngine.Net
                 {
                     dst = cacheBytesQue.Dequeue();
                     dst.Initialize();
-                    
+
                 }
                 else
                 {
-                    dst = new CacheByteObject() { bytes = new byte[cacheByteLen]};
+                    dst = new CacheByteObject() { bytes = new byte[cacheByteLen] };
                 }
                 dst.length = _len;
                 Buffer.BlockCopy(_buffer, 0, dst.bytes, 0, _len);
@@ -349,7 +308,7 @@ namespace LitEngine.Net
                 if (ret < 0)
                 {
                     //收到的不是一个正确的KCP包
-                    if(IsShowDebugLog)
+                    if (IsShowDebugLog)
                     {
                         DLog.Log("Error kcp package.");
                     }
@@ -360,11 +319,11 @@ namespace LitEngine.Net
 
                 for (int size = kcpObject.PeekSize(); size > 0; size = kcpObject.PeekSize())
                 {
-                    if(size > 1048576)
+                    if (size > 1048576)
                     {
                         DLog.LogErrorFormat("The size is too long.size = {0}", size);
                     }
-                    if(kcpRecvBuffer.Length < size)
+                    if (kcpRecvBuffer.Length < size)
                     {
                         int tnewlen = size + kcpRecvBuffer.Length;
                         kcpRecvBuffer = new byte[tnewlen];
@@ -373,7 +332,7 @@ namespace LitEngine.Net
                     {
                         kcpRecvBuffer.Initialize();
                     }
-                    
+
                     int treclen = kcpObject.Recv(kcpRecvBuffer, size);
                     if (treclen > 0)
                     {
