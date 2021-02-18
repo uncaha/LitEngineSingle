@@ -45,11 +45,9 @@ namespace LitEngine.Net
         private IPAddress mServerIP;
         private int mLocalPort = 30379;
         private KCP kcpObject;
-        private SwitchQueue<CacheByteObject> recvQueue = new SwitchQueue<CacheByteObject>(128);
-        private byte[] kcpRecvBuffer = new byte[4096];
 
+        private byte[] kcpRecvBuffer = new byte[4096];
         private int cacheByteLen = 2048;
-        private CacheSwitchQueue<CacheByteObject> cacheBytesQue = new CacheSwitchQueue<CacheByteObject>(60);
         #endregion
         #region 初始化
         private KCPNet() : base()
@@ -58,11 +56,6 @@ namespace LitEngine.Net
             kcpObject = new KCP(1, HandleKcpSend);
             kcpObject.NoDelay(1, 10, 2, 1);
             kcpObject.WndSize(128, 128);
-
-            for (int i = 0; i < 60; i++)
-            {
-                cacheBytesQue.Enqueue(new CacheByteObject(){ bytes = new byte[cacheByteLen]});
-            }
         }
         #endregion
 
@@ -202,6 +195,7 @@ namespace LitEngine.Net
                         int tsendlen = ThreadSend(tdata.Data, tdata.SendLen);
                         DebugMsg(tdata.Cmd, tdata.Data, 0, tsendlen, "KCPSend");
                     }
+                    UpdateKCP();
                     Thread.Sleep(10);
                 }
                 catch (Exception e)
@@ -222,25 +216,28 @@ namespace LitEngine.Net
         private int ThreadSend(byte[] pBuffer, int pSize)
         {
             if (mSocket == null) return 0;
-            return mSocket.SendTo(pBuffer, 0, pSize, SocketFlags.None, mTargetPoint);
+            return kcpObject.Send(pBuffer, pSize);
         }
 
         override public bool Send(SendData pData)
         {
             if (mSocket == null || pData == null) return false;
-            return Send(pData.Data, pData.SendLen);
+            mSendDataList.Enqueue(pData);
+            return true;
         }
 
         override public bool Send(byte[] pBuffer, int pSize)
         {
-            return kcpObject.Send(pBuffer, pSize) >= 0;
+            if (mSocket == null || pBuffer == null) return false;
+            SendData tdata = new SendData(-1, pBuffer, pSize);
+            mSendDataList.Enqueue(tdata);
+            return true;
         }
 
         private void HandleKcpSend(byte[] buff, int size)
         {
             if (mSocket == null) return;
-            SendData tdata = new SendData(-1, buff, size);
-            mSendDataList.Enqueue(tdata);
+            mSocket.SendTo(buff, 0, size, SocketFlags.None, mTargetPoint);
         }
         #endregion
 
@@ -278,31 +275,54 @@ namespace LitEngine.Net
         {
             try
             {
-                if (cacheBytesQue.PopCount <= 0)
-                {
-                    cacheBytesQue.Switch();
-                }
-
-                CacheByteObject dst = null;
-                if (cacheBytesQue.PopCount > 0)
-                {
-                    dst = cacheBytesQue.Dequeue();
-                    dst.Initialize();
-                    
-                }
-                else
-                {
-                    dst = new CacheByteObject() { bytes = new byte[cacheByteLen]};
-                }
-                dst.length = _len;
-                Buffer.BlockCopy(_buffer, 0, dst.bytes, 0, _len);
-                recvQueue.Push(dst);
+                PushKCPData(_buffer, _len);
             }
             catch (Exception e)
             {
                 DLog.LogError(mNetTag + "-" + e.ToString());
             }
 
+        }
+
+        private void PushKCPData(byte[] pBuffer,int pLength)
+        {
+            var recvobject = pBuffer;
+            int ret = kcpObject.Input(pBuffer,pLength);
+
+            if (ret < 0)
+            {
+                //收到的不是一个正确的KCP包
+                if (IsShowDebugLog)
+                {
+                    DLog.Log("Error kcp package.");
+                }
+                return;
+            }
+
+            needKcpUpdateFlag = true;
+
+            for (int size = kcpObject.PeekSize(); size > 0; size = kcpObject.PeekSize())
+            {
+                if (size > 1048576)
+                {
+                    DLog.LogErrorFormat("The size is too long.size = {0}", size);
+                }
+                if (kcpRecvBuffer.Length < size)
+                {
+                    int tnewlen = size + kcpRecvBuffer.Length;
+                    kcpRecvBuffer = new byte[tnewlen];
+                }
+                else
+                {
+                    kcpRecvBuffer.Initialize();
+                }
+
+                int treclen = kcpObject.Recv(kcpRecvBuffer, size);
+                if (treclen > 0)
+                {
+                    PopRecData(kcpRecvBuffer, treclen);
+                }
+            }
         }
 
         private void PopRecData(byte[] pRecbuf, int pSize)
@@ -324,9 +344,7 @@ namespace LitEngine.Net
             {
                 ReceiveData tssdata = new ReceiveData();
                 tssdata.CopyBuffer(pBuffer, 0);
-
-                Call(tssdata.Cmd, tssdata);
-
+                mResultDataList.Enqueue(tssdata);
                 DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
             }
             catch (System.Exception error)
@@ -335,53 +353,6 @@ namespace LitEngine.Net
             }
         }
         #endregion
-
-        private void HandleRecvQueue()
-        {
-            recvQueue.Switch();
-            while (!recvQueue.Empty())
-            {
-                var recvobject = recvQueue.Pop();
-                int ret = kcpObject.Input(recvobject.bytes, recvobject.length);
-
-                cacheBytesQue.Enqueue(recvobject);
-
-                if (ret < 0)
-                {
-                    //收到的不是一个正确的KCP包
-                    if(IsShowDebugLog)
-                    {
-                        DLog.Log("Error kcp package.");
-                    }
-                    return;
-                }
-
-                needKcpUpdateFlag = true;
-
-                for (int size = kcpObject.PeekSize(); size > 0; size = kcpObject.PeekSize())
-                {
-                    if(size > 1048576)
-                    {
-                        DLog.LogErrorFormat("The size is too long.size = {0}", size);
-                    }
-                    if(kcpRecvBuffer.Length < size)
-                    {
-                        int tnewlen = size + kcpRecvBuffer.Length;
-                        kcpRecvBuffer = new byte[tnewlen];
-                    }
-                    else
-                    {
-                        kcpRecvBuffer.Initialize();
-                    }
-                    
-                    int treclen = kcpObject.Recv(kcpRecvBuffer, size);
-                    if (treclen > 0)
-                    {
-                        PopRecData(kcpRecvBuffer, treclen);
-                    }
-                }
-            }
-        }
 
         private static readonly DateTime UTCTimeBegin = new DateTime(1970, 1, 1);
         public static UInt32 GetClockMS()
@@ -392,16 +363,20 @@ namespace LitEngine.Net
         private bool needKcpUpdateFlag = false;
         private uint nextKcpUpdateTime = 0;
 
-        override protected void MainThreadUpdate()
+        private void UpdateKCP()
         {
             uint currentTimeMS = GetClockMS();
-            HandleRecvQueue();
             if (needKcpUpdateFlag || currentTimeMS >= nextKcpUpdateTime)
             {
                 kcpObject.Update(currentTimeMS);
                 nextKcpUpdateTime = kcpObject.Check(currentTimeMS);
                 needKcpUpdateFlag = false;
             }
+        }
+
+        override protected void MainThreadUpdate()
+        {
+            UpdateRecMsg();
         }
 
         #endregion
