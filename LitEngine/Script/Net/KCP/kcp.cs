@@ -169,6 +169,7 @@ namespace LitEngine.Net.KCPCommand
                 rto = 0;
                 fastack = 0;
                 xmit = 0;
+                data = new byte[pLen];
                 if (data == null || pLen > data.Length)
                 {
                     data = new byte[pLen];
