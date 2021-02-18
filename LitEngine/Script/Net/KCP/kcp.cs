@@ -376,7 +376,7 @@ namespace LitEngine.Net.KCPCommand
                 else
                     size = bufferSize - offset;
 
-                var seg = new Segment(size);
+                var seg = GetSegment(size);
                 Array.Copy(buffer, offset, seg.data, 0, size);
                 offset += size;
                 seg.frg = (UInt32)(count - i - 1);
@@ -426,7 +426,8 @@ namespace LitEngine.Net.KCPCommand
             {
                 if (sn == seg.sn)
                 {
-                    snd_buf.RemoveAt(index);
+                    snd_buf.RemoveAt(index);//snd seq删除
+                    segCacheQue.Enqueue(seg);
                     break;
                 }
                 else
@@ -449,7 +450,18 @@ namespace LitEngine.Net.KCPCommand
                     break;
             }
 
-            if (0 < count) snd_buf = slice<Segment>(snd_buf, count, snd_buf.Count);
+            if (0 < count)
+            {
+                for (int i = snd_buf.Count - 1; i >= 0; i--)
+                {
+                    var tseg = snd_buf[i];
+                    if (i < count)
+                    {
+                        segCacheQue.Enqueue(tseg);
+                        snd_buf.RemoveAt(i);
+                    }
+                }
+            } 
         }
 
         void ack_push(UInt32 sn, UInt32 ts)
@@ -524,12 +536,13 @@ namespace LitEngine.Net.KCPCommand
             }
         }
 
-        Segment GetSegment()
+        Segment GetSegment(int size = 0)
         {
             Segment ret = null;
             if (segCacheQue.Count > 0)
             {
                 ret = segCacheQue.Dequeue();
+                ret.Rest(size);
             }
             else
             {
