@@ -581,7 +581,7 @@ namespace LitEngine.Net
 
         #endregion
 
-        private void FixedUpdate()
+        private void Update()
         {
             UpdateReCalledMsg();
             if (isConnected)
