@@ -91,13 +91,9 @@ namespace LitEngine.Net.KCPCommand
 
         public static List<T> slice<T>(List<T> p, int start, int stop)
         {
-            for (var i = p.Count - 1; i >= 0; i--)
+            for (var i = start - 1; i >= 0; i--)
             {
-                if(i < start || i >= stop)
-                {
-                    p.RemoveAt(i);
-                }
-                
+                p.RemoveAt(i);
             }
 
             return p;
@@ -250,7 +246,7 @@ namespace LitEngine.Net.KCPCommand
             buffer = new byte[(mtu + IKCP_OVERHEAD) * 3];
             output = output_;
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 30; i++)
             {
                 var tseg = new Segment(2048);
                 segCacheQue.Enqueue(tseg);
@@ -426,7 +422,9 @@ namespace LitEngine.Net.KCPCommand
             {
                 if (sn == seg.sn)
                 {
-                    snd_buf.RemoveAt(index);
+                    var t1 = slice<Segment>(snd_buf, 0, index);
+                    var t2 = slice<Segment>(snd_buf, index + 1, snd_buf.Count);
+                    snd_buf = append<Segment>(t1, t2);
                     break;
                 }
                 else
@@ -680,7 +678,6 @@ namespace LitEngine.Net.KCPCommand
         }
 
         // flush pending data
-        Segment segFlush = new Segment(0);
         void flush()
         {
             var current_ = current;
@@ -690,8 +687,7 @@ namespace LitEngine.Net.KCPCommand
 
             if (0 == updated) return;
 
-            var seg = segFlush;
-            seg.Rest(0);
+            var seg = new Segment(0);
             seg.conv = conv;
             seg.cmd = IKCP_CMD_ACK;
             seg.wnd = (UInt32)wnd_unused();
