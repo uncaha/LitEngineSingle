@@ -134,7 +134,6 @@ namespace LitEngine.Net
         {
             mRecThread = new Thread(ReceiveMessage);
             mRecThread.IsBackground = true;
-            mRecThread.Priority = System.Threading.ThreadPriority.Lowest;
             mRecThread.Start();
         }
 
