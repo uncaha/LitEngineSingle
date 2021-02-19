@@ -349,39 +349,45 @@ namespace LitEngine.Net.KCPCommand
             // merge fragment.
             var count = 0;
             var n = 0;
-            foreach (var seg in rcv_queue)
+
+            var itorcv_q = rcv_queue.First;
+            while (itorcv_q != null)
             {
+                var seg = itorcv_q.Value;
+
                 Array.Copy(seg.data, 0, buffer, n, seg.Length);
 
                 segCacheQue.Enqueue(seg);
 
                 n += seg.Length;
                 count++;
-                if (0 == seg.frg) break;
-            }
 
-            if (0 < count)
-            {
-                sliceList<Segment>(rcv_queue, count, rcv_queue.Count);
+                var tlast = itorcv_q;
+                itorcv_q = itorcv_q.Next;
+
+                rcv_queue.Remove(tlast);
+
+                if (0 == seg.frg) break;
             }
 
             // move available data from rcv_buf -> rcv_queue
             count = 0;
-            foreach (var seg in rcv_buf)
+            var ito = rcv_buf.First;
+            while (ito != null)
             {
-                if (seg.sn == rcv_nxt && rcv_queue.Count < rcv_wnd)
-                {
-                    rcv_queue.AddLast(seg);
-                    rcv_nxt++;
-                    count++;
-                }
-                else
-                {
-                    break;
-                }
-            }
+                var seg = ito.Value;
 
-            if (0 < count) sliceList<Segment>(rcv_buf, count, rcv_buf.Count);
+                bool tisneed = seg.sn == rcv_nxt && rcv_queue.Count < rcv_wnd;
+                if (!tisneed) break;
+                var tcur = ito;
+                ito = ito.Next;
+
+                rcv_buf.Remove(tcur);
+                rcv_queue.AddLast(tcur);
+
+                rcv_nxt++;
+                count++;
+            }
 
             // fast recover
             if (rcv_queue.Count < rcv_wnd && fast_recover)
@@ -520,7 +526,7 @@ namespace LitEngine.Net.KCPCommand
             if (_itimediff(sn, rcv_nxt + rcv_wnd) >= 0 || _itimediff(sn, rcv_nxt) < 0) return;
 
             var n = rcv_buf.Count - 1;
-            var after_idx = -1;
+
             var repeat = false;
 
             int i = n;
@@ -553,24 +559,20 @@ namespace LitEngine.Net.KCPCommand
             }
 
             // move available data from rcv_buf -> rcv_queue
-            var count = 0;
-            foreach (var seg in rcv_buf)
+            var itorcv_b = rcv_buf.First;
+            while(itorcv_b != null)
             {
-                if (seg.sn == rcv_nxt && rcv_queue.Count < rcv_wnd)
-                {
-                    rcv_queue.AddFirst(seg);
-                    rcv_nxt++;
-                    count++;
-                }
-                else
-                {
-                    break;
-                }
-            }
+                var seg = itorcv_b.Value;
+                bool tisneed = seg.sn == rcv_nxt && rcv_queue.Count < rcv_wnd;
+                if (!tisneed) break;
 
-            if (0 < count)
-            {
-                sliceList<Segment>(rcv_buf, count, rcv_buf.Count);
+                var tlast = itorcv_b;
+                itorcv_b = itorcv_b.Next;
+
+                rcv_buf.Remove(tlast);
+
+                rcv_queue.AddFirst(tlast);
+                rcv_nxt++;
             }
         }
 
