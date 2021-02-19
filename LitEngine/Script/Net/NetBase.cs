@@ -75,7 +75,7 @@ namespace LitEngine.Net
         protected string mNetTag = "";
         public bool StopUpdateRecMsg { get; set; }
 
-        private SwitchQueue<SocketAsyncEventArgs> cacheAsyncEvent = new SwitchQueue<SocketAsyncEventArgs>(60);
+        private SwitchQueue<SocketAsyncEventArgs> cacheAsyncEvent = new SwitchQueue<SocketAsyncEventArgs>(100);
         #endregion
 
         #region 数据
