@@ -252,7 +252,7 @@ namespace LitEngine.Net.KCPCommand
         UInt32 ts_probe; UInt32 probe_wait;
         UInt32 dead_link; UInt32 incr;
 
-        Segment[] snd_queue = new Segment[0];
+        //Segment[] snd_queue = new Segment[0];
         //Segment[] rcv_queue = new Segment[0];
         Segment[] snd_buf = new Segment[0];
         //Segment[] rcv_buf = new Segment[0];
@@ -262,7 +262,9 @@ namespace LitEngine.Net.KCPCommand
         LinkedList<Segment> rcv_queue = new LinkedList<Segment>();
         LinkedList<Segment> rcv_buf = new LinkedList<Segment>();
 
-        
+        LinkedList<Segment> snd_queue = new LinkedList<Segment>();
+
+
 
         byte[] buffer;
         Int32 fastresend;
@@ -422,7 +424,7 @@ namespace LitEngine.Net.KCPCommand
                 Array.Copy(buffer, offset, seg.data, 0, size);
                 offset += size;
                 seg.frg = (UInt32)(count - i - 1);
-                snd_queue = append<Segment>(snd_queue, seg);
+                snd_queue.AddLast(seg);
             }
 
             return 0;
@@ -801,11 +803,12 @@ namespace LitEngine.Net.KCPCommand
                 cwnd_ = _imin_(cwnd, cwnd_);
 
             count = 0;
-            for (var k = 0; k < snd_queue.Length; k++)
+            var ito = snd_queue.First;
+            while (ito != null)
             {
                 if (_itimediff(snd_nxt, snd_una + cwnd_) >= 0) break;
 
-                var newseg = snd_queue[k];
+                var newseg = ito.Value;
                 newseg.conv = conv;
                 newseg.cmd = IKCP_CMD_PUSH;
                 newseg.wnd = seg.wnd;
@@ -819,12 +822,12 @@ namespace LitEngine.Net.KCPCommand
                 snd_buf = append<Segment>(snd_buf, newseg);
                 snd_nxt++;
                 count++;
+
+                var tlast = ito;
+                ito = ito.Next;
+                snd_queue.Remove(tlast);
             }
 
-            if (0 < count)
-            {
-                snd_queue = slice<Segment>(snd_queue, count, snd_queue.Length);
-            }
 
             // calculate resent
             var resent = (UInt32)fastresend;
@@ -1078,7 +1081,7 @@ namespace LitEngine.Net.KCPCommand
         // get how many packet is waiting to be sent
         public int WaitSnd()
         {
-            return snd_buf.Length + snd_queue.Length;
+            return snd_buf.Length + snd_queue.Count;
         }
     }
 
