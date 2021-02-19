@@ -254,7 +254,7 @@ namespace LitEngine.Net.KCPCommand
 
         //Segment[] snd_queue = new Segment[0];
         //Segment[] rcv_queue = new Segment[0];
-        Segment[] snd_buf = new Segment[0];
+        //Segment[] snd_buf = new Segment[0];
         //Segment[] rcv_buf = new Segment[0];
 
         UInt32[] acklist = new UInt32[0];
@@ -263,6 +263,7 @@ namespace LitEngine.Net.KCPCommand
         LinkedList<Segment> rcv_buf = new LinkedList<Segment>();
 
         LinkedList<Segment> snd_queue = new LinkedList<Segment>();
+        LinkedList<Segment> snd_buf = new LinkedList<Segment>();
 
 
 
@@ -454,8 +455,8 @@ namespace LitEngine.Net.KCPCommand
 
         void shrink_buf()
         {
-            if (snd_buf.Length > 0)
-                snd_una = snd_buf[0].sn;
+            if (snd_buf.Count > 0)
+                snd_una = snd_buf.First.Value.sn;
             else
                 snd_una = snd_nxt;
         }
@@ -465,12 +466,13 @@ namespace LitEngine.Net.KCPCommand
 
             if (_itimediff(sn, snd_una) < 0 || _itimediff(sn, snd_nxt) >= 0) return;
 
-            var index = 0;
-            foreach (var seg in snd_buf)
+            var ito = snd_buf.First;
+            while (ito != null)
             {
+                var seg = ito.Value;
                 if (sn == seg.sn)
                 {
-                    snd_buf = append<Segment>(slice<Segment>(snd_buf, 0, index), slice<Segment>(snd_buf, index + 1, snd_buf.Length));
+                    snd_buf.Remove(ito);
                     break;
                 }
                 else
@@ -478,22 +480,27 @@ namespace LitEngine.Net.KCPCommand
                     seg.fastack++;
                 }
 
-                index++;
+                ito = ito.Next;
             }
         }
 
         void parse_una(UInt32 una)
         {
-            var count = 0;
-            foreach (var seg in snd_buf)
-            {
-                if (_itimediff(una, seg.sn) > 0)
-                    count++;
-                else
-                    break;
-            }
 
-            if (0 < count) snd_buf = slice<Segment>(snd_buf, count, snd_buf.Length);
+            var ito = snd_buf.First;
+            while (ito != null)
+            {
+                var seg = ito.Value;
+                if (_itimediff(una, seg.sn) <= 0)
+                {
+                    break;
+                }
+
+                var tlast = ito;
+                ito = ito.Next;
+
+                snd_buf.Remove(tlast);
+            }
         }
 
         void ack_push(UInt32 sn, UInt32 ts)
@@ -819,7 +826,9 @@ namespace LitEngine.Net.KCPCommand
                 newseg.rto = rx_rto;
                 newseg.fastack = 0;
                 newseg.xmit = 0;
-                snd_buf = append<Segment>(snd_buf, newseg);
+
+                snd_buf.AddLast(newseg);
+
                 snd_nxt++;
                 count++;
 
@@ -1081,7 +1090,7 @@ namespace LitEngine.Net.KCPCommand
         // get how many packet is waiting to be sent
         public int WaitSnd()
         {
-            return snd_buf.Length + snd_queue.Count;
+            return snd_buf.Count + snd_queue.Count;
         }
     }
 
