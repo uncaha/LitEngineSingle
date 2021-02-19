@@ -192,27 +192,10 @@ namespace LitEngine.Net
             if (mSocket == null) return;
             try
             {
-                if (cacheAsyncEvent.Empty())
-                {
-                    cacheAsyncEvent.Switch();
-                }
-                SocketAsyncEventArgs sd = null;
-
-                if (!cacheAsyncEvent.Empty())
-                {
-                    sd = cacheAsyncEvent.Pop();
-                }
-                else
-                {
-                    sd = new SocketAsyncEventArgs();
-                    sd.Completed += sendCallBack;
-                    sd.SocketFlags = SocketFlags.None;
-                }
-
+                SocketAsyncEventArgs sd = GetSocketAsyncEvent();
                 sd.SetBuffer(buff, 0, size);
                 sd.RemoteEndPoint = mTargetPoint;
                 mSocket.SendToAsync(sd);
-                //var ar = mSocket.BeginSendTo(buff, 0, size, SocketFlags.None, mTargetPoint, sendCallBack, buff);
             }
             catch (System.Exception erro)
             {
@@ -220,7 +203,6 @@ namespace LitEngine.Net
             }
         }
 
-        #region thread send
         void SendAsyncCallback(object sender, SocketAsyncEventArgs e)
         {
             if(e.SocketError == SocketError.Success)
@@ -230,7 +212,28 @@ namespace LitEngine.Net
             cacheAsyncEvent.Push(e);
         }
 
-        #endregion
+        SocketAsyncEventArgs GetSocketAsyncEvent()
+        {
+            SocketAsyncEventArgs ret = null;
+            if (cacheAsyncEvent.Empty())
+            {
+                cacheAsyncEvent.Switch();
+            }
+
+            if (!cacheAsyncEvent.Empty())
+            {
+                ret = cacheAsyncEvent.Pop();
+            }
+            else
+            {
+                ret = new SocketAsyncEventArgs();
+                ret.Completed += sendCallBack;
+                ret.SocketFlags = SocketFlags.None;
+            }
+
+            return ret;
+        }
+
         #endregion
 
 
