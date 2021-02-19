@@ -23,11 +23,12 @@ namespace LitEngine.Net.TestServer
 
         private KCP kcpObject;
 
+        IPEndPoint serverPoint = null;
         IPEndPoint tarpoint = null;
         private SwitchQueue<byte[]> recvQueue = new SwitchQueue<byte[]>(128);
         void Start()
         {
-
+            gameObject.name = "KCP-" + mLocalPort;
             kcpObject = new KCP(1, HandleKcpSend);
             kcpObject.NoDelay(1, 10, 2, 1);
             kcpObject.WndSize(128, 128);
@@ -36,9 +37,9 @@ namespace LitEngine.Net.TestServer
             //var mTargetPoint = new IPEndPoint(tip, 200236);
             testServer = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
-            mRecPoint = new IPEndPoint(IPAddress.Any, mLocalPort);
-            IPEndPoint tMypoint = new IPEndPoint(IPAddress.Any, mLocalPort);
-            testServer.Bind(tMypoint);
+            mRecPoint = new IPEndPoint(IPAddress.Any, 10824);
+            serverPoint = new IPEndPoint(IPAddress.Any, mLocalPort);
+            testServer.Bind(serverPoint);
 
             taskStart = true;
             recTask = Task.Run(RecThread);
@@ -65,13 +66,13 @@ namespace LitEngine.Net.TestServer
                     {
                         int receiveNumber = testServer.ReceiveFrom(recbuffer, SocketFlags.None, ref mRecPoint);
                         IPEndPoint tremot = (IPEndPoint)mRecPoint;
-                        if (receiveNumber > 0)
+                        if (receiveNumber > 0 && !tremot.Address.Equals(serverPoint))
                         {
+                            DLog.Log(tremot);
                             tarpoint = tremot;
-                            byte[] dst = new byte[receiveNumber];
-                            Buffer.BlockCopy(recbuffer, 0, dst, 0, receiveNumber);
-                            recvQueue.Push(dst);
-                            //ShowBuffer(recbuffer,receiveNumber);
+
+                            HandleRecvQueue(recbuffer, receiveNumber);
+                            ServerUpdate();
                         }
                     }
 
@@ -85,7 +86,7 @@ namespace LitEngine.Net.TestServer
 
         }
 
-        void ShowBuffer(byte[] pBuffer, int pSize)
+        string ShowBuffer(byte[] pBuffer, int pSize)
         {
             System.Text.StringBuilder bufferstr = new System.Text.StringBuilder();
             bufferstr.Append("{");
@@ -96,8 +97,7 @@ namespace LitEngine.Net.TestServer
                 bufferstr.Append(pBuffer[i]);
             }
             bufferstr.Append("}");
-            string tmsg = string.Format("{0}", bufferstr);
-            Debug.Log(tmsg);
+            return bufferstr.ToString();
         }
 
         public bool AddSend(byte[] buff, int size)
@@ -132,10 +132,9 @@ namespace LitEngine.Net.TestServer
         }
 
         // Update is called once per frame
-        void Update()
+        void ServerUpdate()
         {
             uint currentTimeMS = GetClockMS();
-            HandleRecvQueue();
             if (needKcpUpdateFlag || currentTimeMS >= nextKcpUpdateTime)
             {
                 kcpObject.Update(currentTimeMS);
@@ -144,39 +143,35 @@ namespace LitEngine.Net.TestServer
             }
         }
 
-        private void HandleRecvQueue()
+        private void HandleRecvQueue(byte[] pBuffer,int pLen)
         {
-            recvQueue.Switch();
-            while (!recvQueue.Empty())
+            int ret = kcpObject.Input(pBuffer, pLen);
+
+            //收到的不是一个正确的KCP包
+            if (ret < 0)
             {
-                var recvBufferRaw = recvQueue.Pop();
-                int ret = kcpObject.Input(recvBufferRaw, recvBufferRaw.Length);
+                string tstr = ShowBuffer(pBuffer, pLen);
+                DLog.LogFormat("收到了错误的kcp包: {0}", tstr);
+                return;
+            }
 
-                //收到的不是一个正确的KCP包
-                if (ret < 0)
+            needKcpUpdateFlag = true;
+
+            for (int size = kcpObject.PeekSize(); size > 0; size = kcpObject.PeekSize())
+            {
+                DLog.Log("size =" + size);
+                var recvBuffer = new byte[size];
+                int treclen = kcpObject.Recv(recvBuffer, recvBuffer.Length);
+                if (treclen > 0)
                 {
-                    string str = System.Text.Encoding.UTF8.GetString(recvBufferRaw, 0, recvBufferRaw.Length);
-                    DLog.LogFormat("收到了错误的kcp包: {0}", str);
-                    return;
-                }
-
-                needKcpUpdateFlag = true;
-
-                for (int size = kcpObject.PeekSize(); size > 0; size = kcpObject.PeekSize())
-                {
-                    var recvBuffer = new byte[size];
-                    int treclen = kcpObject.Recv(recvBuffer, recvBuffer.Length);
-                    if (treclen > 0)
-                    {
-                        PushRecData(recvBuffer, treclen);
-                    }
+                    PushRecData(recvBuffer, treclen);
                 }
             }
         }
 
         protected void PushRecData(byte[] pRecbuf, int pSize)
         {
-            ShowBuffer(pRecbuf, pSize);
+            DLog.Log( ShowBuffer(pRecbuf, pSize));
             AddSend(tetstdata.Data, tetstdata.SendLen);
 
             // ReceiveData tssdata = new ReceiveData(pRecbuf, 0);

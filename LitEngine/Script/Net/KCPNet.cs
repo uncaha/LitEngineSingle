@@ -43,14 +43,16 @@ namespace LitEngine.Net
         private IPEndPoint mTargetPoint;//目标地址
         private EndPoint mRecPoint;
         private IPAddress mServerIP;
-        private int mLocalPort = 30379;
-        private AsyncCallback sendCallBack;
+        private int mLocalPort = 10824;
+        private EventHandler<SocketAsyncEventArgs> sendCallBack;
         private KCP kcpObject;
         private SwitchQueue<CacheByteObject> recvQueue = new SwitchQueue<CacheByteObject>(128);
         private byte[] kcpRecvBuffer = new byte[4096];
 
         private int cacheByteLen = 2048;
         private CacheSwitchQueue<CacheByteObject> cacheBytesQue = new CacheSwitchQueue<CacheByteObject>(60);
+
+        private SwitchQueue<SocketAsyncEventArgs> cacheAsyncEvent = new SwitchQueue<SocketAsyncEventArgs>(60);
         #endregion
         #region 初始化
         private KCPNet() : base()
@@ -64,6 +66,14 @@ namespace LitEngine.Net
             for (int i = 0; i < 60; i++)
             {
                 cacheBytesQue.Enqueue(new CacheByteObject() { bytes = new byte[cacheByteLen] });
+            }
+
+            for (int i = 0; i < 60; i++)
+            {
+                SocketAsyncEventArgs sd = new SocketAsyncEventArgs();
+                sd.Completed += sendCallBack;
+                sd.SocketFlags = SocketFlags.None;
+                cacheAsyncEvent.Push(sd);
             }
         }
         #endregion
@@ -182,7 +192,27 @@ namespace LitEngine.Net
             if (mSocket == null) return;
             try
             {
-                var ar = mSocket.BeginSendTo(buff, 0, size, SocketFlags.None, mTargetPoint, sendCallBack, buff);
+                if (cacheAsyncEvent.Empty())
+                {
+                    cacheAsyncEvent.Switch();
+                }
+                SocketAsyncEventArgs sd = null;
+
+                if (!cacheAsyncEvent.Empty())
+                {
+                    sd = cacheAsyncEvent.Pop();
+                }
+                else
+                {
+                    sd = new SocketAsyncEventArgs();
+                    sd.Completed += sendCallBack;
+                    sd.SocketFlags = SocketFlags.None;
+                }
+
+                sd.SetBuffer(buff, 0, size);
+                sd.RemoteEndPoint = mTargetPoint;
+                mSocket.SendToAsync(sd);
+                //var ar = mSocket.BeginSendTo(buff, 0, size, SocketFlags.None, mTargetPoint, sendCallBack, buff);
             }
             catch (System.Exception erro)
             {
@@ -191,12 +221,13 @@ namespace LitEngine.Net
         }
 
         #region thread send
-        void SendAsyncCallback(IAsyncResult result)
+        void SendAsyncCallback(object sender, SocketAsyncEventArgs e)
         {
-            int tlen = mSocket.EndSendTo(result);
-            if (result.IsCompleted)
+            if(e.SocketError == SocketError.Success)
             {
+
             }
+            cacheAsyncEvent.Push(e);
         }
 
         #endregion
@@ -218,7 +249,10 @@ namespace LitEngine.Net
                         IPEndPoint tremot = (IPEndPoint)mRecPoint;
 
                         if (receiveNumber > 0 && tremot.Address.Equals(mServerIP))
+                        {
                             Processingdata(receiveNumber, mRecbuffer);
+                        }
+                            
                     }
 
                 }

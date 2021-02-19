@@ -89,18 +89,17 @@ namespace LitEngine.Net.KCPCommand
             return bytes;
         }
 
-        public static List<T> slice<T>(List<T> p, int start, int stop)
+        public static T[] slice<T>(T[] p, int start, int stop)
         {
-            for (var i = p.Count - 1; i >= 0; i--)
+            var arr = new T[stop - start];
+            var index = 0;
+            for (var i = start; i < stop; i++)
             {
-                if (i < start || i >= stop)
-                {
-                    p.RemoveAt(i);
-                }
-
+                arr[index] = p[i];
+                index++;
             }
 
-            return p;
+            return arr;
         }
 
         public static byte[] append(byte[] p, byte c)
@@ -111,11 +110,23 @@ namespace LitEngine.Net.KCPCommand
             return bytes;
         }
 
-
-        public static List<T> append<T>(List<T> p, List<T> cs)
+        public static T[] append<T>(T[] p, T c)
         {
-            p.AddRange(cs);
-            return p;
+            var arr = new T[p.Length + 1];
+            for (var i = 0; i < p.Length; i++)
+                arr[i] = p[i];
+            arr[p.Length] = c;
+            return arr;
+        }
+
+        public static T[] append<T>(T[] p, T[] cs)
+        {
+            var arr = new T[p.Length + cs.Length];
+            for (var i = 0; i < p.Length; i++)
+                arr[i] = p[i];
+            for (var i = 0; i < cs.Length; i++)
+                arr[p.Length + i] = cs[i];
+            return arr;
         }
 
         static UInt32 _imin_(UInt32 a, UInt32 b)
@@ -173,6 +184,7 @@ namespace LitEngine.Net.KCPCommand
                 rto = 0;
                 fastack = 0;
                 xmit = 0;
+                data = new byte[pLen];
                 if (data == null || pLen > data.Length)
                 {
                     data = new byte[pLen];
@@ -215,12 +227,12 @@ namespace LitEngine.Net.KCPCommand
         UInt32 ts_probe; UInt32 probe_wait;
         UInt32 dead_link; UInt32 incr;
 
-        List<Segment> snd_queue = new List<Segment>(100);
-        List<Segment> rcv_queue = new List<Segment>(100);
-        List<Segment> snd_buf = new List<Segment>(100);
-        List<Segment> rcv_buf = new List<Segment>(100);
+        Segment[] snd_queue = new Segment[0];
+        Segment[] rcv_queue = new Segment[0];
+        Segment[] snd_buf = new Segment[0];
+        Segment[] rcv_buf = new Segment[0];
 
-        List<UInt32> acklist = new List<UInt32>(100);
+        UInt32[] acklist = new UInt32[0];
 
         byte[] buffer;
         Int32 fastresend;
@@ -250,7 +262,7 @@ namespace LitEngine.Net.KCPCommand
             buffer = new byte[(mtu + IKCP_OVERHEAD) * 3];
             output = output_;
 
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 30; i++)
             {
                 var tseg = new Segment(2048);
                 segCacheQue.Enqueue(tseg);
@@ -267,13 +279,13 @@ namespace LitEngine.Net.KCPCommand
         public int PeekSize()
         {
 
-            if (0 == rcv_queue.Count) return -1;
+            if (0 == rcv_queue.Length) return -1;
 
             var seq = rcv_queue[0];
 
             if (0 == seq.frg) return seq.Length;
 
-            if (rcv_queue.Count < seq.frg + 1) return -1;
+            if (rcv_queue.Length < seq.frg + 1) return -1;
 
             int length = 0;
 
@@ -291,7 +303,7 @@ namespace LitEngine.Net.KCPCommand
         public int Recv(byte[] buffer, int pLength)
         {
 
-            if (0 == rcv_queue.Count) return -1;
+            if (0 == rcv_queue.Length) return -1;
 
             var peekSize = PeekSize();
             if (0 > peekSize) return -2;
@@ -299,14 +311,14 @@ namespace LitEngine.Net.KCPCommand
             if (peekSize > pLength) return -3;
 
             var fast_recover = false;
-            if (rcv_queue.Count >= rcv_wnd) fast_recover = true;
+            if (rcv_queue.Length >= rcv_wnd) fast_recover = true;
 
             // merge fragment.
             var count = 0;
             var n = 0;
             foreach (var seg in rcv_queue)
             {
-                Buffer.BlockCopy(seg.data, 0, buffer, n, seg.Length);
+                Array.Copy(seg.data, 0, buffer, n, seg.Length);
 
                 segCacheQue.Enqueue(seg);
 
@@ -317,16 +329,16 @@ namespace LitEngine.Net.KCPCommand
 
             if (0 < count)
             {
-                slice<Segment>(rcv_queue, count, rcv_queue.Count);
+                rcv_queue = slice<Segment>(rcv_queue, count, rcv_queue.Length);
             }
 
             // move available data from rcv_buf -> rcv_queue
             count = 0;
             foreach (var seg in rcv_buf)
             {
-                if (seg.sn == rcv_nxt && rcv_queue.Count < rcv_wnd)
+                if (seg.sn == rcv_nxt && rcv_queue.Length < rcv_wnd)
                 {
-                    rcv_queue.Add(seg);
+                    rcv_queue = append<Segment>(rcv_queue, seg);
                     rcv_nxt++;
                     count++;
                 }
@@ -336,10 +348,10 @@ namespace LitEngine.Net.KCPCommand
                 }
             }
 
-            if (0 < count) rcv_buf = slice<Segment>(rcv_buf, count, rcv_buf.Count);
+            if (0 < count) rcv_buf = slice<Segment>(rcv_buf, count, rcv_buf.Length);
 
             // fast recover
-            if (rcv_queue.Count < rcv_wnd && fast_recover)
+            if (rcv_queue.Length < rcv_wnd && fast_recover)
             {
                 // ready to send back IKCP_CMD_WINS in ikcp_flush
                 // tell remote my window size
@@ -376,11 +388,11 @@ namespace LitEngine.Net.KCPCommand
                 else
                     size = bufferSize - offset;
 
-                var seg = GetSegment(size);
+                var seg = new Segment(size);
                 Array.Copy(buffer, offset, seg.data, 0, size);
                 offset += size;
                 seg.frg = (UInt32)(count - i - 1);
-                snd_queue.Add(seg);
+                snd_queue = append<Segment>(snd_queue, seg);
             }
 
             return 0;
@@ -410,7 +422,7 @@ namespace LitEngine.Net.KCPCommand
 
         void shrink_buf()
         {
-            if (snd_buf.Count > 0)
+            if (snd_buf.Length > 0)
                 snd_una = snd_buf[0].sn;
             else
                 snd_una = snd_nxt;
@@ -426,8 +438,7 @@ namespace LitEngine.Net.KCPCommand
             {
                 if (sn == seg.sn)
                 {
-                    snd_buf.RemoveAt(index);//snd seq删除
-                    segCacheQue.Enqueue(seg);
+                    snd_buf = append<Segment>(slice<Segment>(snd_buf, 0, index), slice<Segment>(snd_buf, index + 1, snd_buf.Length));
                     break;
                 }
                 else
@@ -450,24 +461,12 @@ namespace LitEngine.Net.KCPCommand
                     break;
             }
 
-            if (0 < count)
-            {
-                for (int i = snd_buf.Count - 1; i >= 0; i--)
-                {
-                    var tseg = snd_buf[i];
-                    if (i < count)
-                    {
-                        segCacheQue.Enqueue(tseg);
-                        snd_buf.RemoveAt(i);
-                    }
-                }
-            }
+            if (0 < count) snd_buf = slice<Segment>(snd_buf, count, snd_buf.Length);
         }
 
         void ack_push(UInt32 sn, UInt32 ts)
         {
-            acklist.Add(sn);
-            acklist.Add(ts);
+            acklist = append<UInt32>(acklist, new UInt32[2] { sn, ts });
         }
 
         void ack_get(int p, ref UInt32 sn, ref UInt32 ts)
@@ -481,7 +480,7 @@ namespace LitEngine.Net.KCPCommand
             var sn = newseg.sn;
             if (_itimediff(sn, rcv_nxt + rcv_wnd) >= 0 || _itimediff(sn, rcv_nxt) < 0) return;
 
-            var n = rcv_buf.Count - 1;
+            var n = rcv_buf.Length - 1;
             var after_idx = -1;
             var repeat = false;
             for (var i = n; i >= 0; i--)
@@ -503,24 +502,18 @@ namespace LitEngine.Net.KCPCommand
             if (!repeat)
             {
                 if (after_idx == -1)
-                {
-                    rcv_buf.Add(newseg);
-                }
+                    rcv_buf = append<Segment>(new Segment[1] { newseg }, rcv_buf);
                 else
-                {
-                    slice<Segment>(rcv_buf, after_idx + 1, rcv_buf.Count);
-                    rcv_buf.Add(newseg);
-                }
-
+                    rcv_buf = append<Segment>(slice<Segment>(rcv_buf, 0, after_idx + 1), append<Segment>(new Segment[1] { newseg }, slice<Segment>(rcv_buf, after_idx + 1, rcv_buf.Length)));
             }
 
             // move available data from rcv_buf -> rcv_queue
             var count = 0;
             foreach (var seg in rcv_buf)
             {
-                if (seg.sn == rcv_nxt && rcv_queue.Count < rcv_wnd)
+                if (seg.sn == rcv_nxt && rcv_queue.Length < rcv_wnd)
                 {
-                    rcv_queue.Add(seg);
+                    rcv_queue = append<Segment>(rcv_queue, seg);
                     rcv_nxt++;
                     count++;
                 }
@@ -532,17 +525,16 @@ namespace LitEngine.Net.KCPCommand
 
             if (0 < count)
             {
-                rcv_buf = slice<Segment>(rcv_buf, count, rcv_buf.Count);
+                rcv_buf = slice<Segment>(rcv_buf, count, rcv_buf.Length);
             }
         }
 
-        Segment GetSegment(int size = 0)
+        Segment GetSegment()
         {
             Segment ret = null;
             if (segCacheQue.Count > 0)
             {
                 ret = segCacheQue.Dequeue();
-                ret.Rest(size);
             }
             else
             {
@@ -687,13 +679,12 @@ namespace LitEngine.Net.KCPCommand
 
         Int32 wnd_unused()
         {
-            if (rcv_queue.Count < rcv_wnd)
-                return (Int32)(int)rcv_wnd - rcv_queue.Count;
+            if (rcv_queue.Length < rcv_wnd)
+                return (Int32)(int)rcv_wnd - rcv_queue.Length;
             return 0;
         }
 
         // flush pending data
-        Segment segFlush = new Segment(0);
         void flush()
         {
             var current_ = current;
@@ -703,15 +694,14 @@ namespace LitEngine.Net.KCPCommand
 
             if (0 == updated) return;
 
-            var seg = segFlush;
-            seg.Rest(0);
+            var seg = new Segment(0);
             seg.conv = conv;
             seg.cmd = IKCP_CMD_ACK;
             seg.wnd = (UInt32)wnd_unused();
             seg.una = rcv_nxt;
 
             // flush acknowledges
-            var count = acklist.Count / 2;
+            var count = acklist.Length / 2;
             var offset = 0;
             for (var i = 0; i < count; i++)
             {
@@ -724,7 +714,7 @@ namespace LitEngine.Net.KCPCommand
                 ack_get(i, ref seg.sn, ref seg.ts);
                 offset += seg.encode(buffer, offset);
             }
-            acklist.Clear();
+            acklist = new UInt32[0];
 
             // probe window size (if remote window size equals zero)
             if (0 == rmt_wnd)
@@ -775,7 +765,7 @@ namespace LitEngine.Net.KCPCommand
                 cwnd_ = _imin_(cwnd, cwnd_);
 
             count = 0;
-            for (var k = 0; k < snd_queue.Count; k++)
+            for (var k = 0; k < snd_queue.Length; k++)
             {
                 if (_itimediff(snd_nxt, snd_una + cwnd_) >= 0) break;
 
@@ -790,14 +780,14 @@ namespace LitEngine.Net.KCPCommand
                 newseg.rto = rx_rto;
                 newseg.fastack = 0;
                 newseg.xmit = 0;
-                snd_buf.Add(newseg);
+                snd_buf = append<Segment>(snd_buf, newseg);
                 snd_nxt++;
                 count++;
             }
 
             if (0 < count)
             {
-                snd_queue = slice<Segment>(snd_queue, count, snd_queue.Count);
+                snd_queue = slice<Segment>(snd_queue, count, snd_queue.Length);
             }
 
             // calculate resent
@@ -1052,7 +1042,7 @@ namespace LitEngine.Net.KCPCommand
         // get how many packet is waiting to be sent
         public int WaitSnd()
         {
-            return snd_buf.Count + snd_queue.Count;
+            return snd_buf.Length + snd_queue.Length;
         }
     }
 
