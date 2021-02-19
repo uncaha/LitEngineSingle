@@ -674,6 +674,7 @@ namespace LitEngine.Net.KCPCommand
         }
 
         // flush pending data
+        Segment flushSeg = new Segment(0);
         void flush()
         {
             var current_ = current;
@@ -683,7 +684,9 @@ namespace LitEngine.Net.KCPCommand
 
             if (0 == updated) return;
 
-            var seg = new Segment(0);
+            var seg = flushSeg;
+            seg.Rest(0);
+
             seg.conv = conv;
             seg.cmd = IKCP_CMD_ACK;
             seg.wnd = (UInt32)wnd_unused();
@@ -771,14 +774,13 @@ namespace LitEngine.Net.KCPCommand
                 newseg.fastack = 0;
                 newseg.xmit = 0;
 
-                snd_buf.AddLast(newseg);
-
-                snd_nxt++;
-                count++;
-
                 var tlast = ito;
                 ito = ito.Next;
                 snd_queue.Remove(tlast);
+                snd_buf.AddLast(tlast);
+
+                snd_nxt++;
+                count++;
             }
 
 
