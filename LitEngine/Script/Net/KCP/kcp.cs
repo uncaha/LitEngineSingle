@@ -82,68 +82,6 @@ namespace LitEngine.Net.KCPCommand
             return 4;
         }
 
-        public static byte[] slice(byte[] p, int start, int stop)
-        {
-            var bytes = new byte[stop - start];
-            Array.Copy(p, start, bytes, 0, bytes.Length);
-            return bytes;
-        }
-
-        public static T[] slice<T>(T[] p, int start, int stop)
-        {
-            var arr = new T[stop - start];
-            var index = 0;
-            for (var i = start; i < stop; i++)
-            {
-                arr[index] = p[i];
-                index++;
-            }
-
-            return arr;
-        }
-
-        public static void sliceList<T>(LinkedList<T> p, int start, int stop)
-        {
-
-            if (start >= stop)
-            {
-                p.Clear();
-                return;
-            }
-
-            int i = 0;
-            var item = p.First;
-            while(item != null)
-            {
-                var tcur = item;
-                item = item.Next;
-
-                if (i >= stop || i < start)
-                {
-                    p.Remove(tcur);
-                }
-                
-                i++;
-            }
-        }
-
-        public static byte[] append(byte[] p, byte c)
-        {
-            var bytes = new byte[p.Length + 1];
-            Array.Copy(p, bytes, p.Length);
-            bytes[p.Length] = c;
-            return bytes;
-        }
-
-        public static T[] append<T>(T[] p, T c)
-        {
-            var arr = new T[p.Length + 1];
-            for (var i = 0; i < p.Length; i++)
-                arr[i] = p[i];
-            arr[p.Length] = c;
-            return arr;
-        }
-
         public static T[] append<T>(T[] p, T[] cs)
         {
             var arr = new T[p.Length + cs.Length];
@@ -274,7 +212,8 @@ namespace LitEngine.Net.KCPCommand
         // buffer, size
         Action<byte[], int> output;
 
-        Queue<Segment> segCacheQue = new Queue<Segment>();
+        
+        Queue<LinkedListNode<Segment>> segCacheQue = new Queue<LinkedListNode<Segment>>();
         // create a new kcp control object, 'conv' must equal in two endpoint
         // from the same connection.
         public KCP(UInt32 conv_, Action<byte[], int> output_)
@@ -295,10 +234,11 @@ namespace LitEngine.Net.KCPCommand
             buffer = new byte[(mtu + IKCP_OVERHEAD) * 3];
             output = output_;
 
-            for (int i = 0; i < 30; i++)
+            for (int i = 0; i < 60; i++)
             {
                 var tseg = new Segment(2048);
-                segCacheQue.Enqueue(tseg);
+                var tnode = new LinkedListNode<Segment>(tseg);
+                segCacheQue.Enqueue(tnode);
             }
 
         }
@@ -357,7 +297,7 @@ namespace LitEngine.Net.KCPCommand
 
                 Array.Copy(seg.data, 0, buffer, n, seg.Length);
 
-                segCacheQue.Enqueue(seg);
+                segCacheQue.Enqueue(itorcv_q);
 
                 n += seg.Length;
                 count++;
@@ -520,9 +460,9 @@ namespace LitEngine.Net.KCPCommand
             ts = acklist[p * 2 + 1];
         }
 
-        void parse_data(Segment newseg)
+        void parse_data(LinkedListNode<Segment> newseg)
         {
-            var sn = newseg.sn;
+            var sn = newseg.Value.sn;
             if (_itimediff(sn, rcv_nxt + rcv_wnd) >= 0 || _itimediff(sn, rcv_nxt) < 0) return;
 
             var n = rcv_buf.Count - 1;
@@ -576,16 +516,17 @@ namespace LitEngine.Net.KCPCommand
             }
         }
 
-        Segment GetSegment()
+        LinkedListNode<Segment> GetSegment()
         {
-            Segment ret = null;
+            LinkedListNode<Segment> ret = null;
             if (segCacheQue.Count > 0)
             {
                 ret = segCacheQue.Dequeue();
             }
             else
             {
-                ret = new Segment(2048);
+                var tseg = new Segment(2048);
+                ret = new LinkedListNode<Segment>(tseg);
             }
             return ret;
         }
@@ -659,7 +600,8 @@ namespace LitEngine.Net.KCPCommand
                         ack_push(sn, ts);
                         if (_itimediff(sn, rcv_nxt) >= 0)
                         {
-                            var seg = GetSegment();
+                            var tnode = GetSegment();
+                            var seg = tnode.Value;
                             seg.Rest((int)length);
 
                             seg.conv = conv_;
@@ -672,7 +614,7 @@ namespace LitEngine.Net.KCPCommand
 
                             if (length > 0) Array.Copy(data, offset, seg.data, 0, length);
 
-                            parse_data(seg);
+                            parse_data(tnode);
                         }
                     }
                 }
