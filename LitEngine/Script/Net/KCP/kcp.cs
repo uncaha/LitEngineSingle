@@ -102,7 +102,7 @@ namespace LitEngine.Net.KCPCommand
             return arr;
         }
 
-        public static void sliceList<T>(List<T> p, int start, int stop)
+        public static void sliceList<T>(LinkedList<T> p, int start, int stop)
         {
 
             if (start >= stop)
@@ -110,13 +110,20 @@ namespace LitEngine.Net.KCPCommand
                 p.Clear();
                 return;
             }
-             
-            for (int i = p.Count - 1; i >= 0; i--)
+
+            int i = 0;
+            var item = p.First;
+            while(item != null)
             {
-                if(i >= stop || i < start)
+                var tcur = item;
+                item = item.Next;
+
+                if (i >= stop || i < start)
                 {
-                    p.RemoveAt(i);
+                    p.Remove(tcur);
                 }
+                
+                i++;
             }
         }
 
@@ -252,8 +259,10 @@ namespace LitEngine.Net.KCPCommand
 
         UInt32[] acklist = new UInt32[0];
 
-        List<Segment> rcv_queue = new List<Segment>(100);
-        List<Segment> rcv_buf = new List<Segment>(100);
+        LinkedList<Segment> rcv_queue = new LinkedList<Segment>();
+        LinkedList<Segment> rcv_buf = new LinkedList<Segment>();
+
+        
 
         byte[] buffer;
         Int32 fastresend;
@@ -302,7 +311,7 @@ namespace LitEngine.Net.KCPCommand
 
             if (0 == rcv_queue.Count) return -1;
 
-            var seq = rcv_queue[0];
+            var seq = rcv_queue.First.Value;
 
             if (0 == seq.frg) return seq.Length;
 
@@ -359,7 +368,7 @@ namespace LitEngine.Net.KCPCommand
             {
                 if (seg.sn == rcv_nxt && rcv_queue.Count < rcv_wnd)
                 {
-                    rcv_queue.Add(seg);
+                    rcv_queue.AddLast(seg);
                     rcv_nxt++;
                     count++;
                 }
@@ -504,9 +513,13 @@ namespace LitEngine.Net.KCPCommand
             var n = rcv_buf.Count - 1;
             var after_idx = -1;
             var repeat = false;
-            for (var i = n; i >= 0; i--)
+
+            int i = n;
+            var ito = rcv_buf.Last;
+            while (ito != null)
             {
-                var seg = rcv_buf[i];
+                var seg = ito.Value;
+
                 if (seg.sn == sn)
                 {
                     repeat = true;
@@ -515,22 +528,19 @@ namespace LitEngine.Net.KCPCommand
 
                 if (_itimediff(sn, seg.sn) > 0)
                 {
-                    after_idx = i;
+                    repeat = true;
+                    rcv_buf.AddBefore(ito, newseg);
                     break;
                 }
+
+                ito = ito.Previous;
+                i--;
             }
+
 
             if (!repeat)
             {
-                if (after_idx == -1)
-                {
-                    rcv_buf.Insert(0, newseg);
-                }
-                else
-                {
-                    rcv_buf.Insert(after_idx + 1, newseg);
-                }
-                    
+                rcv_buf.AddFirst(newseg);
             }
 
             // move available data from rcv_buf -> rcv_queue
@@ -539,7 +549,7 @@ namespace LitEngine.Net.KCPCommand
             {
                 if (seg.sn == rcv_nxt && rcv_queue.Count < rcv_wnd)
                 {
-                    rcv_queue.Add(seg);
+                    rcv_queue.AddFirst(seg);
                     rcv_nxt++;
                     count++;
                 }
