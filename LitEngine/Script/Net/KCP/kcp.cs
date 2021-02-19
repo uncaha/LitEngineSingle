@@ -102,6 +102,24 @@ namespace LitEngine.Net.KCPCommand
             return arr;
         }
 
+        public static void sliceList<T>(List<T> p, int start, int stop)
+        {
+
+            if (start >= stop)
+            {
+                p.Clear();
+                return;
+            }
+             
+            for (int i = p.Count - 1; i >= 0; i--)
+            {
+                if(i >= stop || i < start)
+                {
+                    p.RemoveAt(i);
+                }
+            }
+        }
+
         public static byte[] append(byte[] p, byte c)
         {
             var bytes = new byte[p.Length + 1];
@@ -228,11 +246,13 @@ namespace LitEngine.Net.KCPCommand
         UInt32 dead_link; UInt32 incr;
 
         Segment[] snd_queue = new Segment[0];
-        Segment[] rcv_queue = new Segment[0];
+        //Segment[] rcv_queue = new Segment[0];
         Segment[] snd_buf = new Segment[0];
         Segment[] rcv_buf = new Segment[0];
 
         UInt32[] acklist = new UInt32[0];
+
+        List<Segment> rcv_queue = new List<Segment>();
 
         byte[] buffer;
         Int32 fastresend;
@@ -279,13 +299,13 @@ namespace LitEngine.Net.KCPCommand
         public int PeekSize()
         {
 
-            if (0 == rcv_queue.Length) return -1;
+            if (0 == rcv_queue.Count) return -1;
 
             var seq = rcv_queue[0];
 
             if (0 == seq.frg) return seq.Length;
 
-            if (rcv_queue.Length < seq.frg + 1) return -1;
+            if (rcv_queue.Count < seq.frg + 1) return -1;
 
             int length = 0;
 
@@ -303,7 +323,7 @@ namespace LitEngine.Net.KCPCommand
         public int Recv(byte[] buffer, int pLength)
         {
 
-            if (0 == rcv_queue.Length) return -1;
+            if (0 == rcv_queue.Count) return -1;
 
             var peekSize = PeekSize();
             if (0 > peekSize) return -2;
@@ -311,7 +331,7 @@ namespace LitEngine.Net.KCPCommand
             if (peekSize > pLength) return -3;
 
             var fast_recover = false;
-            if (rcv_queue.Length >= rcv_wnd) fast_recover = true;
+            if (rcv_queue.Count >= rcv_wnd) fast_recover = true;
 
             // merge fragment.
             var count = 0;
@@ -329,16 +349,16 @@ namespace LitEngine.Net.KCPCommand
 
             if (0 < count)
             {
-                rcv_queue = slice<Segment>(rcv_queue, count, rcv_queue.Length);
+                sliceList<Segment>(rcv_queue, count, rcv_queue.Count);
             }
 
             // move available data from rcv_buf -> rcv_queue
             count = 0;
             foreach (var seg in rcv_buf)
             {
-                if (seg.sn == rcv_nxt && rcv_queue.Length < rcv_wnd)
+                if (seg.sn == rcv_nxt && rcv_queue.Count < rcv_wnd)
                 {
-                    rcv_queue = append<Segment>(rcv_queue, seg);
+                    rcv_queue.Add(seg);
                     rcv_nxt++;
                     count++;
                 }
@@ -351,7 +371,7 @@ namespace LitEngine.Net.KCPCommand
             if (0 < count) rcv_buf = slice<Segment>(rcv_buf, count, rcv_buf.Length);
 
             // fast recover
-            if (rcv_queue.Length < rcv_wnd && fast_recover)
+            if (rcv_queue.Count < rcv_wnd && fast_recover)
             {
                 // ready to send back IKCP_CMD_WINS in ikcp_flush
                 // tell remote my window size
@@ -511,9 +531,9 @@ namespace LitEngine.Net.KCPCommand
             var count = 0;
             foreach (var seg in rcv_buf)
             {
-                if (seg.sn == rcv_nxt && rcv_queue.Length < rcv_wnd)
+                if (seg.sn == rcv_nxt && rcv_queue.Count < rcv_wnd)
                 {
-                    rcv_queue = append<Segment>(rcv_queue, seg);
+                    rcv_queue.Add(seg);
                     rcv_nxt++;
                     count++;
                 }
@@ -679,8 +699,8 @@ namespace LitEngine.Net.KCPCommand
 
         Int32 wnd_unused()
         {
-            if (rcv_queue.Length < rcv_wnd)
-                return (Int32)(int)rcv_wnd - rcv_queue.Length;
+            if (rcv_queue.Count < rcv_wnd)
+                return (Int32)(int)rcv_wnd - rcv_queue.Count;
             return 0;
         }
 
