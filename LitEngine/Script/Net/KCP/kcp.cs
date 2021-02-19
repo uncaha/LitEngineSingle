@@ -190,12 +190,6 @@ namespace LitEngine.Net.KCPCommand
         UInt32 ts_probe; UInt32 probe_wait;
         UInt32 dead_link; UInt32 incr;
 
-        //Segment[] snd_queue = new Segment[0];
-        //Segment[] rcv_queue = new Segment[0];
-        //Segment[] snd_buf = new Segment[0];
-        //Segment[] rcv_buf = new Segment[0];
-
-        UInt32[] acklist = new UInt32[0];
 
         LinkedList<Segment> rcv_queue = new LinkedList<Segment>();
         LinkedList<Segment> rcv_buf = new LinkedList<Segment>();
@@ -203,6 +197,7 @@ namespace LitEngine.Net.KCPCommand
         LinkedList<Segment> snd_queue = new LinkedList<Segment>();
         LinkedList<Segment> snd_buf = new LinkedList<Segment>();
 
+        List<uint> acklist = new List<uint>(60);
 
 
         byte[] buffer;
@@ -455,7 +450,8 @@ namespace LitEngine.Net.KCPCommand
 
         void ack_push(UInt32 sn, UInt32 ts)
         {
-            acklist = append<UInt32>(acklist, new UInt32[2] { sn, ts });
+            acklist.Add(sn);
+            acklist.Add(ts);
         }
 
         void ack_get(int p, ref UInt32 sn, ref UInt32 ts)
@@ -702,7 +698,7 @@ namespace LitEngine.Net.KCPCommand
             seg.una = rcv_nxt;
 
             // flush acknowledges
-            var count = acklist.Length / 2;
+            var count = acklist.Count / 2;
             var offset = 0;
             for (var i = 0; i < count; i++)
             {
@@ -715,7 +711,7 @@ namespace LitEngine.Net.KCPCommand
                 ack_get(i, ref seg.sn, ref seg.ts);
                 offset += seg.encode(buffer, offset);
             }
-            acklist = new UInt32[0];
+            acklist.Clear();
 
             // probe window size (if remote window size equals zero)
             if (0 == rmt_wnd)
