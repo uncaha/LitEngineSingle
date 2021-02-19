@@ -202,7 +202,7 @@ namespace LitEngine.Net.KCPCommand
                 rto = 0;
                 fastack = 0;
                 xmit = 0;
-                data = new byte[pLen];
+
                 if (data == null || pLen > data.Length)
                 {
                     data = new byte[pLen];
@@ -248,11 +248,12 @@ namespace LitEngine.Net.KCPCommand
         Segment[] snd_queue = new Segment[0];
         //Segment[] rcv_queue = new Segment[0];
         Segment[] snd_buf = new Segment[0];
-        Segment[] rcv_buf = new Segment[0];
+        //Segment[] rcv_buf = new Segment[0];
 
         UInt32[] acklist = new UInt32[0];
 
-        List<Segment> rcv_queue = new List<Segment>();
+        List<Segment> rcv_queue = new List<Segment>(100);
+        List<Segment> rcv_buf = new List<Segment>(100);
 
         byte[] buffer;
         Int32 fastresend;
@@ -368,7 +369,7 @@ namespace LitEngine.Net.KCPCommand
                 }
             }
 
-            if (0 < count) rcv_buf = slice<Segment>(rcv_buf, count, rcv_buf.Length);
+            if (0 < count) sliceList<Segment>(rcv_buf, count, rcv_buf.Count);
 
             // fast recover
             if (rcv_queue.Count < rcv_wnd && fast_recover)
@@ -500,7 +501,7 @@ namespace LitEngine.Net.KCPCommand
             var sn = newseg.sn;
             if (_itimediff(sn, rcv_nxt + rcv_wnd) >= 0 || _itimediff(sn, rcv_nxt) < 0) return;
 
-            var n = rcv_buf.Length - 1;
+            var n = rcv_buf.Count - 1;
             var after_idx = -1;
             var repeat = false;
             for (var i = n; i >= 0; i--)
@@ -522,9 +523,14 @@ namespace LitEngine.Net.KCPCommand
             if (!repeat)
             {
                 if (after_idx == -1)
-                    rcv_buf = append<Segment>(new Segment[1] { newseg }, rcv_buf);
+                {
+                    rcv_buf.Insert(0, newseg);
+                }
                 else
-                    rcv_buf = append<Segment>(slice<Segment>(rcv_buf, 0, after_idx + 1), append<Segment>(new Segment[1] { newseg }, slice<Segment>(rcv_buf, after_idx + 1, rcv_buf.Length)));
+                {
+                    rcv_buf.Insert(after_idx + 1, newseg);
+                }
+                    
             }
 
             // move available data from rcv_buf -> rcv_queue
@@ -545,7 +551,7 @@ namespace LitEngine.Net.KCPCommand
 
             if (0 < count)
             {
-                rcv_buf = slice<Segment>(rcv_buf, count, rcv_buf.Length);
+                sliceList<Segment>(rcv_buf, count, rcv_buf.Count);
             }
         }
 
