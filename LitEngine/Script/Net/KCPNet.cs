@@ -44,7 +44,7 @@ namespace LitEngine.Net
         private EndPoint mRecPoint;
         private IPAddress mServerIP;
         private int mLocalPort = 10824;
-        private EventHandler<SocketAsyncEventArgs> sendCallBack;
+
         private KCP kcpObject;
         private SwitchQueue<CacheByteObject> recvQueue = new SwitchQueue<CacheByteObject>(128);
         private byte[] kcpRecvBuffer = new byte[4096];
@@ -52,7 +52,6 @@ namespace LitEngine.Net
         private int cacheByteLen = 2048;
         private CacheSwitchQueue<CacheByteObject> cacheBytesQue = new CacheSwitchQueue<CacheByteObject>(60);
 
-        private SwitchQueue<SocketAsyncEventArgs> cacheAsyncEvent = new SwitchQueue<SocketAsyncEventArgs>(60);
         #endregion
         #region 初始化
         private KCPNet() : base()
@@ -61,19 +60,10 @@ namespace LitEngine.Net
             kcpObject = new KCP(1, HandleKcpSend);
             kcpObject.NoDelay(1, 10, 2, 1);
             kcpObject.WndSize(128, 128);
-            sendCallBack = SendAsyncCallback;
 
             for (int i = 0; i < 60; i++)
             {
                 cacheBytesQue.Enqueue(new CacheByteObject() { bytes = new byte[cacheByteLen] });
-            }
-
-            for (int i = 0; i < 60; i++)
-            {
-                SocketAsyncEventArgs sd = new SocketAsyncEventArgs();
-                sd.Completed += sendCallBack;
-                sd.SocketFlags = SocketFlags.None;
-                cacheAsyncEvent.Push(sd);
             }
         }
         #endregion
@@ -203,35 +193,9 @@ namespace LitEngine.Net
             }
         }
 
-        void SendAsyncCallback(object sender, SocketAsyncEventArgs e)
+        override protected void SendAsyncCallback(object sender, SocketAsyncEventArgs e)
         {
-            if(e.SocketError == SocketError.Success)
-            {
-
-            }
-            cacheAsyncEvent.Push(e);
-        }
-
-        SocketAsyncEventArgs GetSocketAsyncEvent()
-        {
-            SocketAsyncEventArgs ret = null;
-            if (cacheAsyncEvent.Empty())
-            {
-                cacheAsyncEvent.Switch();
-            }
-
-            if (!cacheAsyncEvent.Empty())
-            {
-                ret = cacheAsyncEvent.Pop();
-            }
-            else
-            {
-                ret = new SocketAsyncEventArgs();
-                ret.Completed += sendCallBack;
-                ret.SocketFlags = SocketFlags.None;
-            }
-
-            return ret;
+            base.SendAsyncCallback(sender,e);
         }
 
         #endregion

@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System;
 using System.Threading;
 using System.Net;
+using LitEngine.Net.KCPCommand;
 namespace LitEngine.Net
 {
     public sealed class TCPNet : NetBase<TCPNet>
@@ -78,7 +79,6 @@ namespace LitEngine.Net
 
                     #region 收发;
                     CreatRec();
-                    CreatSend();
                     #endregion
 
                     DLog.Log("收发线程启动!");
@@ -110,75 +110,49 @@ namespace LitEngine.Net
         {
             mRecThread = new Thread(ReceiveMessage);
             mRecThread.IsBackground = true;
-            mRecThread.Priority = System.Threading.ThreadPriority.Lowest;
             mRecThread.Start();
-        }
-
-        private void CreatSend()
-        {
-            mSendThread = new Thread(SendMessageThread);
-            mSendThread.IsBackground = true;
-            mSendThread.Priority = System.Threading.ThreadPriority.Lowest;
-            mSendThread.Start();
         }
 
         #endregion
 
         #region 发送
 
-        private void SendMessageThread()
-        {
-            while (mStartThread)
-            {
-                try
-                {
-
-                    if (mSendDataList.PushCount == 0) continue;
-
-                    mSendDataList.Switch();
-                    for (int i = 0, length = mSendDataList.PopCount; i < length; i++)
-                    {
-                        var tdata = mSendDataList.Dequeue();
-                        int tsendlen = ThreadSend(tdata.Data, tdata.SendLen);
-                        DebugMsg(tdata.Cmd, tdata.Data, 0, tsendlen, "TCPSend");
-                    }
-                    Thread.Sleep(10);
-                }
-                catch (Exception e)
-                {
-                    if (mStartThread)
-                    {
-                        DLog.LogError(mNetTag + ":SendMessageThread->" + e.ToString());
-                        CloseSRThread();
-                        AddMainThreadMsgReCall(new NetMessage(MessageType.SendError, mNetTag + "-" + e.ToString()));
-                        return;
-                    }
-                }
-
-            }
-
-        }
-
-        private int ThreadSend(byte[] pBuffer, int pSize)
-        {
-            if (mSocket == null) return 0;
-            return mSocket.Send(pBuffer, pSize, SocketFlags.None);
-        }
-
         override public bool Send(SendData pData)
         {
             if (mSocket == null || pData == null) return false;
-            mSendDataList.Enqueue(pData);
-            return true;
+
+            bool rv = Send(pData.Data, pData.SendLen);
+            DebugMsg(pData.Cmd, pData.Data, 0, pData.SendLen, "TCPSend");
+            return rv;
         }
 
         override public bool Send(byte[] pBuffer, int pSize)
         {
             if (mSocket == null || pBuffer == null) return false;
-            SendData tdata = new SendData(-1, pBuffer, pSize);
-            mSendDataList.Enqueue(tdata);
-            return true;
+            SocketAsyncEventArgs sd = GetSocketAsyncEvent();
+            sd.SetBuffer(pBuffer, 0, pSize);
+            return mSocket.SendAsync(sd);
         }
+
+        override protected void SendAsyncCallback(object sender, SocketAsyncEventArgs e)
+        {
+            if (e.SocketError == SocketError.Success)
+            {
+
+            }
+            else
+            {
+                DLog.LogError(mNetTag + ":SendMessageThread->" + e.SocketError);
+                if (mStartThread)
+                {
+                    CloseSRThread();
+                    AddMainThreadMsgReCall(new NetMessage(MessageType.SendError, mNetTag + "-" + e.ToString()));
+                }
+            }
+
+            base.SendAsyncCallback(sender,e);
+        }
+
 
         #endregion
 

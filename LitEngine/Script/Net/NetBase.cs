@@ -62,7 +62,6 @@ namespace LitEngine.Net
         }
 
         protected Thread mRecThread;
-        protected Thread mSendThread;
 
         protected Socket mSocket = null;
         protected string mHostName;//服务器地址
@@ -75,6 +74,8 @@ namespace LitEngine.Net
 
         protected string mNetTag = "";
         public bool StopUpdateRecMsg { get; set; }
+
+        private SwitchQueue<SocketAsyncEventArgs> cacheAsyncEvent = new SwitchQueue<SocketAsyncEventArgs>(60);
         #endregion
 
         #region 数据
@@ -216,6 +217,14 @@ namespace LitEngine.Net
         protected NetBase()
         {
             StopUpdateRecMsg = false;
+
+            for (int i = 0; i < 60; i++)
+            {
+                SocketAsyncEventArgs sd = new SocketAsyncEventArgs();
+                sd.Completed += SendAsyncCallback;
+                sd.SocketFlags = SocketFlags.None;
+                cacheAsyncEvent.Push(sd);
+            }
         }
 
         virtual protected void InitNet()
@@ -370,7 +379,6 @@ namespace LitEngine.Net
             ClearBuffer();
             KillSocket();
             WaitThreadJoin(mRecThread);
-            WaitThreadJoin(mSendThread);
         }
         virtual protected void CloseSocketStart()
         {
@@ -576,6 +584,33 @@ namespace LitEngine.Net
         virtual public bool Send(byte[] pBuffer,int pSize)
         {
             return false;
+        }
+
+        virtual protected void SendAsyncCallback(object sender, SocketAsyncEventArgs e)
+        {
+            cacheAsyncEvent.Push(e);
+        }
+
+        protected SocketAsyncEventArgs GetSocketAsyncEvent()
+        {
+            SocketAsyncEventArgs ret = null;
+            if (cacheAsyncEvent.Empty())
+            {
+                cacheAsyncEvent.Switch();
+            }
+
+            if (!cacheAsyncEvent.Empty())
+            {
+                ret = cacheAsyncEvent.Pop();
+            }
+            else
+            {
+                ret = new SocketAsyncEventArgs();
+                ret.Completed += SendAsyncCallback;
+                ret.SocketFlags = SocketFlags.None;
+            }
+
+            return ret;
         }
         #endregion
 

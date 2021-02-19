@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Net;
 using System;
 using System.Threading;
+
 namespace LitEngine.Net
 {
     public sealed class UDPNet : NetBase<UDPNet>
@@ -89,18 +90,9 @@ namespace LitEngine.Net
             mRecThread.Start();
         }
 
-        private void CreatSend()
-        {
-            mSendThread = new Thread(SendMessageThread);
-            mSendThread.IsBackground = true;
-            mSendThread.Priority = System.Threading.ThreadPriority.Lowest;
-            mSendThread.Start();
-        }
-
         private void CreatSendAndRecThread()
         {
             CreatRec();
-            CreatSend();
             DLog.Log(mNetTag + "建立连接完成");
         }
 
@@ -117,58 +109,27 @@ namespace LitEngine.Net
         #region 收发
         #region 发送  
 
-        private void SendMessageThread()
-        {
-            while (mStartThread)
-            {
-                try
-                {
-
-                    if (mSendDataList.PushCount == 0) continue;
-
-                    mSendDataList.Switch();
-                    for (int i = 0, length = mSendDataList.PopCount; i < length; i++)
-                    {
-                        var tdata = mSendDataList.Dequeue();
-                        int tsendlen = ThreadSend(tdata.Data, tdata.SendLen);
-                        DebugMsg(tdata.Cmd, tdata.Data, 0, tsendlen, "UDPSend");
-                    }
-                    Thread.Sleep(10);
-                }
-                catch (Exception e)
-                {
-                    if (mStartThread)
-                    {
-                        DLog.LogError(mNetTag + ":SendMessageThread->" + e.ToString());
-                        CloseSRThread();
-                        AddMainThreadMsgReCall(new NetMessage(MessageType.SendError, mNetTag + "-" + e.ToString()));
-                        return;
-                    }
-                }
-
-            }
-
-        }
-
-        private int ThreadSend(byte[] pBuffer, int pSize)
-        {
-            if (mSocket == null) return 0;
-            return mSocket.SendTo(pBuffer, 0, pSize, SocketFlags.None, mTargetPoint);
-        }
-
         override public bool Send(SendData pData)
         {
             if (mSocket == null || pData == null) return false;
-            mSendDataList.Enqueue(pData);
-            return true;
+
+            bool rv = Send(pData.Data, pData.SendLen);
+            DebugMsg(pData.Cmd, pData.Data, 0, pData.SendLen, "TCPSend");
+            return rv;
         }
 
         override public bool Send(byte[] pBuffer, int pSize)
         {
             if (mSocket == null || pBuffer == null) return false;
-            SendData tdata = new SendData(-1, pBuffer, pSize);
-            mSendDataList.Enqueue(tdata);
-            return true;
+            SocketAsyncEventArgs sd = GetSocketAsyncEvent();
+            sd.SetBuffer(pBuffer, 0, pSize);
+            sd.RemoteEndPoint = mTargetPoint;
+            return mSocket.SendToAsync(sd);
+        }
+
+        override protected void SendAsyncCallback(object sender, SocketAsyncEventArgs e)
+        {
+            base.SendAsyncCallback(sender, e);
         }
 
         #endregion

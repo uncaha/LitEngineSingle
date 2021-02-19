@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections;
-namespace LitEngine.Net.KCPCommand
+namespace LitEngine.Net
 {
     public class Utility
     {
