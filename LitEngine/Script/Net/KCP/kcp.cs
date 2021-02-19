@@ -367,11 +367,13 @@ namespace LitEngine.Net.KCPCommand
                 else
                     size = bufferSize - offset;
 
-                var seg = new Segment(size);
+                var tnode = GetSegment();
+                var seg = tnode.Value;
+                seg.Rest(size);
                 Array.Copy(buffer, offset, seg.data, 0, size);
                 offset += size;
                 seg.frg = (UInt32)(count - i - 1);
-                snd_queue.AddLast(seg);
+                snd_queue.AddLast(tnode);
             }
 
             return 0;
@@ -419,6 +421,7 @@ namespace LitEngine.Net.KCPCommand
                 if (sn == seg.sn)
                 {
                     snd_buf.Remove(ito);
+                    PushSegmentNode(ito);
                     break;
                 }
                 else
@@ -446,6 +449,7 @@ namespace LitEngine.Net.KCPCommand
                 ito = ito.Next;
 
                 snd_buf.Remove(tlast);
+                PushSegmentNode(tlast);
             }
         }
 
@@ -529,6 +533,11 @@ namespace LitEngine.Net.KCPCommand
                 ret = new LinkedListNode<Segment>(tseg);
             }
             return ret;
+        }
+
+        void PushSegmentNode(LinkedListNode<Segment> pNode)
+        {
+            segCacheQue.Enqueue(pNode);
         }
 
         // when you received a low level packet (eg. UDP packet), call it
