@@ -282,7 +282,6 @@ namespace LitEngine.Net.KCPCommand
             if (rcv_queue.Count >= rcv_wnd) fast_recover = true;
 
             // merge fragment.
-            var count = 0;
             var n = 0;
 
             var itorcv_q = rcv_queue.First;
@@ -292,21 +291,18 @@ namespace LitEngine.Net.KCPCommand
 
                 Array.Copy(seg.data, 0, buffer, n, seg.Length);
 
-                segCacheQue.Enqueue(itorcv_q);
-
                 n += seg.Length;
-                count++;
 
                 var tlast = itorcv_q;
                 itorcv_q = itorcv_q.Next;
 
                 rcv_queue.Remove(tlast);
+                PushSegmentNode(tlast);
 
                 if (0 == seg.frg) break;
             }
 
             // move available data from rcv_buf -> rcv_queue
-            count = 0;
             var ito = rcv_buf.First;
             while (ito != null)
             {
@@ -321,7 +317,6 @@ namespace LitEngine.Net.KCPCommand
                 rcv_queue.AddLast(tcur);
 
                 rcv_nxt++;
-                count++;
             }
 
             // fast recover
