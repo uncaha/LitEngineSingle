@@ -84,10 +84,11 @@ namespace LitEngine.Net
 
         private void CreatRec()
         {
-            mRecThread = new Thread(ReceiveMessage);
-            mRecThread.IsBackground = true;
-            mRecThread.Priority = System.Threading.ThreadPriority.Lowest;
-            mRecThread.Start();
+            //mRecThread = new Thread(ReceiveMessage);
+            //mRecThread.IsBackground = true;
+            //mRecThread.Priority = System.Threading.ThreadPriority.Lowest;
+            //mRecThread.Start();
+            StartReceiveAsync();
         }
 
         private void CreatSendAndRecThread()
@@ -138,30 +139,35 @@ namespace LitEngine.Net
         #region　接收
 
         #region thread rec
-        private void ReceiveMessage()
+
+        private void StartReceiveAsync()
         {
-            while (mStartThread)
+            receiveAsyncEvent.RemoteEndPoint = mRecPoint;
+            receiveAsyncEvent.SetBuffer(mRecbuffer, 0, mReadMaxLen);
+            if (!mSocket.ReceiveFromAsync(receiveAsyncEvent))
             {
-                try
-                {
-                    if (mSocket.Available != 0)
-                    {
-                        int receiveNumber = mSocket.ReceiveFrom(mRecbuffer, SocketFlags.None, ref mRecPoint);
-                        IPEndPoint tremot = (IPEndPoint)mRecPoint;
-
-                        if (receiveNumber > 0 && tremot.Address.Equals(mServerIP))
-                            Processingdata(receiveNumber, mRecbuffer);
-                    }
-
-                }
-                catch (Exception e)
-                {
-                    DLog.LogError("UDP接收线程异常:" + e + "|" + "|" + mServerIP);
-                }
-                Thread.Sleep(1);
+                ReceiveAsyncCallback(mSocket, receiveAsyncEvent);
             }
-
         }
+
+        override protected void ReceiveAsyncCallback(object sender, SocketAsyncEventArgs e)
+        {
+            if (e.SocketError == SocketError.Success)
+            {
+                IPEndPoint tremot = receiveAsyncEvent.RemoteEndPoint as IPEndPoint;
+                if (e.BytesTransferred > 0 && tremot.Address.Equals(mServerIP))
+                {
+                    Processingdata(e.BytesTransferred, mRecbuffer);
+                }
+                StartReceiveAsync();
+            }
+            else
+            {
+                DLog.LogError(mNetTag + ":ReceiveMessage->" + e.SocketError);
+                StartReceiveAsync();
+            }
+        }
+
         #endregion
 
         override protected void PushRecData(byte[] pBuffer, int pSize)

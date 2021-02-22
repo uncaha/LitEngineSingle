@@ -108,9 +108,7 @@ namespace LitEngine.Net
 
         private void CreatRec()
         {
-            mRecThread = new Thread(ReceiveMessage);
-            mRecThread.IsBackground = true;
-            mRecThread.Start();
+            StartReceiveAsync();
         }
 
         #endregion
@@ -158,35 +156,35 @@ namespace LitEngine.Net
 
         #region　接收
 
-        private void ReceiveMessage()
+        private void StartReceiveAsync()
         {
-            DLog.Log("TCP Start ReceiveMessage");
-            try
+            receiveAsyncEvent.SetBuffer(mRecbuffer, 0, mReadMaxLen);
+            if(!mSocket.ReceiveAsync(receiveAsyncEvent))
             {
-                while (mStartThread)
-                {
-
-                    if (mSocket.Available != 0)
-                    {
-                        int receiveNumber = 0;
-                        receiveNumber = mSocket.Receive(mRecbuffer, 0, mReadMaxLen, SocketFlags.None);
-                        if (receiveNumber > 0)
-                            Processingdata(receiveNumber, mRecbuffer);
-
-                    }
-                }
-
+                ReceiveAsyncCallback(mSocket, receiveAsyncEvent);
             }
-            catch (Exception e)
+        }
+
+        override protected void ReceiveAsyncCallback(object sender, SocketAsyncEventArgs e)
+        {
+            if (e.SocketError == SocketError.Success)
             {
+                if (e.BytesTransferred > 0)
+                {
+                    Processingdata(e.BytesTransferred, mRecbuffer);
+                }
+                StartReceiveAsync();
+            }
+            else
+            {
+                SocketError ttag = e.SocketError;
+                DLog.LogError(mNetTag + ":ReceiveMessage->" + ttag);
                 if (mStartThread)
                 {
-                    DLog.LogError(mNetTag + ":ReceiveMessage->" + e.ToString());
                     CloseSRThread();
-                    AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ReceiveError, mNetTag + "-" + e.ToString()));
+                    AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ReceiveError, mNetTag + "-" + ttag));
                 }
             }
-            DLog.Log("TCP End ReceiveMessage");
         }
 
         override protected void Processingdata(int _len, byte[] _buffer)

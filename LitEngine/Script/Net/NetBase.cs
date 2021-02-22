@@ -61,8 +61,6 @@ namespace LitEngine.Net
             IPVALL,
         }
 
-        protected Thread mRecThread;
-
         protected Socket mSocket = null;
         protected string mHostName;//服务器地址
         protected int mPort;
@@ -76,10 +74,11 @@ namespace LitEngine.Net
         public bool StopUpdateRecMsg { get; set; }
 
         private SwitchQueue<SocketAsyncEventArgs> cacheAsyncEvent = new SwitchQueue<SocketAsyncEventArgs>(100);
+        protected SocketAsyncEventArgs receiveAsyncEvent = null;
         #endregion
 
         #region 数据
-        protected const int mReadMaxLen = 1024 * 20;
+        protected const int mReadMaxLen = 2048 * 20;
         protected byte[] mRecbuffer = new byte[mReadMaxLen];
 
         protected BufferBase mBufferData = new BufferBase(1024 * 400);
@@ -225,6 +224,10 @@ namespace LitEngine.Net
                 sd.SocketFlags = SocketFlags.None;
                 cacheAsyncEvent.Push(sd);
             }
+
+            receiveAsyncEvent = new SocketAsyncEventArgs();
+            receiveAsyncEvent.Completed += ReceiveAsyncCallback;
+            receiveAsyncEvent.SocketFlags = SocketFlags.None;
         }
 
         virtual protected void InitNet()
@@ -378,7 +381,7 @@ namespace LitEngine.Net
             mStartThread = false;
             ClearBuffer();
             KillSocket();
-            WaitThreadJoin(mRecThread);
+            //WaitThreadJoin(mRecThread);
         }
         virtual protected void CloseSocketStart()
         {
@@ -589,6 +592,11 @@ namespace LitEngine.Net
         virtual protected void SendAsyncCallback(object sender, SocketAsyncEventArgs e)
         {
             cacheAsyncEvent.Push(e);
+        }
+
+        virtual protected void ReceiveAsyncCallback(object sender, SocketAsyncEventArgs e)
+        {
+
         }
 
         protected SocketAsyncEventArgs GetSocketAsyncEvent()
