@@ -115,7 +115,7 @@ namespace LitEngine.Net
             if (mSocket == null || pData == null) return false;
 
             bool rv = Send(pData.Data, pData.SendLen);
-            DebugMsg(pData.Cmd, pData.Data, 0, pData.SendLen, "TCPSend");
+            DebugMsg(pData.Cmd, pData.Data, 0, pData.SendLen, "UDPSend");
             return rv;
         }
 
