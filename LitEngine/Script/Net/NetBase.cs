@@ -368,20 +368,20 @@ namespace LitEngine.Net
                         mSocket.Shutdown(SocketShutdown.Both);
                     }
                     mSocket.Close();
-                    mSocket = null;
                 }
             }
             catch (Exception err)
             {
                 // DLog.LogError(mNetTag + "socket的关闭时出现异常:" + err);
             }
+            
+            mSocket = null;
         }
         virtual protected void CloseSocket()
         {
             mStartThread = false;
             ClearBuffer();
             KillSocket();
-            //WaitThreadJoin(mRecThread);
         }
         virtual protected void CloseSocketStart()
         {

@@ -205,6 +205,7 @@ namespace LitEngine.Net
 
         private void StartReceiveAsync()
         {
+            if (mSocket == null) return;
             receiveAsyncEvent.RemoteEndPoint = mRecPoint;
             receiveAsyncEvent.SetBuffer(mRecbuffer, 0, mReadMaxLen);
             if (!mSocket.ReceiveFromAsync(receiveAsyncEvent))
