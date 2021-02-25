@@ -140,7 +140,7 @@ namespace LitEngine.Net
             }
             else
             {
-                DLog.LogError(mNetTag + ":SendMessageThread->" + e.SocketError);
+                DLog.Log(mNetTag + ":SendMessageThread->" + e.SocketError);
                 if (mStartThread)
                 {
                     CloseSRThread();
@@ -179,7 +179,7 @@ namespace LitEngine.Net
             else
             {
                 SocketError ttag = e.SocketError;
-                DLog.LogError(mNetTag + ":ReceiveMessage->" + ttag);
+                DLog.Log(mNetTag + ":ReceiveMessage->" + ttag);
                 if (mStartThread)
                 {
                     CloseSRThread();

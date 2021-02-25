@@ -164,7 +164,7 @@ namespace LitEngine.Net
             }
             else
             {
-                DLog.LogError(mNetTag + ":ReceiveMessage->" + e.SocketError);
+                DLog.Log(mNetTag + ":ReceiveMessage->" + e.SocketError);
                 StartReceiveAsync();
             }
         }
