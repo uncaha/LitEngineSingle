@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿
 using UnityEngine;
 namespace LitEngine.Value
 {
@@ -173,7 +173,20 @@ namespace LitEngine.Value
             return Dot(tan, tbn);
         }
 
+
+        public VectorFixed3 Lerp(VectorFixed3 b, Fixed p)
+        {
+            Fixed tp = Fixed.Clamp01(p);
+            return (this + b) * tp;
+        }
+
         public static VectorFixed3 Lerp(VectorFixed3 a, VectorFixed3 b,Fixed p)
+        {
+            Fixed tp = Fixed.Clamp01(p);
+            return (a + b) * tp;
+        }
+
+        public static VectorFixed3 Lerp(VectorFixed3 a, Vector3 b, Fixed p)
         {
             Fixed tp = Fixed.Clamp01(p);
             return (a + b) * tp;
