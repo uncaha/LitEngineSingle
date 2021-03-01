@@ -36,6 +36,7 @@ namespace LitEngine.Value
         /// </summary>
         public static int Fix_Fracbits = 16;
         public static Fixed Zero = new Fixed(0);
+        public static Fixed One = new Fixed(1);
         public Int64 bits;
 
         public Fixed(int x)
@@ -443,6 +444,23 @@ namespace LitEngine.Value
         public static Fixed Min(Fixed p1, Fixed p2)
         {
             return p1.bits < p2.bits ? p1 : p2;
+        }
+
+        public static Fixed Clamp(Fixed min, Fixed max, Fixed v)
+        {
+            if (v.bits < min.bits) return new Fixed() { bits = min.bits };
+            if (v.bits > max.bits) return new Fixed() { bits = max.bits };
+            return v;
+        }
+
+        public static Fixed Clamp(float min, float max, Fixed v)
+        {
+            return Clamp(new Fixed(min), new Fixed(max),v);
+        }
+
+        public static Fixed Clamp01(Fixed v)
+        {
+            return Clamp(Fixed.Zero, Fixed.One, v);
         }
 
         public static Fixed Precision()

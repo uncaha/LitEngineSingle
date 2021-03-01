@@ -173,6 +173,12 @@ namespace LitEngine.Value
             return Dot(tan, tbn);
         }
 
+        public static VectorFixed3 Lerp(VectorFixed3 a, VectorFixed3 b,Fixed p)
+        {
+            Fixed tp = Fixed.Clamp01(p);
+            return (a + b) * tp;
+        }
+
         #region dot
         public Fixed Dot(VectorFixed3 b)
         {
