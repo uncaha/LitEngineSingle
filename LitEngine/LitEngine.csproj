@@ -235,6 +235,10 @@
     <Compile Include="Script\Net\NetData\SafeSwitchQueue.cs" />
     <Compile Include="Script\Net\NetData\CacheSwitchQueue.cs" />
     <Compile Include="Script\Net\NetData\SwitchBufferQueue.cs" />
+    <Compile Include="Script\ValueTool\Fixed.cs" />
+    <Compile Include="Script\ValueTool\VectorFixed2.cs" />
+    <Compile Include="Script\ValueTool\VectorFixed3.cs" />
+    <Compile Include="Script\ValueTool\MathFixed.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />
@@ -244,6 +248,7 @@
     <Folder Include="Script\Loader\LoadTool\" />
     <Folder Include="Script\Net\KCP\" />
     <Folder Include="Script\Net\TestServer\" />
+    <Folder Include="Script\ValueTool\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
