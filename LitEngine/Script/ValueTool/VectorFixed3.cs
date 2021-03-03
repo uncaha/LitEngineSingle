@@ -5,21 +5,9 @@ namespace LitEngine.Value
     public struct VectorFixed3
     {
 
-        public Fixed x
-        {
-            get;
-            private set;
-        }
-        public Fixed y
-        {
-            get;
-            private set;
-        }
-        public Fixed z
-        {
-            get;
-            private set;
-        }
+        public Fixed x;
+        public Fixed y;
+        public Fixed z;
 
         #region 属性
         public static VectorFixed3 left = new VectorFixed3(-1, 0);
@@ -54,6 +42,12 @@ namespace LitEngine.Value
             this.x = new Fixed(v3.x);
             this.y = new Fixed(v3.y);
             this.z = new Fixed(v3.z);
+        }
+        public VectorFixed3(Vector2 v2)
+        {
+            this.x = new Fixed(v2.x);
+            this.y = new Fixed(v2.y);
+            this.z = new Fixed(0f);
         }
         public Vector3 ToVector3()
         {
@@ -148,85 +142,23 @@ namespace LitEngine.Value
             return (this - b).magnitude;
         }
 
-        public Fixed Angle(VectorFixed3 b)
-        {
-            return Angle(this,b);
-        }
-
-        public Fixed Angle(Vector3 b)
-        {
-            return Angle(this, b);
-        }
-
-        public static Fixed Angle(VectorFixed3 a,VectorFixed3 b)
-        {
-            var tan = a.normalized;
-            var tbn = b.normalized;
-
-            return Dot(tan, tbn);
-        }
-        public static Fixed Angle(VectorFixed3 a, Vector3 b)
-        {
-            var tan = a.normalized;
-            var tbn = b.normalized;
-
-            return Dot(tan, tbn);
-        }
-
-
-        public VectorFixed3 Lerp(VectorFixed3 b, Fixed p)
-        {
-            Fixed tp = Fixed.Clamp01(p);
-            return (this + b) * tp;
-        }
-
         public static VectorFixed3 Lerp(VectorFixed3 a, VectorFixed3 b,Fixed p)
         {
             Fixed tp = Fixed.Clamp01(p);
-            return (a + b) * tp;
-        }
-
-        public static VectorFixed3 Lerp(VectorFixed3 a, Vector3 b, Fixed p)
-        {
-            Fixed tp = Fixed.Clamp01(p);
-            return (a + b) * tp;
+            return a + (b - a) * tp;
         }
 
         #region dot
-        public Fixed Dot(VectorFixed3 b)
-        {
-            return Dot(this, b);
-        }
-        public Fixed Dot(Vector3 b)
-        {
-            return Dot(this, b);
-        }
+
         public static Fixed Dot(VectorFixed3 a, VectorFixed3 b)
-        {
-            return a.x * b.x + b.y * a.y + a.z * b.z;
-        }
-        public static Fixed Dot(VectorFixed3 a, Vector3 b)
         {
             return a.x * b.x + b.y * a.y + a.z * b.z;
         }
         #endregion
 
         #region cross
-        public VectorFixed3 Cross(VectorFixed3 b)
-        {
-            return Cross(this, b);
-        }
-
-        public VectorFixed3 Cross(Vector3 b)
-        {
-            return Cross(this, b);
-        }
 
         public static VectorFixed3 Cross(VectorFixed3 a, VectorFixed3 b)
-        {
-            return a * b;
-        }
-        public static VectorFixed3 Cross(VectorFixed3 a, Vector3 b)
         {
             return a * b;
         }
