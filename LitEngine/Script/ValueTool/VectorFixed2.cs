@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
+
 namespace LitEngine.Value
 {
+    [System.Serializable]
     public struct VectorFixed2
     {
 

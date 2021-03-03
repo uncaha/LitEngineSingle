@@ -2,9 +2,9 @@
 using UnityEngine;
 namespace LitEngine.Value
 {
+    [System.Serializable]
     public struct VectorFixed3
     {
-
         public Fixed x;
         public Fixed y;
         public Fixed z;
@@ -51,7 +51,7 @@ namespace LitEngine.Value
         }
         public Vector3 ToVector3()
         {
-            return new Vector3(x.ToFloat(), y.ToFloat(),z.ToFloat());
+            return new Vector3(x.ToFloat(), y.ToFloat(), z.ToFloat());
         }
 
         public static VectorFixed3 FromVector3(Vector3 v3)
@@ -82,7 +82,7 @@ namespace LitEngine.Value
         }
         public static VectorFixed3 operator *(VectorFixed3 a, Fixed b)
         {
-            return new VectorFixed3(a.x * b, a.y * b,a.z * b);
+            return new VectorFixed3(a.x * b, a.y * b, a.z * b);
         }
         public static VectorFixed3 operator *(VectorFixed3 a, int b)
         {
@@ -103,22 +103,13 @@ namespace LitEngine.Value
         }
         #endregion
 
-        #region 方法
-
+        #region 属性
         public VectorFixed3 normalized
         {
             get
             {
-                if (x == 0 && y == 0)
-                {
-                    return VectorFixed3.zero;
-                }
-                Fixed n = ((x * x) + (y * y) + (z * z)).Sqrt();
-
-                var result = new VectorFixed3(x / n, y / n, z / n);
-                result.x = Fixed.Range(result.x, -1, 1);
-                result.y = Fixed.Range(result.y, -1, 1);
-                result.z = Fixed.Range(result.z, -1, 1);
+                var result = new VectorFixed3(x, y, z);
+                result.Normalized();
                 return result;
             }
         }
@@ -136,40 +127,43 @@ namespace LitEngine.Value
                 return n;
             }
         }
+        #endregion
+        #region 方法
+        public void Normalized()
+        {
+            if (x == 0 && y == 0 && z == 0) return;
+
+            Fixed n = ((x * x) + (y * y) + (z * z)).Sqrt();
+
+            x = Fixed.Range(x / n, -1, 1);
+            y = Fixed.Range(y / n, -1, 1);
+            z = Fixed.Range(z / n, -1, 1);
+        }
 
         public Fixed Distance(VectorFixed3 b)
         {
             return (this - b).magnitude;
         }
+        public override string ToString()
+        {
+            return string.Format("{{0},{1},{2}}", x, y, z);
+        }
+        #endregion
 
-        public static VectorFixed3 Lerp(VectorFixed3 a, VectorFixed3 b,Fixed p)
+        #region static
+        public static VectorFixed3 Lerp(VectorFixed3 a, VectorFixed3 b, Fixed p)
         {
             Fixed tp = Fixed.Clamp01(p);
             return a + (b - a) * tp;
         }
-
-        #region dot
-
         public static Fixed Dot(VectorFixed3 a, VectorFixed3 b)
         {
             return a.x * b.x + b.y * a.y + a.z * b.z;
         }
-        #endregion
-
-        #region cross
-
         public static VectorFixed3 Cross(VectorFixed3 a, VectorFixed3 b)
         {
             return a * b;
         }
-
         #endregion
-
-        public override string ToString()
-        {
-            return string.Format("{{0},{1},{2}}",x,y,z);
-        }
-        #endregion
-
     }
 }

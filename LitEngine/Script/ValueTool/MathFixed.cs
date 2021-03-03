@@ -11,6 +11,8 @@ namespace LitEngine.Value
         /// </summary>
         protected static readonly List<Fixed> _m_SinTab = new List<Fixed>();
         public static readonly Fixed PI = new Fixed(3.14159265f);
+        public static readonly Fixed PIover180 = PI / 180;
+        public static readonly Fixed PIover90 = PIover180 / 2;
         protected static Fixed GetSinTab(Fixed r)
         {
 
