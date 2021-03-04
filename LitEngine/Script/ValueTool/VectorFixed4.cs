@@ -126,14 +126,7 @@ namespace LitEngine.Value
             return rotation.GetConjugate();
         }
 
-        public static VectorFixed4 LookRotation(Vector3 forward)
-        {
-            var tv = new VectorFixed4(Quaternion.identity);
-            tv.RotationTo(forward);
-            return tv;
-        }
-
-        public static VectorFixed4 GetV4FromAxis(VectorFixed3 v,Fixed angle)
+        public static VectorFixed4 AngleAxis(VectorFixed3 v,Fixed angle)
         {
             VectorFixed4 ret = new VectorFixed4();
             ret.FromAxis(v,angle);
