@@ -504,7 +504,7 @@ namespace LitEngine.Value
         public override string ToString()
         {
             double tmp = (double)bits / (double)(1 << Fix_Fracbits);
-            return tmp.ToString();
+            return tmp.ToString("f4");
         }
     }
 }
