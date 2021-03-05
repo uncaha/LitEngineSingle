@@ -103,8 +103,9 @@ namespace LitEngine.Value
 
         #endregion
 
-    
+
         #region static
+
         public static VectorFixed4 FromQuaternion(Quaternion v4)
         {
             return new VectorFixed4(v4);
@@ -121,6 +122,11 @@ namespace LitEngine.Value
             return ret;
         }
 
+        public static VectorFixed4 Euler(Vector3 euler)
+        {
+            return Euler(new VectorFixed3(euler));
+        }
+
         public static VectorFixed4 Inverse(VectorFixed4 rotation)
         {
             return rotation.GetConjugate();
@@ -131,6 +137,10 @@ namespace LitEngine.Value
             VectorFixed4 ret = new VectorFixed4();
             ret.FromAxis(v,angle);
             return ret;
+        }
+        public static VectorFixed4 AngleAxis(Vector3 v, float angle)
+        {
+            return AngleAxis(new VectorFixed3(v),new Fixed(angle));
         }
 
         public static VectorFixed4 Lerp(VectorFixed4 from,VectorFixed4 to,Fixed t)
