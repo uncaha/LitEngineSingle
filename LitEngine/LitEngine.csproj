@@ -240,6 +240,7 @@
     <Compile Include="Script\ValueTool\VectorFixed3.cs" />
     <Compile Include="Script\ValueTool\MathFixed.cs" />
     <Compile Include="Script\ValueTool\VectorFixed4.cs" />
+    <Compile Include="Script\ValueTool\TransformFixed.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />

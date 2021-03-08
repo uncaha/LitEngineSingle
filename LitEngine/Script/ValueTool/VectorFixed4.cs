@@ -221,6 +221,14 @@ namespace LitEngine.Value
             this.w = resQuat.w;
         }
 
+        public void SetValue(Quaternion pValue)
+        {
+            x.SetValue(pValue.x);
+            y.SetValue(pValue.y);
+            z.SetValue(pValue.z);
+            w.SetValue(pValue.w);
+        }
+
         public override string ToString()
         {
             return string.Format("({0},{1},{2},{3})", x, y, z, w);

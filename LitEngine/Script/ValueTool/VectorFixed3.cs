@@ -97,10 +97,7 @@ namespace LitEngine.Value
         {
             return new VectorFixed3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
         }
-        public static VectorFixed3 operator *(VectorFixed3 a, Vector3 b)
-        {
-            return new VectorFixed3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
-        }
+
         #endregion
 
         #region 属性
@@ -144,6 +141,13 @@ namespace LitEngine.Value
         {
             return (this - b).magnitude;
         }
+
+        public void SetValue(Vector3 pValue)
+        {
+            x.SetValue(pValue.x);
+            y.SetValue(pValue.y);
+            z.SetValue(pValue.z);
+        }
         public override string ToString()
         {
             return string.Format("({0},{1},{2})", x, y, z);
@@ -163,6 +167,25 @@ namespace LitEngine.Value
         public static VectorFixed3 Cross(VectorFixed3 a, VectorFixed3 b)
         {
             return a * b;
+        }
+
+        public static Fixed Distance(Vector3 a,Vector3 b)
+        {
+            VectorFixed3 afixed = new VectorFixed3(a);
+            VectorFixed3 bfixed = new VectorFixed3(b);
+            return afixed.Distance(bfixed);
+        }
+
+        public static Vector3 MoveV3(Vector3 pStart, Vector3 pDir, float pSpeed)
+        {
+            return MoveV3(new VectorFixed3(pStart), new VectorFixed3(pDir), new Fixed(pSpeed));
+        }
+
+        public static Vector3 MoveV3(VectorFixed3 pStart, VectorFixed3 pDir, Fixed pSpeed)
+        {
+            VectorFixed3 tstart = new VectorFixed3();
+            tstart = pStart + pDir * pSpeed;
+            return tstart.ToVector3();
         }
         #endregion
     }

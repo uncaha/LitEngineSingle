@@ -21,9 +21,9 @@ namespace LitEngine.Value
             return new VectorFixed3(v3.x, v3.y, v3.z);
         }
 
-        public static Fixed ToFixedRotation(this UnityEngine.Quaternion rotation)
+        public static VectorFixed4 ToVectorFixed4(this UnityEngine.Quaternion rotation)
         {
-            return -rotation.eulerAngles.y.ToFixed();
+            return new VectorFixed4(rotation);
         }
 
     }
@@ -51,13 +51,20 @@ namespace LitEngine.Value
         {
             bits = ((x) * (1 << Fix_Fracbits));
         }
-        public Int64 GetValue()
+
+        public Fixed SetValue(int x)
         {
-            return bits;
+            bits = (x << Fix_Fracbits);
+            return this;
         }
-        public Fixed SetValue(Int64 i)
+        public Fixed SetValue(float x)
         {
-            bits = i;
+            bits = (Int64)((x) * (1 << Fix_Fracbits));
+            return this;
+        }
+        public Fixed SetValue(Int64 x)
+        {
+            bits = ((x) * (1 << Fix_Fracbits));
             return this;
         }
         public static Fixed Lerp(Fixed a, Fixed b, float t)
