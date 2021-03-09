@@ -327,8 +327,10 @@ namespace LitEngine
         #region 同步
         static public UnityEngine.Object LoadAsset(string pAssetName,string pGroupKey = null)
         {
-            AddToGroup(pGroupKey,pAssetName);
-            return (UnityEngine.Object)Instance.LoadAssetRetain(pAssetName.ToLowerInvariant()).Retain();
+            var tbundle = Instance.LoadAssetRetain(pAssetName.ToLowerInvariant());
+            if (tbundle == null) return null;
+            AddToGroup(pGroupKey, pAssetName);
+            return (UnityEngine.Object)tbundle.Retain();
         }
         #endregion
 
@@ -348,13 +350,24 @@ namespace LitEngine
         private BaseBundle LoadAssetRetain(string _AssetsName)
         {
             if (string.IsNullOrEmpty(_AssetsName)) return null;
-            if (!mBundleList.Contains(_AssetsName))
+            BaseBundle ret = null;
+            bool tiscached = mBundleList.Contains(_AssetsName);
+            if (!tiscached)
             {
-                AssetsBundleHaveDependencie tbundle = new AssetsBundleHaveDependencie(_AssetsName, LoadAssetRetain);
-                AddCache(tbundle);
-                tbundle.Load();
+                ret = new AssetsBundleHaveDependencie(_AssetsName, LoadAssetRetain);
+                AddCache(ret);
+                ret.Load();
             }
-            return mBundleList[_AssetsName];
+            else
+            {
+                ret = mBundleList[_AssetsName];
+                if(!ret.Loaded)
+                {
+                    DLog.LogErrorFormat("{0} 已存在一个异步操作,并且还未完成加载.", _AssetsName);
+                    return null;
+                }
+            }
+            return ret;
         }
         #endregion
         #region 异步载入
