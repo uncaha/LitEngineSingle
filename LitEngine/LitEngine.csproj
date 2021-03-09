@@ -241,6 +241,7 @@
     <Compile Include="Script\ValueTool\MathFixed.cs" />
     <Compile Include="Script\ValueTool\VectorFixed4.cs" />
     <Compile Include="Script\ValueTool\TransformFixed.cs" />
+    <Compile Include="Script\Loader\LoadTool\ResourcesLoader.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />
