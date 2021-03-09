@@ -71,7 +71,7 @@ namespace LitEngine.LoadAsset
             {
                 ret = sNullObject;
                 ret.assetName = pAsset;
-                ret.isInSide = true;
+                ret.isInSide = false;
             }
             return ret;
         }
