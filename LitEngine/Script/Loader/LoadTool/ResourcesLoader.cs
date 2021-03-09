@@ -7,23 +7,26 @@ namespace LitEngine.LoadAsset
         string resPath { get; }
         bool IsDone { get; }
         bool IsStart { get; }
-        UnityEngine.Object res { get; }
+        IResourcesObject resourcesObject{ get; }
+        UnityEngine.Object res{ get; }
+        event Action<UnityEngine.Object> onComplete;
         void Update();
         bool StartLoad();
     }
 
-    public class ResourcesObject<T> : IResourcesLoader where T : UnityEngine.Object
+    public class ResourcesLoaded<T> : IResourcesLoader where T : UnityEngine.Object
     {
         public string resPath { get; private set; }
-        public UnityEngine.Object res { get; private set; }
+        public IResourcesObject resourcesObject { get; private set; }
+        public UnityEngine.Object res { get{ if (resourcesObject == null) return null; return resourcesObject.resObject; } }
         public bool IsStart { get; private set; }
         public bool IsDone { get; private set; }
 
-        private Action<T> onComplete;
-        public ResourcesObject(string path, UnityEngine.Object obj, Action<T> delegateOnComplete)
+        public event Action<UnityEngine.Object> onComplete;
+        public ResourcesLoaded(string path, UnityEngine.Object obj, Action<UnityEngine.Object> delegateOnComplete)
         {
             resPath = path;
-            res = obj;
+            resourcesObject = new ResourcesObject(path, obj);
             onComplete = delegateOnComplete;
         }
         public bool StartLoad()
@@ -48,7 +51,7 @@ namespace LitEngine.LoadAsset
             try
             {
                 if (onComplete != null)
-                    onComplete((T)res);
+                    onComplete(res);
             }
             catch (System.Exception error)
             {
@@ -60,14 +63,17 @@ namespace LitEngine.LoadAsset
     public class EditorAssetLoader<T> : IResourcesLoader where T : UnityEngine.Object
     {
         public string resPath { get; private set; }
-        public UnityEngine.Object res { get; private set; }
+        public string realPath { get; private set; }
+        public IResourcesObject resourcesObject { get; private set; }
+        public UnityEngine.Object res { get { if (resourcesObject == null) return null; return resourcesObject.resObject; } }
         public bool IsStart { get; private set; }
         public bool IsDone { get; private set; }
-        private Action<T> onComplete;
+        public event Action<UnityEngine.Object> onComplete;
         private Func<string, System.Type, UnityEngine.Object> assetLoader;
-        public EditorAssetLoader(string path, Func<string, System.Type, UnityEngine.Object> loadFun, Action<T> delegateOnComplete)
+        public EditorAssetLoader(string path,string pRealPath, Func<string, System.Type, UnityEngine.Object> loadFun, Action<UnityEngine.Object> delegateOnComplete)
         {
             resPath = path;
+            realPath = pRealPath;
             assetLoader = loadFun;
             onComplete = delegateOnComplete;
         }
@@ -75,7 +81,7 @@ namespace LitEngine.LoadAsset
         public bool StartLoad()
         {
             if (IsStart) return true;
-            res = assetLoader(resPath, typeof(T));
+            resourcesObject = new ResourcesObject(realPath, assetLoader(realPath, typeof(T)));
             IsStart = true;
             return true;
         }
@@ -98,7 +104,7 @@ namespace LitEngine.LoadAsset
             try
             {
                 if (onComplete != null)
-                    onComplete((T)res);
+                    onComplete(res);
             }
             catch (System.Exception error)
             {
@@ -110,13 +116,15 @@ namespace LitEngine.LoadAsset
     public class ResourcesLoader<T> : IResourcesLoader where T : UnityEngine.Object
     {
         public string resPath { get; private set; }
-        Action<T> onComplete;
-        T resObejct;
-        public UnityEngine.Object res { get { return resObejct; } }
+        public event Action<UnityEngine.Object> onComplete;
+
+        public IResourcesObject resourcesObject { get; private set; }
+        public UnityEngine.Object res { get { if (resourcesObject == null) return null; return resourcesObject.resObject; } }
         ResourceRequest request;
         public bool IsStart { get; private set; }
         public bool IsDone { get; private set; }
-        public ResourcesLoader(string path, Action<T> delegateOnComplete)
+
+        public ResourcesLoader(string path, Action<UnityEngine.Object> delegateOnComplete)
         {
             resPath = path;
             onComplete = delegateOnComplete;
@@ -133,6 +141,8 @@ namespace LitEngine.LoadAsset
             }
             request = Resources.LoadAsync<T>(resPath);
             request.priority = 255;
+
+            resourcesObject = new ResourcesObject(resPath, null);
             if (request == null)
             {
                 LoadEnd();
@@ -146,7 +156,7 @@ namespace LitEngine.LoadAsset
         public void Update()
         {
             if (IsDone) return;
-            if (!request.isDone) return;
+            if (request != null && !request.isDone) return;
             LoadEnd();
             CallComplete();
 
@@ -163,11 +173,11 @@ namespace LitEngine.LoadAsset
             {
                 if (request != null)
                 {
-                    resObejct = request.asset as T;
+                    ((ResourcesObject)resourcesObject).resObject = request.asset;
                 }
 
                 if (onComplete != null)
-                    onComplete(resObejct);
+                    onComplete(res);
             }
             catch (System.Exception error)
             {
@@ -180,14 +190,16 @@ namespace LitEngine.LoadAsset
     {
         public string resPath { get; private set; }
         public string realPath { get; private set; }
-        Action<T> onComplete;
-        T resObejct;
-        public UnityEngine.Object res { get { return resObejct; } }
+        
+        public IResourcesObject resourcesObject { get; private set; }
+        public UnityEngine.Object res { get { if (resourcesObject == null) return null; return resourcesObject.resObject; } }
 
         public bool IsStart { get; private set; }
         public bool IsDone { get; private set; }
         public bool IsLoaded { get; private set; }
-        public ResourcesAssetLoader(string path, string pRealPath, Action<T> delegateOnComplete)
+
+        public event Action<UnityEngine.Object> onComplete;
+        public ResourcesAssetLoader(string path, string pRealPath, Action<UnityEngine.Object> delegateOnComplete)
         {
             resPath = path;
             realPath = pRealPath;
@@ -204,14 +216,14 @@ namespace LitEngine.LoadAsset
                 CallComplete();
                 return false;
             }
-            LoaderManager.LoadAssetAsync(resPath, realPath, LoadCallBack);
+            var tbundle = LoaderManager.LoadAssetAsync(resPath, realPath, LoadCallBack);
+            resourcesObject = new ResourcesAssetObject(realPath, tbundle);
             IsStart = true;
             return true;
         }
 
         void LoadCallBack(string pKey, object pRes)
         {
-            resObejct = pRes as T;
             IsLoaded = true;
         }
 
@@ -233,7 +245,7 @@ namespace LitEngine.LoadAsset
             try
             {
                 if (onComplete != null)
-                    onComplete(resObejct);
+                    onComplete(resourcesObject.Retain());
             }
             catch (System.Exception error)
             {

@@ -5,7 +5,7 @@ using LitEngine.LoadAsset;
 using UnityEngine;
 namespace LitEngine
 {
-    public class ResourcesManager : MonoManagerBase
+    public sealed class ResourcesManager : MonoManagerBase
     {
 
         #region static
@@ -35,6 +35,7 @@ namespace LitEngine
 
         static public string resourcesMapPath = "ResourcesMap";
         static public Func<string, System.Type, UnityEngine.Object> assetLoaderDelgate = null;
+        static private long refIndex = 1;
 
         static public void SetResourcesMap(string pMapPath, Func<string, System.Type, UnityEngine.Object> editorLoader)
         {
@@ -50,66 +51,115 @@ namespace LitEngine
 
         public static T Load<T>(string path) where T : UnityEngine.Object
         {
+
+            IResourcesObject outobj = null;
+            if (Instance.resCacheDic.TryGetValue(path, out outobj))
+            {
+                return outobj.Retain() as T;
+            }
+
             T ret = null;
             var assetobj = Instance.assetMap.GetAsset(path);
+            IResourcesObject tResObject = null;
             if (!assetobj.isInSide)
             {
                 string trealPath = GetRealPath(path + assetobj.sufixx);
+                
                 if (assetLoaderDelgate != null)
                 {
-                    ret = (T)assetLoaderDelgate(trealPath, typeof(T));
+                    var tobj = assetLoaderDelgate(trealPath, typeof(T));
+                    tResObject = new ResourcesObject(trealPath, tobj);
                 }
                 else
                 {
-                    ret = (T)LoaderManager.LoadAsset(trealPath);
+                    var tbundle = LoaderManager.GetBundleFromAsset(trealPath);
+                    tResObject = new ResourcesAssetObject(trealPath, tbundle);
                 }
             }
             else
             {
-                ret = Resources.Load<T>(path);
+                var tobj = Resources.Load<T>(path);
+                tResObject = new ResourcesObject(path, tobj);
             }
+
+            if (tResObject.resObject != null)
+            {
+                Instance.resCacheDic.Add(path, tResObject);
+                ret = tResObject.Retain() as T;
+            }
+
             return ret;
         }
 
-        public static IResourcesLoader LoadAnsyc<T>(string path, Action<T> onLoadComplete) where T : UnityEngine.Object
+        public static IResourcesLoader LoadAnsyc<T>(string path, Action<UnityEngine.Object> onLoadComplete) where T : UnityEngine.Object
         {
+            IResourcesLoader tloader = null;
+
+            #region 已缓存
+            IResourcesObject tresobj = null;
+            if (Instance.resCacheDic.TryGetValue(path, out tresobj))
+            {
+                tloader = new ResourcesLoaded<T>(path, tresobj.Retain(), onLoadComplete);
+                if (tloader.StartLoad())
+                {
+                    Instance.asyncLoaderList.Add(path + refIndex, tloader);
+                    refIndex++;
+                }
+                return tloader;
+            }
+            #endregion
+
+            #region 加载中
+            if (Instance.asyncLoaderList.ContainsKey(path))
+            {
+                tloader = Instance.asyncLoaderList[path];
+
+                if (onLoadComplete != null)
+                {
+                    tloader.resourcesObject.Retain();
+                    tloader.onComplete += onLoadComplete;
+                }
+
+                return tloader;
+            }
+            #endregion
+
+            #region load
             var assetobj = Instance.assetMap.GetAsset(path);
+            
             if (!assetobj.isInSide)
             {
                 string realPath = GetRealPath(path + assetobj.sufixx);
-                IResourcesLoader tloader = null;
                 if (assetLoaderDelgate != null)
                 {
-                    tloader = new EditorAssetLoader<T>(realPath, assetLoaderDelgate, onLoadComplete);
+                    tloader = new EditorAssetLoader<T>(path, realPath, assetLoaderDelgate, onLoadComplete);
                 }
                 else
                 {
                     tloader = new ResourcesAssetLoader<T>(path, realPath, onLoadComplete);
                 }
-
-                bool tisStart = tloader.StartLoad();
-                if (tisStart)
-                {
-                    Instance.asyncLoaderList.Add(tloader);
-                }
-                return tloader;
             }
             else
             {
-                IResourcesLoader tloader = new ResourcesLoader<T>(path, onLoadComplete);
-                bool tisStart = tloader.StartLoad();
-                if (tisStart)
-                {
-                    Instance.asyncLoaderList.Add(tloader);
-                }
-                return tloader;
+                tloader = new ResourcesLoader<T>(path, onLoadComplete);
             }
+
+            bool tisStart = tloader.StartLoad();
+            if (tisStart)
+            {
+                Instance.asyncLoaderList.Add(path, tloader);
+            }
+
+            return tloader;
+            #endregion
+
         }
         #endregion
 
         #region member
         private bool mInited = false;
-        List<IResourcesLoader> asyncLoaderList = new List<IResourcesLoader>(500);
+        private Dictionary<string,IResourcesLoader> asyncLoaderList = new Dictionary<string,IResourcesLoader>(500);
+        private Dictionary<string, IResourcesObject> resCacheDic = new Dictionary<string, IResourcesObject>();
         private AssetMap assetMap;
 
         private void Init()
@@ -133,27 +183,26 @@ namespace LitEngine
         public void Update()
         {
             int tcount = asyncLoaderList.Count;
+            
             if (tcount > 0)
             {
+                var tlistkeys = new List<string>(asyncLoaderList.Keys);
                 for (int i = tcount - 1; i >= 0; i--)
                 {
-                    var item = asyncLoaderList[i];
+                    var tkey = tlistkeys[i];
+                    var item = asyncLoaderList[tkey];
                     item.Update();
                     if (item.IsDone)
                     {
-                        //if (!string.IsNullOrEmpty(item.resPath) && item.res != null)
-                        //{
-                        //    if (Instance.resMap.ContainsKey(item.resPath))
-                        //    {
-                        //        Instance.resMap[item.resPath] = item.res;
-                        //    }
-                        //    else
-                        //    {
-                        //        Instance.resMap.Add(item.resPath, item.res);
-                        //    }
-                        //}
+                        if (item.res != null)
+                        {
+                            if (!resCacheDic.ContainsKey(item.resPath))
+                            {
+                                resCacheDic.Add(item.resPath, item.resourcesObject);
+                            }
+                        }
 
-                        asyncLoaderList.RemoveAt(i);
+                        asyncLoaderList.Remove(tkey);
                     }
                 }
             }

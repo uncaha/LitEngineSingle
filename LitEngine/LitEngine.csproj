@@ -243,6 +243,7 @@
     <Compile Include="Script\ValueTool\TransformFixed.cs" />
     <Compile Include="Script\Loader\LoadTool\ResourcesLoader.cs" />
     <Compile Include="Script\Loader\ResourcesManager.cs" />
+    <Compile Include="Script\Loader\LoadTool\ResourcesObject.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />

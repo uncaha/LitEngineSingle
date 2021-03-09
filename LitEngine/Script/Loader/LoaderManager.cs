@@ -332,6 +332,15 @@ namespace LitEngine
             AddToGroup(pGroupKey, pAssetName);
             return (UnityEngine.Object)tbundle.Retain();
         }
+
+        static public BaseBundle GetBundleFromAsset(string pAssetName, string pGroupKey = null)
+        {
+            var tbundle = Instance.LoadAssetRetain(pAssetName.ToLowerInvariant());
+            if (tbundle == null) return null;
+            AddToGroup(pGroupKey, pAssetName);
+            tbundle.Retain();
+            return tbundle;
+        }
         #endregion
 
         #region 异步
