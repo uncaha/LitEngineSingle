@@ -48,6 +48,49 @@ namespace LitEngine
             return GameCore.CombinePath(GameCore.ExportPath, pPath);
         }
 
+        static public bool ReleaseAsset(string path)
+        {
+            if(Instance.resCacheDic.ContainsKey(path))
+            {
+                var titem = Instance.resCacheDic[path];
+                titem.Release();
+                if(titem.disposed)
+                {
+                    Instance.resCacheDic.Remove(path);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        static public bool RemoveAsset(string path)
+        {
+            if (Instance.resCacheDic.ContainsKey(path))
+            {
+                var titem = Instance.resCacheDic[path];
+                titem.Dispose();
+                Instance.resCacheDic.Remove(path);
+                return true;
+            }
+            return false;
+        }
+
+        static public void RemoveAllAsset()
+        {
+            var tdic = Instance.resCacheDic;
+
+            var tlistkeys = new List<string>(tdic.Keys);
+            for (int i = 0,max = tlistkeys.Count; i < max; i++)
+            {
+                var tkey = tlistkeys[i];
+                var item = tdic[tkey];
+
+                item.Dispose();
+                tdic.Remove(tkey);
+            }
+            
+        }
+
         public static T Load<T>(string path) where T : UnityEngine.Object
         {
             T ret = null;
@@ -102,10 +145,18 @@ namespace LitEngine
             bool tisCached = Instance.GetCachedRes(path,out T tcachedRes);
             if(tisCached)
             {
-                if (onLoadComplete != null)
+                try
                 {
-                    onLoadComplete(tcachedRes);
+                    if (onLoadComplete != null)
+                    {
+                        onLoadComplete(tcachedRes);
+                    }
                 }
+                catch (Exception ex)
+                {
+                    DLog.LogErrorFormat("ResourcesManager.LoadAnsyc:{0}", ex.ToString()); ;
+                }
+
                 tloader = new ResourcesLoaded<T>(path, tcachedRes, null);
                 return tloader;
             }
@@ -200,29 +251,36 @@ namespace LitEngine
             return false;
         }
 
+        private void UpdateLoader(string pKey,IResourcesLoader pLoader)
+        {
+            pLoader.Update();
+            if (pLoader.IsDone)
+            {
+                if (pLoader.res != null)
+                {
+                    if (!resCacheDic.ContainsKey(pLoader.resPath))
+                    {
+                        resCacheDic.Add(pLoader.resPath, pLoader.resourcesObject);
+                    }
+                }
+
+                asyncLoaderList.Remove(pKey);
+            }
+        }
+
+        List<string> updateKeyList = new List<string>(100);
         private void Update()
         {
             if (asyncLoaderList.Count > 0)
             {
-                var tlistkeys = new List<string>(asyncLoaderList.Keys);
-                int tcount = tlistkeys.Count;
+                updateKeyList.Clear();
+                updateKeyList.AddRange(asyncLoaderList.Keys);
+
+                int tcount = updateKeyList.Count;
                 for (int i = 0; i < tcount; i++)
                 {
-                    var tkey = tlistkeys[i];
-                    var item = asyncLoaderList[tkey];
-                    item.Update();
-                    if (item.IsDone)
-                    {
-                        if (item.res != null)
-                        {
-                            if (!resCacheDic.ContainsKey(item.resPath))
-                            {
-                                resCacheDic.Add(item.resPath, item.resourcesObject);
-                            }
-                        }
-
-                        asyncLoaderList.Remove(tkey);
-                    }
+                    var itemkey = updateKeyList[i];
+                    UpdateLoader(itemkey, asyncLoaderList[itemkey]);
                 }
             }
         }
