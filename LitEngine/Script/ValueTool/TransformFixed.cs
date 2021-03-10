@@ -12,6 +12,7 @@ namespace LitEngine.Value
 
         public void SetTransform(Transform trans)
         {
+            if (transform == null) return;
             transform = trans;
             gameObject = trans.gameObject;
         }
