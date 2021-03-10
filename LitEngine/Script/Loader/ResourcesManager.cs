@@ -35,12 +35,11 @@ namespace LitEngine
 
         static public string resourcesMapPath = "ResourcesMap";
         static public Func<string, System.Type, UnityEngine.Object> assetLoaderDelgate = null;
-        static private long refIndex = 1;
 
-        static public void SetResourcesMap(string pMapPath, Func<string, System.Type, UnityEngine.Object> editorLoader)
+        static public void SetResourcesMap(string pMapPath, Func<string, System.Type, UnityEngine.Object> pLoader = null)
         {
             resourcesMapPath = pMapPath;
-            assetLoaderDelgate = editorLoader;
+            assetLoaderDelgate = pLoader;
             Instance.InitAssetMap();
         }
 
@@ -51,20 +50,22 @@ namespace LitEngine
 
         public static T Load<T>(string path) where T : UnityEngine.Object
         {
-
-            IResourcesObject outobj = null;
-            if (Instance.resCacheDic.TryGetValue(path, out outobj))
-            {
-                return outobj.Retain() as T;
-            }
-
             T ret = null;
+            #region 已缓存
+            bool tisCached = Instance.GetCachedRes(path, out ret);
+            if (tisCached)
+            {
+                return ret;
+            }
+            #endregion
+
+            #region load
             var assetobj = Instance.assetMap.GetAsset(path);
             IResourcesObject tResObject = null;
             if (!assetobj.isInSide)
             {
                 string trealPath = GetRealPath(path + assetobj.sufixx);
-                
+
                 if (assetLoaderDelgate != null)
                 {
                     var tobj = assetLoaderDelgate(trealPath, typeof(T));
@@ -88,6 +89,8 @@ namespace LitEngine
                 ret = tResObject.Retain() as T;
             }
 
+            #endregion
+
             return ret;
         }
 
@@ -96,15 +99,14 @@ namespace LitEngine
             IResourcesLoader tloader = null;
 
             #region 已缓存
-            IResourcesObject tresobj = null;
-            if (Instance.resCacheDic.TryGetValue(path, out tresobj))
+            bool tisCached = Instance.GetCachedRes(path,out T tcachedRes);
+            if(tisCached)
             {
-                tloader = new ResourcesLoaded<T>(path, tresobj.Retain(), onLoadComplete);
-                if (tloader.StartLoad())
+                if (onLoadComplete != null)
                 {
-                    Instance.asyncLoaderList.Add(path + refIndex, tloader);
-                    refIndex++;
+                    onLoadComplete(tcachedRes);
                 }
+                tloader = new ResourcesLoaded<T>(path, tcachedRes, null);
                 return tloader;
             }
             #endregion
@@ -180,14 +182,31 @@ namespace LitEngine
             assetMap.Init();
         }
 
-        public void Update()
+        bool GetCachedRes<T>(string path,out T resObj) where T:UnityEngine.Object
         {
-            int tcount = asyncLoaderList.Count;
-            
-            if (tcount > 0)
+            resObj = null;
+            if (resCacheDic.TryGetValue(path, out IResourcesObject outobj))
+            {
+                if (!outobj.disposed)
+                {
+                    resObj = (T)outobj.Retain();
+                    return true;
+                }
+                else
+                {
+                    resCacheDic.Remove(path);
+                }
+            }
+            return false;
+        }
+
+        private void Update()
+        {
+            if (asyncLoaderList.Count > 0)
             {
                 var tlistkeys = new List<string>(asyncLoaderList.Keys);
-                for (int i = tcount - 1; i >= 0; i--)
+                int tcount = tlistkeys.Count;
+                for (int i = 0; i < tcount; i++)
                 {
                     var tkey = tlistkeys[i];
                     var item = asyncLoaderList[tkey];

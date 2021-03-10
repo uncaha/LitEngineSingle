@@ -18,15 +18,16 @@ namespace LitEngine.LoadAsset
     {
         public string resPath { get; private set; }
         public IResourcesObject resourcesObject { get; private set; }
-        public UnityEngine.Object res { get{ if (resourcesObject == null) return null; return resourcesObject.resObject; } }
+        public UnityEngine.Object res { get; private set; }
         public bool IsStart { get; private set; }
         public bool IsDone { get; private set; }
 
         public event Action<UnityEngine.Object> onComplete;
+
         public ResourcesLoaded(string path, UnityEngine.Object obj, Action<UnityEngine.Object> delegateOnComplete)
         {
             resPath = path;
-            resourcesObject = new ResourcesObject(path, obj);
+            res = obj;
             onComplete = delegateOnComplete;
         }
         public bool StartLoad()
@@ -103,8 +104,9 @@ namespace LitEngine.LoadAsset
         {
             try
             {
+                var tobj = resourcesObject.Retain();
                 if (onComplete != null)
-                    onComplete(res);
+                    onComplete(tobj);
             }
             catch (System.Exception error)
             {
@@ -175,9 +177,9 @@ namespace LitEngine.LoadAsset
                 {
                     ((ResourcesObject)resourcesObject).resObject = request.asset;
                 }
-
+                var tobj = resourcesObject.Retain();
                 if (onComplete != null)
-                    onComplete(res);
+                    onComplete(tobj);
             }
             catch (System.Exception error)
             {
@@ -244,8 +246,9 @@ namespace LitEngine.LoadAsset
         {
             try
             {
+                var tobj = resourcesObject.Retain();
                 if (onComplete != null)
-                    onComplete(resourcesObject.Retain());
+                    onComplete(tobj);
             }
             catch (System.Exception error)
             {

@@ -67,15 +67,31 @@ namespace LitEngine.LoadAsset
 
         public void Release()
         {
+            if (disposed) return;
+            retinCount--;
+            if (retinCount <= 0)
+            {
+                Dispose();
+            }
         }
 
         public Object Retain()
         {
+            if (disposed) return null;
+            retinCount++;
             return resObject;
         }
 
         public void Dispose()
         {
+            if (disposed) return;
+            disposed = true;
+            retinCount = 0;
+            if(resObject != null)
+            {
+                Resources.UnloadAsset(resObject);
+                resObject = null;
+            }
         }
     }
 }
