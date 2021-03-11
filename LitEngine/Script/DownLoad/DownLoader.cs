@@ -134,7 +134,9 @@ namespace LitEngine.DownLoad
             mThreadRuning = true;
             IsDone = false;
             Error = null;
-            OnStart?.Invoke(this);
+
+            CallDelgate(OnStart);
+
             task = Task.Run((System.Action)ReadNetByte);
         }
 
@@ -387,23 +389,23 @@ namespace LitEngine.DownLoad
             return null;
         }
 
-        public void CallComplete()
+        private void CallDelgate(System.Action<DownLoader> pDelgate)
         {
-            if (!IsDone) return;
+            if (pDelgate == null) return;
             try
             {
-                var tcomplete = OnComplete;
-                tcomplete?.Invoke(this);
+                pDelgate?.Invoke(this);
             }
             catch (System.Exception e)
             {
-                Debug.LogErrorFormat("DownLoader->CallComplete error.Url = {0},erro = {1}", SourceURL, e.ToString());
+                Debug.LogErrorFormat("DownLoader->CallDelgate error.delgate = {0} Url = {1},erro = {2}", pDelgate, SourceURL, e.ToString());
             }
         }
         void OnDone()
         {
             if (IsDone) return;
             IsDone = true;
+            CallDelgate(OnComplete);
         }
         public void Update()
         {
@@ -412,7 +414,7 @@ namespace LitEngine.DownLoad
             {
                 case DownloadState.downloading:
                     {
-                        OnProgress?.Invoke(this);
+                        CallDelgate(OnProgress);
                     }
                     break;
                 case DownloadState.finished:

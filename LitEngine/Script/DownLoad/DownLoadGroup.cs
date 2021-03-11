@@ -177,13 +177,9 @@ namespace LitEngine.DownLoad
                 DownLoadedLength += item.DownLoadedLength;
                 Progress += item.Progress;
                 ContentLength += item.ContentLength;
-                if (!groupList[i].IsCompleteDownLoad)
+                if (!groupList[i].IsCompleteDownLoad && !item.IsDone)
                 {
-                    item.Update();
-                    if (!item.IsDone)
-                    {
-                        isAllDone = false;
-                    }
+                    isAllDone = false;
                 }
             }
             Progress = Progress / groupList.Count;
@@ -208,20 +204,22 @@ namespace LitEngine.DownLoad
             IsCompleteDownLoad = tisCompleteGroup;
             Error = terrostr.ToString();
 
+            CallDelgate(onComplete);
         }
-        public void CallComplete()
+
+        private void CallDelgate(System.Action<DownLoadGroup> pDelgate)
         {
-            if (!IsDone) return;
+            if (pDelgate == null) return;
             try
             {
-                var tfinished = onComplete;
-                tfinished?.Invoke(this);
+                pDelgate?.Invoke(this);
             }
-            catch (System.Exception _error)
+            catch (System.Exception e)
             {
-                Debug.LogError(_error);
+                Debug.LogErrorFormat("DownLoadGroup->CallDelgate error.delgate = {0} key = {1},erro = {2}", pDelgate, Key, e.ToString());
             }
         }
+
         public void Update()
         {
             if (IsDone) return;
@@ -235,10 +233,7 @@ namespace LitEngine.DownLoad
                         {
                             State = DownloadState.finished;
                         }
-                        if (OnProgress != null)
-                        {
-                            OnProgress(this);
-                        }
+                        CallDelgate(OnProgress);
                     }
                     break;
                 case DownloadState.finished:

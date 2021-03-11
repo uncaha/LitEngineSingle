@@ -9,6 +9,5 @@ namespace LitEngine.DownLoad
         bool IsCompleteDownLoad { get; } //成功下载
         void StartAsync();
         void Update();
-        void CallComplete();
     }
 }

@@ -158,7 +158,7 @@
     <Compile Include="Script\Net\NetData\SocketDataBase.cs" />
     <Compile Include="Script\Net\TCPNet.cs" />
     <Compile Include="Script\Net\UDPNet.cs" />
-    <Compile Include="Script\Net\UnityNetWork.cs" />
+    <Compile Include="Script\Net\UnityHttp.cs" />
     <Compile Include="Script\EngineInterface\UnityInterface\Enable-Collision-Trigger\ScriptInterfaceCET.cs" />
     <Compile Include="Script\Managers\ScriptManager.cs" />
     <Compile Include="Script\ScriptOnCullDisable.cs" />

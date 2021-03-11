@@ -194,7 +194,6 @@ namespace LitEngine.DownLoad
                 if (item.IsDone)
                 {
                     Remove(item.Key);
-                    item.CallComplete();
                 }
             }
         }
@@ -240,7 +239,6 @@ namespace LitEngine.DownLoad
                 if (item.IsDone)
                 {
                     RemoveGroup(tkey);
-                    item.CallComplete();
                 }
             }
         }
