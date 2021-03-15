@@ -6,9 +6,10 @@ namespace LitEngine.UpdateSpace
 {
     public class UpdateBase : IDisposable
     {
+
+        internal UpdateObjectVector Owner { get; set; }
+        internal LinkedListNode<UpdateBase> node { get; set; }
         public string Key { get; protected set; }
-        public bool Dead { get; set; }
-        public UpdateObjectVector Owner { get; set; }
         public bool IsRegToOwner { get; protected set; }
         public float deleteTime { get; protected set; }
 
@@ -41,7 +42,6 @@ namespace LitEngine.UpdateSpace
             method = _method;
             target = _target;
             IsRegToOwner = false;
-            Dead = false;
         }
 
         public UpdateBase()
@@ -74,15 +74,16 @@ namespace LitEngine.UpdateSpace
             UnRegToOwner();
             Owner = null;
             method = null;
-            Dead = true;
         }
         #endregion
         virtual public void RegToOwner()
         {
             if (IsRegToOwner) return;
             if (Owner != null)
+            {
                 Owner.AddNoSetOwner(this);
-            IsRegToOwner = true;
+                IsRegToOwner = true;
+            }
         }
 
         virtual public void UnRegToOwner()
@@ -95,7 +96,6 @@ namespace LitEngine.UpdateSpace
 
         virtual public void RunDelgete()
         {
-            if (Dead) return;
             if (!IsTimeOut()) return;
             CallMethod();
         }

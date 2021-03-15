@@ -7,7 +7,7 @@ namespace LitEngine
     {
         private static object lockobj = new object();
         private static GameUpdateManager sInstance = null;
-        public static GameUpdateManager Instance
+        private static GameUpdateManager Instance
         {
             get
             {
@@ -37,36 +37,68 @@ namespace LitEngine
         public bool mIsLateUpdate = true;
         public bool mIsGUIUpdate = true;
 
-        public readonly UpdateObjectVector UpdateList = new UpdateObjectVector(UpdateType.Update);
-        public readonly UpdateObjectVector FixedUpdateList = new UpdateObjectVector(UpdateType.FixedUpdate);
-        public readonly UpdateObjectVector LateUpdateList = new UpdateObjectVector(UpdateType.LateUpdate);
-        public readonly UpdateObjectVector OnGUIList = new UpdateObjectVector(UpdateType.OnGUI);
+        private readonly UpdateObjectVector UpdateList = new UpdateObjectVector(UpdateType.Update);
+        private readonly UpdateObjectVector FixedUpdateList = new UpdateObjectVector(UpdateType.FixedUpdate);
+        private readonly UpdateObjectVector LateUpdateList = new UpdateObjectVector(UpdateType.LateUpdate);
+        private readonly UpdateObjectVector OnGUIList = new UpdateObjectVector(UpdateType.OnGUI);
 
-        public GameUpdateManager()
+        private GameUpdateManager()
         {
 
         }
+
+        #region 设置父列表
+        static public void SetUpdateOwner(UpdateBase pDelgate)
+        {
+            if(pDelgate.IsRegToOwner)
+            {
+                pDelgate.UnRegToOwner();
+            }
+            pDelgate.Owner = Instance.UpdateList;
+        }
+        static public void SetLateUpdateOwner(UpdateBase pDelgate)
+        {
+            if (pDelgate.IsRegToOwner)
+            {
+                pDelgate.UnRegToOwner();
+            }
+            pDelgate.Owner = Instance.LateUpdateList;
+        }
+        static public void SetFixedUpdateOwner(UpdateBase pDelgate)
+        {
+            if (pDelgate.IsRegToOwner)
+            {
+                pDelgate.UnRegToOwner();
+            }
+            pDelgate.Owner = Instance.FixedUpdateList;
+        }
+        static public void SetGUIUpdateOwner(UpdateBase pDelgate)
+        {
+            if (pDelgate.IsRegToOwner)
+            {
+                pDelgate.UnRegToOwner();
+            }
+            pDelgate.Owner = Instance.OnGUIList;
+        }
+        #endregion
         #region 注册
-        static internal void InsertUpdate(int pIndex,UpdateBase pSor)
+        static public void RegUpdate(UpdateBase pDelgate)
         {
-            Instance.UpdateList.Insert(pIndex,pSor);
+            Instance.UpdateList.Add(pDelgate);
         }
-        static public void RegUpdate(UpdateBase _act)
+        static public void RegLateUpdate(UpdateBase pDelgate)
         {
-            Instance.UpdateList.Add(_act);
+            Instance.LateUpdateList.Add(pDelgate);
         }
-        static public void RegLateUpdate(UpdateBase _act)
+        static public void RegFixedUpdate(UpdateBase pDelgate)
         {
-            Instance.LateUpdateList.Add(_act);
+            Instance.FixedUpdateList.Add(pDelgate);
         }
-        static public void RegFixedUpdate(UpdateBase _act)
+        static public void RegGUIUpdate(UpdateBase pDelgate)
         {
-            Instance.FixedUpdateList.Add(_act);
+            Instance.OnGUIList.Add(pDelgate);
         }
-        static public void RegGUIUpdate(UpdateBase _act)
-        {
-            Instance.OnGUIList.Add(_act);
-        }
+
         #endregion
 
         #region 销毁
@@ -77,22 +109,22 @@ namespace LitEngine
             LateUpdateList.Clear();
             OnGUIList.Clear();
         }
-        static public void UnRegUpdate(UpdateBase _act)
+        static public void UnRegUpdate(UpdateBase pDelgate)
         {
-            Instance.UpdateList.Remove(_act);
+            Instance.UpdateList.Remove(pDelgate);
 
         }
-        static public void UnRegLateUpdate(UpdateBase _act)
+        static public void UnRegLateUpdate(UpdateBase pDelgate)
         {
-            Instance.LateUpdateList.Remove(_act);
+            Instance.LateUpdateList.Remove(pDelgate);
         }
-        static public void UnRegFixedUpdate(UpdateBase _act)
+        static public void UnRegFixedUpdate(UpdateBase pDelgate)
         {
-            Instance.FixedUpdateList.Remove(_act);
+            Instance.FixedUpdateList.Remove(pDelgate);
         }
-        static public void UnGUIUpdate(UpdateBase _act)
+        static public void UnGUIUpdate(UpdateBase pDelgate)
         {
-            Instance.OnGUIList.Remove(_act);
+            Instance.OnGUIList.Remove(pDelgate);
         }
         #endregion
 
@@ -124,11 +156,6 @@ namespace LitEngine
             OnGUIList.Update();
         }
         #endregion
-
-        override public void DestroyManager()
-        {
-            base.DestroyManager();
-        }
     }
 }
 

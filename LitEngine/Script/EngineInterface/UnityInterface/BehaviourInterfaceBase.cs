@@ -110,21 +110,21 @@ namespace LitEngine
             {
                 mUpdateDelegate = mCodeTool.GetUpdateObjectAction("Update", mScriptClass, ScriptObject);
                 if (mUpdateDelegate != null)
-                    mUpdateDelegate.Owner = GameUpdateManager.Instance.UpdateList;
+                    GameUpdateManager.SetUpdateOwner(mUpdateDelegate);
 
                 mFixedUpdateDelegate = mCodeTool.GetUpdateObjectAction("FixedUpdate", mScriptClass, ScriptObject);
                 if (mFixedUpdateDelegate != null)
-                    mFixedUpdateDelegate.Owner = GameUpdateManager.Instance.FixedUpdateList;
+                    GameUpdateManager.SetFixedUpdateOwner(mFixedUpdateDelegate);
 
                 mLateUpdateDelegate = mCodeTool.GetUpdateObjectAction("LateUpdate", mScriptClass, ScriptObject);
                 if (mLateUpdateDelegate != null)
-                    mLateUpdateDelegate.Owner = GameUpdateManager.Instance.LateUpdateList;
+                    GameUpdateManager.SetLateUpdateOwner(mLateUpdateDelegate);
 
                 mOnGUIDelegate = mCodeTool.GetUpdateObjectAction("OnGUI", mScriptClass, ScriptObject);
                 if (mOnGUIDelegate != null)
                 {
                     mOnGUIDelegate.MaxTime = 0;
-                    mOnGUIDelegate.Owner = GameUpdateManager.Instance.OnGUIList;
+                    GameUpdateManager.SetGUIUpdateOwner(mOnGUIDelegate);
                 }
 
             }

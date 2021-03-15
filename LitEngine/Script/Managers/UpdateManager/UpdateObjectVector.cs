@@ -8,58 +8,63 @@ namespace LitEngine.UpdateSpace
         LateUpdate,
         OnGUI,
     }
-    public class UpdateObjectVector
+    public sealed class UpdateObjectVector
     {
-
         private UpdateType mUpdateType = UpdateType.Update;
-        private List<UpdateBase> mList = new List<UpdateBase>();
+        private LinkedList<UpdateBase> updaterList = new LinkedList<UpdateBase>();
 
-        public int Count { get { return mList.Count; } }
+        public int Count { get { return updaterList.Count; } }
 
         public UpdateObjectVector(UpdateType _type)
         {
             mUpdateType = _type;
         }
 
-        public void Add(UpdateBase _obj)
+        internal void Add(UpdateBase pUpdater)
         {
-            if (_obj == null || mList.Contains(_obj))
-                return;
-            _obj.Owner = this;
-            _obj.RegToOwner();
-        }
-
-        public void Insert(int pIndex, UpdateBase pSor)
-        {
-            if (pSor == null || mList.Contains(pSor))
-                return;
-            pSor.Owner = this;
-            mList.Insert(pIndex, pSor);
-        }
-
-        public void AddNoSetOwner(UpdateBase _obj)
-        {
-            if (_obj == null || mList.Contains(_obj))
-                return;
-            mList.Add(_obj);
-        }
-
-        public void Remove(UpdateBase _obj)
-        {
-            if (_obj == null || !mList.Contains(_obj))
-                return;
-            mList.Remove(_obj);
-        }
-
-        public void Clear()
-        {
-            for (int i = mList.Count - 1; i >= 0; i--)
+            if (pUpdater == null) return;
+            if (pUpdater.IsRegToOwner)
             {
-                UpdateBase tobj = mList[i];
-                mList.RemoveAt(i);
-                tobj.Dispose();
+                pUpdater.UnRegToOwner();
             }
-            mList.Clear();
+
+            pUpdater.Owner = this;
+            pUpdater.RegToOwner();
+        }
+
+        internal void AddNoSetOwner(UpdateBase pUpdater)
+        {
+            if (pUpdater == null) return;
+            if (pUpdater.IsRegToOwner)
+            {
+                pUpdater.UnRegToOwner();
+            }
+
+            if (pUpdater.node != null)
+            {
+                pUpdater.node = new LinkedListNode<UpdateBase>(pUpdater);
+            }
+
+            updaterList.AddLast(pUpdater.node);
+        }
+
+        internal void Remove(UpdateBase pUpdater)
+        {
+            if (pUpdater == null) return;
+            if (pUpdater.node != null)
+            {
+                updaterList.Remove(pUpdater.node);
+            }
+
+        }
+
+        internal void Clear()
+        {
+            foreach (var item in updaterList)
+            {
+                item.Dispose();
+            }
+            updaterList.Clear();
         }
 
         private void RunUpdate(UpdateBase _runobj)
@@ -75,17 +80,18 @@ namespace LitEngine.UpdateSpace
             }
         }
 
-        public void Update()
+        internal void Update()
         {
-            if (mList.Count == 0) return;
-            for (int i = mList.Count - 1; i >= 0; i--)
+            if (updaterList.Count == 0) return;
+
+            var itor = updaterList.First;
+
+            while (itor != null)
             {
-                if (!mList[i].Dead)
-                    RunUpdate(mList[i]);
-                else
-                    mList[i].Dispose();
+                var item = itor.Value;
+                RunUpdate(item);
+                itor = itor.Next;
             }
         }
     }
-
 }
