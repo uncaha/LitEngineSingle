@@ -14,7 +14,7 @@ namespace LitEngine
 
         private static object lockobj = new object();
         private static ResourcesManager sInstance = null;
-        private static ResourcesManager Instance
+        public static ResourcesManager Instance
         {
             get
             {

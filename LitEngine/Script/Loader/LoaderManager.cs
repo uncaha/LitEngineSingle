@@ -6,14 +6,13 @@ using UnityEngine.SceneManagement;
 using LitEngine.LoadAsset;
 namespace LitEngine
 {
-    public class LoaderManager : MonoManagerBase
+    public class LoaderManager
     {
         public const string ManifestName = "AppManifest";
         public const string byteFileInfoFileName = "bytefileinfo.txt";
-        private static bool IsDispose = false;
         private static object lockobj = new object();
         private static LoaderManager sInstance = null;
-        private static LoaderManager Instance
+        public static LoaderManager Instance
         {
             get
             {
@@ -24,10 +23,7 @@ namespace LitEngine
 
                         if (sInstance == null)
                         {
-                            IsDispose = false;
-                            GameObject tobj = new GameObject("LoaderManager");
-                            GameObject.DontDestroyOnLoad(tobj);
-                            sInstance = tobj.AddComponent<LoaderManager>();
+                            sInstance = new LoaderManager();
                             sInstance.Init();
                         }
                     }
@@ -43,11 +39,10 @@ namespace LitEngine
         private WaitingList mWaitLoadBundleList = null;
         public AssetBundleManifest Manifest { get; private set; }
 
-        public ByteFileInfoList _ByteInfoData;
+        private ByteFileInfoList _ByteInfoData;
         public static ByteFileInfoList ByteInfoData { get { return Instance._ByteInfoData; } }
 
         private bool mInited = false;
-        private bool isDisposed = false;
         #endregion
         #region 路径获取
 
@@ -62,6 +57,10 @@ namespace LitEngine
         #endregion
 
         #region 初始化,销毁,设置
+        private LoaderManager()
+        {
+            GameUpdateManager.RegUpdate(Update, "LoaderManager");
+        }
         static public void ReLoadResInfo()
         {
             if(sInstance != null)
@@ -111,35 +110,13 @@ namespace LitEngine
                 tinfobundle.Unload(false);
             }
         }
-        #region 释放
-        override public void DestroyManager()
-        {
-            base.DestroyManager();
-        }
-        override protected void OnDestroy()
-        {
-            if (isDisposed) return;
-            isDisposed = true;
-            DisposeNoGcCode();
-            base.OnDestroy();
-        }
-        protected void DisposeNoGcCode()
-        {
-            if (Manifest != null)
-                Object.DestroyImmediate(Manifest, true);
-            mBundleTaskList.Clear();
-            mWaitLoadBundleList.Clear();
-            RemoveAllAsset();
-            IsDispose = true;
-            sInstance = null;
-        }
-        #endregion
 
         #endregion
 
         #region update
         void Update()
         {
+            if (mWaitLoadBundleList.Count == 0 && mBundleTaskList.Count == 0) return;
             if (mWaitLoadBundleList.Count > 0)
             {
                 for (int i = mWaitLoadBundleList.Count - 1; i >= 0; i--)
@@ -157,18 +134,6 @@ namespace LitEngine
                     mBundleTaskList[i].IsDone();
                 }
             }
-
-
-            if (mWaitLoadBundleList.Count == 0 && mBundleTaskList.Count == 0)
-                ActiveLoader(false);
-        }
-        #endregion
-
-        #region fun
-        void ActiveLoader(bool _active)
-        {
-            if (gameObject.activeSelf == _active) return;
-            gameObject.SetActive(_active);
         }
         #endregion
 
@@ -224,7 +189,6 @@ namespace LitEngine
 
         static public void ReleaseAsset(string _key)
         {
-            if (IsDispose) return;
             Instance.mBundleList.ReleaseBundle(BaseBundle.DeleteSuffixName(_key.ToLowerInvariant()));
         }
 
@@ -249,7 +213,6 @@ namespace LitEngine
 
         static public void RemoveAsset(string _AssetsName)
         {
-            if (IsDispose) return;
             Instance.mBundleList.Remove(BaseBundle.DeleteSuffixName(_AssetsName.ToLowerInvariant()));
         }
 
@@ -387,7 +350,6 @@ namespace LitEngine
             _bundle.Load();
             AddmWaitLoadList(_bundle);
             CreatTaskAndStart(_key, _bundle, _callback, _retain);
-            ActiveLoader(true);
         }
 
         private BaseBundle LoadAssetAsyncRetain(string _key, string _AssetsName, System.Action<string, object> _callback, bool _retain)
@@ -419,7 +381,6 @@ namespace LitEngine
                 else
                 {
                     CreatTaskAndStart(_key, mBundleList[_AssetsName], _callback, _retain);
-                    ActiveLoader(true);
                 }
 
             }

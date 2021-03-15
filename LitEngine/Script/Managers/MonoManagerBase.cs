@@ -18,4 +18,5 @@ namespace LitEngine
             GameObject.DestroyImmediate(gameObject);
         }
     }
+
 }
