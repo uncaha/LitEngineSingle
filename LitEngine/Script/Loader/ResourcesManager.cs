@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using LitEngine.LoadAsset;
 using UnityEngine;
+using LitEngine.UpdateSpace;
+using LitEngine.Method;
 namespace LitEngine
 {
-    public sealed class ResourcesManager : MonoManagerBase
+    public class ResourcesManager
     {
 
         #region static
+
         private static object lockobj = new object();
         private static ResourcesManager sInstance = null;
         private static ResourcesManager Instance
@@ -22,10 +25,7 @@ namespace LitEngine
 
                         if (sInstance == null)
                         {
-                            GameObject tobj = new GameObject("ResourcesManager");
-                            GameObject.DontDestroyOnLoad(tobj);
-                            sInstance = tobj.AddComponent<ResourcesManager>();
-                            sInstance.Init();
+                            sInstance = new ResourcesManager();
                         }
                     }
                 }
@@ -215,11 +215,9 @@ namespace LitEngine
         private Dictionary<string, IResourcesObject> resCacheDic = new Dictionary<string, IResourcesObject>();
         private AssetMap assetMap;
 
-        private void Init()
+        private ResourcesManager()
         {
-            if (mInited) return;
-            mInited = true;
-
+            GameUpdateManager.RegUpdate(Update, "ResourcesManager");
             InitAssetMap();
         }
 

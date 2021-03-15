@@ -11,12 +11,12 @@ namespace LitEngine.DownLoad
             return -((DownLoader)x).priority.CompareTo(((DownLoader)y).priority);
         }
     }
-    public class DownLoadManager : MonoBehaviour
+    public class DownLoadManager
     {
 
         private static object lockobj = new object();
         private static DownLoadManager sInstance = null;
-        private static DownLoadManager Instance
+        public static DownLoadManager Instance
         {
             get
             {
@@ -27,10 +27,7 @@ namespace LitEngine.DownLoad
 
                         if (sInstance == null)
                         {
-                            GameObject tobj = new GameObject("DownLoadManager");
-                            GameObject.DontDestroyOnLoad(tobj);
-                            sInstance = tobj.AddComponent<DownLoadManager>();
-                            sInstance.Init();
+                            sInstance = new DownLoadManager();
                         }
                     }
                 }
@@ -49,10 +46,10 @@ namespace LitEngine.DownLoad
 
         private DownLoadManager()
         {
-            
+            GameUpdateManager.RegUpdate(Update, "DownLoadManager");
         }
 
-        private void OnDestroy()
+        public void Dispose()
         {
             ArrayList tkeys = new ArrayList(sDownLoadMap.Keys);
             for (int i = 0 ,length = tkeys.Count; i < length; i++)
@@ -69,12 +66,6 @@ namespace LitEngine.DownLoad
                 DownLoadGroup item = (DownLoadGroup)sGroupMap[tk];
                 item.Dispose();
             }
-        }
-
-        public void Init()
-        {
-            if (mInited) return;
-            mInited = true;
         }
 
         public static DownLoader DownLoadFileAsync(string sourceurl, string destination,string pFileName,string pMD5,long pLength, System.Action<DownLoader> finished, System.Action<DownLoader> progress = null, bool isClear = true)
