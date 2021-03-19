@@ -247,13 +247,6 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />
-  <ItemGroup>
-    <Folder Include="Script\DownLoad\" />
-    <Folder Include="Script\DownLoad\Update\" />
-    <Folder Include="Script\Loader\LoadTool\" />
-    <Folder Include="Script\Net\KCP\" />
-    <Folder Include="Script\Net\TestServer\" />
-    <Folder Include="Script\ValueTool\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
