@@ -118,22 +118,22 @@ namespace LitEngine.Log
                 GUILayout.MaxWidth(MainWindowWidth));
         }
 
-        public void AddLog(string log)
+        public void AddLog(string log, UnityEngine.LogType pType)
         {
-            events.Insert(0, string.Format("{0}\n{1}\n", DateTime.Now.ToString(datePatt), log));
+            events.Add(string.Format("{0}\n[{1}]{2}\n", DateTime.Now.ToString(datePatt), pType, log));
         }
 
         protected void OnGUI()
         {
             GUILayout.BeginVertical();
-            if(!IsOpen)
+            if (!IsOpen)
             {
                 if (this.Button("ShowLog"))
                 {
                     IsOpen = true;
                 }
             }
-            
+
             if (!IsOpen) return;
             if (this.Button("Back"))
             {

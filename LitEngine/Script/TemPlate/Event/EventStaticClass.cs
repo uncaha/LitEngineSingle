@@ -19,7 +19,7 @@ namespace LitEngine.TemPlate.Event
             EventDispatch.UnRegAllEvent(pTarget);
         }
 
-        static public void SendEvent(this object target,object pObject)
+        static public void SendEvent(this object target, object pObject)
         {
             EventDispatch.Send(pObject);
         }

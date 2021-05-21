@@ -16,6 +16,17 @@ namespace LitEngine.Log
             public LogType type;
         }
         private static LogToFile sInstance = null;
+        public static LogToFile Instance
+        {
+            get
+            {
+                if (sInstance == null)
+                {
+                    sInstance = new LogToFile();
+                }
+                return sInstance;
+            }
+        }
 
         private string sFilePath = "";
         private int mainThreadID = -1;
@@ -24,11 +35,20 @@ namespace LitEngine.Log
         private Thread saveThread;
         private bool saveThreadRunning = false;
 
+        private LogWindow logView = null;
+
         private StreamWriter logWriger = null;
         public static void InitLogCallback()
         {
-            if (sInstance != null) return;
-            sInstance = new LogToFile();
+            var tins = Instance;
+        }
+
+        public static void ShowLogView()
+        {
+            GameObject logobj = new GameObject("LogView");
+            GameObject.DontDestroyOnLoad(logobj);
+
+            Instance.logView = logobj.AddComponent<LogWindow>();
         }
 
         private LogToFile()
@@ -79,6 +99,10 @@ namespace LitEngine.Log
                 return;
             mDisposed = true;
             this.saveThreadRunning = false;
+            if (logView != null)
+            {
+                GameObject.Destroy(logView.gameObject);
+            }
 
             try
             {
@@ -171,6 +195,7 @@ namespace LitEngine.Log
             if (mainThreadID != Thread.CurrentThread.ManagedThreadId) return;
             LogData tdata = new LogData() { logStr = log, stackTrace = pStackTrace, type = pType };
             LogOutPut(tdata);
+            logView?.AddLog(log, pType);
         }
 
         void logCallbackTrhread(string log, string pStackTrace, UnityEngine.LogType pType)
@@ -178,6 +203,7 @@ namespace LitEngine.Log
             if (mainThreadID == Thread.CurrentThread.ManagedThreadId) return;
             LogData tdata = new LogData() { logStr = log, stackTrace = pStackTrace, type = pType };
             LogOutPut(tdata);
+            logView?.AddLog(log, pType);
         }
 
         void LogOutPut(LogData pData)

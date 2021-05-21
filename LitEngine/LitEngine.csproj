@@ -244,6 +244,8 @@
     <Compile Include="Script\Loader\LoadTool\ResourcesLoader.cs" />
     <Compile Include="Script\Loader\ResourcesManager.cs" />
     <Compile Include="Script\Loader\LoadTool\ResourcesObject.cs" />
+    <Compile Include="Script\Net\NetData\HttpRequestObject.cs" />
+    <Compile Include="Script\Net\HttpNet.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />
