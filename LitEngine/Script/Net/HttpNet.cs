@@ -298,32 +298,40 @@ namespace LitEngine.Net
             }
         }
 
-        public static void SendDelete(string pUrl, HttpObjectCompleteEvent pOnComplete, int pTimeOut = 60, Dictionary<string, string> pHeaders = null)
+        public static HttpObject SendDelete(string pUrl, HttpObjectCompleteEvent pOnComplete, int pTimeOut = 60, Dictionary<string, string> pHeaders = null)
         {
-            HttpObject obj = GetHttpObject(pUrl, HttpMethod.DELETE, null, pOnComplete, pTimeOut, pHeaders);
+            HttpObject ret = GetHttpObject(pUrl, HttpMethod.DELETE, null, pOnComplete, pTimeOut, pHeaders);
 
-            obj.SendAsync();
+            ret.SendAsync();
+
+            return ret;
         }
 
-        public static void SendPut(string pUrl, byte[] pPostData, HttpObjectCompleteEvent pOnComplete, int pTimeOut = 60, Dictionary<string, string> pHeaders = null)
+        public static HttpObject SendPut(string pUrl, byte[] pPostData, HttpObjectCompleteEvent pOnComplete, int pTimeOut = 60, Dictionary<string, string> pHeaders = null)
         {
-            HttpObject obj = GetHttpObject(pUrl, HttpMethod.PUT, pPostData, pOnComplete, pTimeOut, pHeaders);
+            HttpObject ret = GetHttpObject(pUrl, HttpMethod.PUT, pPostData, pOnComplete, pTimeOut, pHeaders);
 
-            obj.SendAsync();
+            ret.SendAsync();
+
+            return ret;
         }
 
-        public static void SendPost(string pUrl, byte[] pPostData, HttpObjectCompleteEvent pOnComplete, int pTimeOut = 60, Dictionary<string, string> pHeaders = null)
+        public static HttpObject SendPost(string pUrl, byte[] pPostData, HttpObjectCompleteEvent pOnComplete, int pTimeOut = 60, Dictionary<string, string> pHeaders = null)
         {
-            HttpObject obj = GetHttpObject(pUrl, HttpMethod.POST, pPostData, pOnComplete, pTimeOut, pHeaders);
+            HttpObject ret = GetHttpObject(pUrl, HttpMethod.POST, pPostData, pOnComplete, pTimeOut, pHeaders);
 
-            obj.SendAsync();
+            ret.SendAsync();
+
+            return ret;
         }
 
-        public static void SendGet(string pUrl, HttpObjectCompleteEvent pOnComplete, int pTimeOut = 60, Dictionary<string, string> pHeaders = null)
+        public static HttpObject SendGet(string pUrl, HttpObjectCompleteEvent pOnComplete, int pTimeOut = 60, Dictionary<string, string> pHeaders = null)
         {
-            HttpObject obj = GetHttpObject(pUrl, HttpMethod.GET, null, pOnComplete, pTimeOut, pHeaders);
+            HttpObject ret = GetHttpObject(pUrl, HttpMethod.GET, null, pOnComplete, pTimeOut, pHeaders);
 
-            obj.SendAsync();
+            ret.SendAsync();
+
+            return ret;
         }
 
         public static HttpObject GetHttpObject(string pUrl, HttpMethod httpType, byte[] pPostData, HttpObjectCompleteEvent pOnComplete, int pTimeOut = 60, Dictionary<string, string> pHeaders = null)
