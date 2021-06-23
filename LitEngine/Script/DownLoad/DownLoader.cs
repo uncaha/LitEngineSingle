@@ -48,7 +48,7 @@ namespace LitEngine.DownLoad
         private bool mThreadRuning = false;
 
         private HttpWebRequest mReqest;
-        private WebResponse mResponse;
+        private HttpWebResponse mResponse;
         private Stream mHttpStream;
 
 
@@ -195,7 +195,7 @@ namespace LitEngine.DownLoad
                 string rspError = null;
                 try
                 {
-                    mResponse = mReqest.GetResponse();
+                    mResponse = (HttpWebResponse)mReqest.GetResponse();
                 }
                 catch (System.Exception _error)
                 {
@@ -208,41 +208,50 @@ namespace LitEngine.DownLoad
                     throw new System.NullReferenceException(terro);
                 }
 
-                mHttpStream = mResponse.GetResponseStream();
-                tneedDownLoadSize = mResponse.ContentLength;
-
-                DownLoadedLength = thaveindex;
-                if (isClearDownload)
+                if (mResponse.StatusCode == HttpStatusCode.OK)
                 {
-                    ContentLength = tneedDownLoadSize;
-                }
+                    mHttpStream = mResponse.GetResponseStream();
+                    tneedDownLoadSize = mResponse.ContentLength;
 
-                if (ttempfile == null)
-                {
-                    ttempfile = System.IO.File.Create(TempFile);
-                }
-
-
-                int tcount = 0;
-                int tlen = 1024;
-                byte[] tbuffer = new byte[tlen];
-                int tReadSize = 0;
-                tReadSize = mHttpStream.Read(tbuffer, 0, tlen);
-                while (tReadSize > 0 && mThreadRuning)
-                {
-                    DownLoadedLength += tReadSize;
-                    tdownloadSize += tReadSize;
-
-                    ttempfile.Write(tbuffer, 0, tReadSize);
-                    tReadSize = mHttpStream.Read(tbuffer, 0, tlen);
-
-                    if (++tcount >= 512)
+                    DownLoadedLength = thaveindex;
+                    if (isClearDownload)
                     {
-                        ttempfile.Flush();
-                        tcount = 0;
+                        ContentLength = tneedDownLoadSize;
                     }
 
+                    if (ttempfile == null)
+                    {
+                        ttempfile = System.IO.File.Create(TempFile);
+                    }
+
+
+                    int tcount = 0;
+                    int tlen = 1024;
+                    byte[] tbuffer = new byte[tlen];
+                    int tReadSize = 0;
+                    tReadSize = mHttpStream.Read(tbuffer, 0, tlen);
+                    while (tReadSize > 0 && mThreadRuning)
+                    {
+                        DownLoadedLength += tReadSize;
+                        tdownloadSize += tReadSize;
+
+                        ttempfile.Write(tbuffer, 0, tReadSize);
+                        tReadSize = mHttpStream.Read(tbuffer, 0, tlen);
+
+                        if (++tcount >= 512)
+                        {
+                            ttempfile.Flush();
+                            tcount = 0;
+                        }
+
+                    }
                 }
+                else
+                {
+                    Error = string.Format("[URL] = {0},[Code] = {1},[CodeNum]", SourceURL, mResponse.StatusCode.ToString(), (int)mResponse.StatusCode);
+                }
+
+                
             }
             catch (System.Exception _error)
             {
@@ -256,7 +265,7 @@ namespace LitEngine.DownLoad
 
             try
             {
-                if (tdownloadSize == tneedDownLoadSize)
+                if (tdownloadSize == tneedDownLoadSize && tneedDownLoadSize != 0)
                 {
                     DownLoadComplete();
                 }
