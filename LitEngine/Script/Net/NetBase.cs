@@ -5,7 +5,7 @@ using System.Threading;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Collections.Generic;
-
+using System.Collections.Concurrent;
 namespace LitEngine.Net
 {
     #region 回调消息
@@ -73,7 +73,7 @@ namespace LitEngine.Net
         protected string mNetTag = "";
         public bool StopUpdateRecMsg { get; set; }
 
-        private SwitchQueue<SocketAsyncEventArgs> cacheAsyncEvent = new SwitchQueue<SocketAsyncEventArgs>(100);
+        private ConcurrentQueue<SocketAsyncEventArgs> cacheAsyncEvent = new ConcurrentQueue<SocketAsyncEventArgs>();
         protected SocketAsyncEventArgs receiveAsyncEvent = null;
         #endregion
 
@@ -82,12 +82,12 @@ namespace LitEngine.Net
         protected byte[] mRecbuffer = new byte[mReadMaxLen];
 
         protected BufferBase mBufferData = new BufferBase(1024 * 400);
-        protected SafeSwitchQueue<ReceiveData> mResultDataList = new SafeSwitchQueue<ReceiveData>();
-        protected SafeSwitchQueue<SendData> mSendDataList = new SafeSwitchQueue<SendData>();
+        protected ConcurrentQueue<ReceiveData> mResultDataList = new ConcurrentQueue<ReceiveData>();
+        protected ConcurrentQueue<SendData> mSendDataList = new ConcurrentQueue<SendData>();
         #endregion
         #region 分发
         protected SafeMap<int, SafeList<System.Action<object>>> mMsgHandlerList = new SafeMap<int, SafeList<System.Action<object>>>();//消息注册列表
-        protected SafeQueue<NetMessage> mToMainThreadMsgList = new SafeQueue<NetMessage>();//给主线程发送通知
+        protected ConcurrentQueue<NetMessage> mToMainThreadMsgList = new ConcurrentQueue<NetMessage>();//给主线程发送通知
         #endregion
 
         #region 输出到外部
@@ -222,7 +222,7 @@ namespace LitEngine.Net
                 SocketAsyncEventArgs sd = new SocketAsyncEventArgs();
                 sd.Completed += SendAsyncCallback;
                 sd.SocketFlags = SocketFlags.None;
-                cacheAsyncEvent.Push(sd);
+                cacheAsyncEvent.Enqueue(sd);
             }
 
             receiveAsyncEvent = new SocketAsyncEventArgs();
@@ -347,9 +347,9 @@ namespace LitEngine.Net
         {
             mBufferData.Clear();
 
-            mSendDataList.Clear();
+            mSendDataList = new ConcurrentQueue<SendData>();
 
-            mResultDataList.Clear();
+            mResultDataList = new ConcurrentQueue<ReceiveData>();
         }
         virtual protected void WaitThreadJoin(Thread _thread)
         {
@@ -487,8 +487,13 @@ namespace LitEngine.Net
         {
             try
             {
-                if (mToMainThreadMsgList.Count == 0 || MessageDelgate == null) return;
-                MessageDelgate(mToMainThreadMsgList.Dequeue());
+                if (!mToMainThreadMsgList.IsEmpty || MessageDelgate == null) return;
+                NetMessage tmsg = null;
+                if(mToMainThreadMsgList.TryDequeue(out tmsg))
+                {
+                    MessageDelgate(tmsg);
+                }
+               
             }
             catch (Exception _error)
             {
@@ -501,24 +506,24 @@ namespace LitEngine.Net
             if (StopUpdateRecMsg) return;
             if (receiveOutput != null) return;
 
-            mResultDataList.Switch();
-
-            int i = mResultDataList.PopCount;
-
-            while (i > 0)
+            if(!mResultDataList.IsEmpty)
             {
-                try
+                ReceiveData trecdata = null;
+                while (mResultDataList.TryDequeue(out trecdata))
                 {
-                    ReceiveData trecdata = (ReceiveData)mResultDataList.Dequeue();
-                    Call(trecdata.Cmd, trecdata);
-                    i--;
-                }
-                catch (Exception _error)
-                {
-                    DLog.LogError(_error.ToString());
-                }
+                    try
+                    {
+                        Call(trecdata.Cmd, trecdata);
+                    }
+                    catch (Exception _error)
+                    {
+                        DLog.LogError(_error.ToString());
+                    }
 
+                }
             }
+
+            
 
         }
         #endregion
@@ -591,7 +596,7 @@ namespace LitEngine.Net
 
         virtual protected void SendAsyncCallback(object sender, SocketAsyncEventArgs e)
         {
-            cacheAsyncEvent.Push(e);
+            cacheAsyncEvent.Enqueue(e);
         }
 
         virtual protected void ReceiveAsyncCallback(object sender, SocketAsyncEventArgs e)
@@ -602,14 +607,10 @@ namespace LitEngine.Net
         protected SocketAsyncEventArgs GetSocketAsyncEvent()
         {
             SocketAsyncEventArgs ret = null;
-            if (cacheAsyncEvent.Empty())
-            {
-                cacheAsyncEvent.Switch();
-            }
 
-            if (!cacheAsyncEvent.Empty())
+            if(cacheAsyncEvent.TryDequeue(out ret))
             {
-                ret = cacheAsyncEvent.Pop();
+                return ret;
             }
             else
             {
@@ -617,7 +618,6 @@ namespace LitEngine.Net
                 ret.Completed += SendAsyncCallback;
                 ret.SocketFlags = SocketFlags.None;
             }
-
             return ret;
         }
         #endregion

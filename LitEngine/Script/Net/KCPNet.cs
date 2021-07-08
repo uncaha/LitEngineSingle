@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Threading;
 using System.Runtime.InteropServices;
-
+using System.Collections.Concurrent;
 using LitEngine.Net.KCPCommand;
 namespace LitEngine.Net
 {
@@ -46,11 +46,11 @@ namespace LitEngine.Net
         private int mLocalPort = 10824;
 
         private KCP kcpObject;
-        private SwitchQueue<CacheByteObject> recvQueue = new SwitchQueue<CacheByteObject>(128);
+        private ConcurrentQueue<CacheByteObject> recvQueue = new ConcurrentQueue<CacheByteObject>();
         private byte[] kcpRecvBuffer = new byte[4096];
 
         private int cacheByteLen = 2048;
-        private CacheSwitchQueue<CacheByteObject> cacheBytesQue = new CacheSwitchQueue<CacheByteObject>(60);
+        private ConcurrentQueue<CacheByteObject> cacheBytesQue = new ConcurrentQueue<CacheByteObject>();
 
         #endregion
         #region 初始化
@@ -238,17 +238,10 @@ namespace LitEngine.Net
         {
             try
             {
-                if (cacheBytesQue.PopCount <= 0)
-                {
-                    cacheBytesQue.Switch();
-                }
-
                 CacheByteObject dst = null;
-                if (cacheBytesQue.PopCount > 0)
+                if (cacheBytesQue.TryDequeue(out dst))
                 {
-                    dst = cacheBytesQue.Dequeue();
                     dst.Initialize();
-
                 }
                 else
                 {
@@ -256,7 +249,7 @@ namespace LitEngine.Net
                 }
                 dst.length = _len;
                 Buffer.BlockCopy(_buffer, 0, dst.bytes, 0, _len);
-                recvQueue.Push(dst);
+                recvQueue.Enqueue(dst);
             }
             catch (Exception e)
             {
@@ -298,10 +291,9 @@ namespace LitEngine.Net
 
         private void HandleRecvQueue()
         {
-            recvQueue.Switch();
-            while (!recvQueue.Empty())
+            CacheByteObject recvobject = null;
+            while (recvQueue.TryDequeue(out recvobject))
             {
-                var recvobject = recvQueue.Pop();
                 int ret = kcpObject.Input(recvobject.bytes, recvobject.length);
 
                 cacheBytesQue.Enqueue(recvobject);
