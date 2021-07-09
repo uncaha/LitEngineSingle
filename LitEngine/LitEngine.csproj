@@ -246,6 +246,7 @@
     <Compile Include="Script\Loader\LoadTool\ResourcesObject.cs" />
     <Compile Include="Script\Net\NetData\HttpRequestObject.cs" />
     <Compile Include="Script\Net\HttpNet.cs" />
+    <Compile Include="Script\Net\TestServer\NetTestMono.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup />
