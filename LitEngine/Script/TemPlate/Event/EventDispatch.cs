@@ -75,20 +75,23 @@ namespace LitEngine.TemPlate.Event
             }
         }
 
-        static public void Send(object pObject)
+        static public void Send<T>(object pData)
         {
-            if (pObject == null) return;
+            SendByType(typeof(T), pData);
+        }
+
+        static public void SendByType(Type keyType, object pData)
+        {
             try
             {
-                Type tkey = pObject.GetType();
-                if (!Eventdp.mReceiver.ContainsKey(tkey)) return;
-                Eventdp.mReceiver[tkey].Call(pObject);
+                if (!Eventdp.mReceiver.ContainsKey(keyType)) return;
+                Eventdp.mReceiver[keyType].Call(pData);
             }
             catch (Exception erro)
             {
                 DLog.LogError("EventDispatch: " + erro.Message);
             }
-            
+
         }
     }
 }

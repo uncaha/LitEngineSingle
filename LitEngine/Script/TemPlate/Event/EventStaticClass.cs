@@ -29,7 +29,13 @@ namespace LitEngine.TemPlate.Event
 
         static public void SendEvent(this object target, object pObject)
         {
-            EventDispatch.Send(pObject);
+            if (pObject == null) return;
+            Type tkey = pObject.GetType();
+            EventDispatch.SendByType(tkey, pObject);
+        }
+        static public void Send<T>(this object target, object pObject = null)
+        {
+            EventDispatch.Send<T>(pObject);
         }
     }
 }
