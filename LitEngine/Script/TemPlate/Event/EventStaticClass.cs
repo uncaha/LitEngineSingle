@@ -8,10 +8,18 @@ namespace LitEngine.TemPlate.Event
         {
             EventDispatch.Reg(pTarget, pType, pRreceive);
         }
+        public static void RegEvent<T>(this object pTarget, Action<object> pRreceive)
+        {
+            EventDispatch.Reg(pTarget, typeof(T), pRreceive);
+        }
 
         public static void UnRegEvent(this object pTarget, Type pType)
         {
             EventDispatch.UnReg(pTarget, pType);
+        }
+        public static void UnRegEvent<T>(this object pTarget)
+        {
+            EventDispatch.UnReg(pTarget, typeof(T));
         }
 
         public static void UnRegAllEvent(this object pTarget)
