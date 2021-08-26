@@ -31,11 +31,11 @@ namespace LitEngine.TemPlate.Event
         {
             if (pObject == null) return;
             Type tkey = pObject.GetType();
-            EventDispatch.SendByType(tkey, pObject);
+            EventDispatch.Send(tkey, pObject);
         }
         static public void Send<T>(this object target, object pObject = null)
         {
-            EventDispatch.Send<T>(pObject);
+            EventDispatch.Send(typeof(T), pObject);
         }
     }
 }

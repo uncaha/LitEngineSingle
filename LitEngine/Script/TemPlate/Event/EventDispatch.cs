@@ -75,12 +75,7 @@ namespace LitEngine.TemPlate.Event
             }
         }
 
-        static public void Send<T>(object pData)
-        {
-            SendByType(typeof(T), pData);
-        }
-
-        static public void SendByType(Type keyType, object pData)
+        static public void Send(Type keyType, object pData)
         {
             try
             {
