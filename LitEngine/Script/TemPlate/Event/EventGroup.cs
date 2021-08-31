@@ -14,7 +14,7 @@ namespace LitEngine.TemPlate.Event
 
         public void Add(object target, System.Action<object> _delgate)
         {
-            if(!Delgates.ContainsKey(_delgate))
+            if(!Delgates.ContainsKey(target))
             {
                 EventObject titem = new EventObject(target, _delgate);
                 Delgates.Add(target, titem);
