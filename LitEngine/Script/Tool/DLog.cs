@@ -92,6 +92,21 @@ public class DLog
                 break;
         }
     }
+
+    public static void TagLog(DLogType logType,string tag, object pObject)
+    {
+        if (!IsShow(DLogType.Log)) return;
+
+        LOGColor(logType, string.Format("[{0}]{1}", tag, pObject), LogColor.NONE);
+    }
+
+    public static void TagLogFormat(DLogType logType, string tag, string format, params object[] paramObjs)
+    {
+        if (!IsShow(DLogType.Log)) return;
+
+        LOGColor(logType, string.Format("[{0}]{1}", tag, string.Format(format, paramObjs)), LogColor.NONE);
+    }
+
     public static void Log(object _object)
     {
         if (!IsShow(DLogType.Log)) return;
