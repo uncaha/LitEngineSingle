@@ -2,151 +2,167 @@
 using System.Text;
 using System.Collections.Generic;
 
-public enum LogColor
-{
-    NONE = 0,
-    BLUE,
-    YELLO,
-    RED,
-    GREEN,
-    AQUA,
-    WHITE,
-}
-public enum DLogType
-{
-    Log = 1,
-    Warning,
-    Error,
-    Assert,
-    TrueLog,
-}
 
 public class DLog
 {
-   
-    public static DLogType MinLogType = DLogType.Log;
-    private static bool IsShow(DLogType _type)
+    public enum DLogType
     {
-        int ret = (int)_type - (int)MinLogType;
+        Log = 1,
+        Warning,
+        Error,
+        Assert,
+        TrueLog,
+    }
+
+    public static string LogTag = "[GuildSDK]";
+
+    public static DLogType MinLogType = DLogType.Log;
+    private static bool IsShow(DLogType type)
+    {
+        int ret = (int)type - (int)MinLogType;
         if (ret < 0) return false;
         return true;
     }
-    protected static string ColorString(LogColor _color)
-    {
-        string ret = null;
-        switch(_color)
-        {
-            case LogColor.BLUE:
-                ret = "<color=blue>";
-                break;
-            case LogColor.YELLO:
-                ret = "<color=yellow>";
-                break;
-            case LogColor.RED:
-                ret = "<color=red>";
-                break;
-            case LogColor.GREEN:
-                ret = "<color=green>";
-                break;
-            case LogColor.AQUA:
-                ret = "<color=aqua>";
-                break;
-            case LogColor.WHITE:
-                ret = "<color=white>";
-                break;
-        }
-        return ret;
-    }
 
-    public static void LOGColor(DLogType _type, string _msg, LogColor _color)
-    {
-        if (!IsShow(_type)) return;
-        
-        StringBuilder tbuilder = new StringBuilder();
-        tbuilder.Append(_msg == null ? "Null" : _msg);
 
-        string tcolorstr = ColorString(_color);
-        if (tcolorstr != null)
-        {
-            tbuilder.Insert(0, tcolorstr);
-            tbuilder.Append("</color>");
-        }
 
-        string tmsg = tbuilder.ToString();
-        switch (_type)
-        {
-            case DLogType.TrueLog:
-            case DLogType.Log:
-                UnityEngine.Debug.Log(tmsg);
-                break;
-            case DLogType.Error:
-                UnityEngine.Debug.LogError(tmsg);
-                break;
-            case DLogType.Warning:
-                UnityEngine.Debug.LogWarning(tmsg);
-                break;
-            case DLogType.Assert:
-                UnityEngine.Debug.LogAssertion(tmsg);
-                break;
-            default:
-                break;
-        }
-    }
-
-    public static void TagLog(DLogType logType,string tag, object pObject)
+    public static void TagLog(DLogType logType, string tag, object pObject)
     {
         if (!IsShow(DLogType.Log)) return;
 
-        LOGColor(logType, string.Format("[{0}]{1}", tag, pObject), LogColor.NONE);
+        OutputLog(logType, string.Format("[{0}]{1}", tag, pObject));
     }
 
     public static void TagLogFormat(DLogType logType, string tag, string format, params object[] paramObjs)
     {
         if (!IsShow(DLogType.Log)) return;
 
-        LOGColor(logType, string.Format("[{0}]{1}", tag, string.Format(format, paramObjs)), LogColor.NONE);
+        OutputLog(logType, string.Format("[{0}]{1}", tag, string.Format(format, paramObjs)));
     }
 
     public static void Log(object _object)
     {
-        if (!IsShow(DLogType.Log)) return;
-        LOGColor(DLogType.Log, _object == null ? "Null" : _object.ToString(), LogColor.NONE);
+        OutputString(DLogType.Log, _object);
     }
 
     public static void LogWarning(object _object)
     {
-        if (!IsShow(DLogType.Warning)) return;
-        LOGColor(DLogType.Warning, _object == null ? "Null" : _object.ToString(), LogColor.NONE);
+        OutputString(DLogType.Warning, _object);
     }
 
     public static void LogError(object _object)
     {
-        if (!IsShow(DLogType.Error)) return;
-        LOGColor(DLogType.Error, _object == null ? "Null" : _object.ToString(), LogColor.NONE);
+        OutputString(DLogType.Error, _object);
     }
 
     public static void LogAssertion(object _object)
     {
-        if (!IsShow(DLogType.Assert)) return;
-        LOGColor(DLogType.Assert, _object == null ? "Null" : _object.ToString(), LogColor.NONE);
+        OutputString(DLogType.Assert, _object);
     }
 
-    public static void LogFormat(string _formatstr, params object[] _params)
-    {
-        if (!IsShow(DLogType.Log)) return;
-        LOGColor(DLogType.Log, string.Format(_formatstr, _params), LogColor.NONE);
-    }
-
-    public static void LogWarningFormat(string _formatstr, params object[] _params)
-    {
-        if (!IsShow(DLogType.Warning)) return;
-        LOGColor(DLogType.Warning, string.Format(_formatstr, _params), LogColor.NONE);
-    }
-
-    public static void LogErrorFormat(string _formatstr, params object[] _params)
+    public static void LogException(string msg, System.Exception error)
     {
         if (!IsShow(DLogType.Error)) return;
-        LOGColor(DLogType.Error, string.Format(_formatstr, _params), LogColor.NONE);
+        try
+        {
+            StringBuilder tbuild = new StringBuilder();
+            tbuild.Append("[MSG]");
+            tbuild.AppendLine(msg);
+
+            tbuild.Append("[Exception]");
+            tbuild.AppendLine(error.ToString());
+
+            UnityEngine.Debug.LogError(tbuild.ToString());
+        }
+        catch (System.Exception e)
+        {
+            UnityEngine.Debug.LogError(e.ToString());
+        }
+    }
+
+    public static void LogFormat(string format, params object[] args)
+    {
+        OutputFormatString(DLogType.Log, format, args);
+    }
+
+    public static void LogWarningFormat(string format, params object[] args)
+    {
+        OutputFormatString(DLogType.Warning, format, args);
+    }
+
+    public static void LogErrorFormat(string format, params object[] args)
+    {
+        OutputFormatString(DLogType.Error, format, args);
+    }
+
+
+    private static void OutputString(DLogType type, object tar)
+    {
+        try
+        {
+            if (!IsShow(type)) return;
+            OutputLog(type, tar == null ? "Null" : tar.ToString());
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError(tar);
+            Debug.LogError(ex.ToString());
+        }
+    }
+
+    private static void OutputFormatString(DLogType type, string format, params object[] args)
+    {
+        try
+        {
+            if (!IsShow(type)) return;
+            string msg = null;
+            if (args.Length == 1)
+            {
+                msg = string.Format(format, args[0]);
+            }
+            else if (args.Length == 2)
+            {
+                msg = string.Format(format, args[0], args[1]);
+            }
+            else if (args.Length == 3)
+            {
+                msg = string.Format(format, args[0], args[1], args[2]);
+            }
+            else
+            {
+                msg = string.Format(format, args);
+            }
+
+            OutputLog(type, msg);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError(format);
+            Debug.LogError(ex.ToString());
+        }
+    }
+
+    private static void OutputLog(DLogType type, string msg)
+    {
+        //var tmsg = string.Format("{0}[Tick:{1}]: {2} ", LogTag, System.DateTime.Now.TimeOfDay, msg);
+        switch (type)
+        {
+            case DLogType.TrueLog:
+            case DLogType.Log:
+                UnityEngine.Debug.Log(msg);
+                break;
+            case DLogType.Error:
+                UnityEngine.Debug.LogError(msg);
+                break;
+            case DLogType.Warning:
+                UnityEngine.Debug.LogWarning(msg);
+                break;
+            case DLogType.Assert:
+                UnityEngine.Debug.LogAssertion(msg);
+                break;
+            default:
+                break;
+        }
     }
 
 }
