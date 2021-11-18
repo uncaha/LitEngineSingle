@@ -580,7 +580,7 @@ namespace LitEngine.Net
                 }
                 else
                 {
-                    DLog.LOGColor(DLogType.Log, tmsg, LogColor.YELLO);
+                    DLog.Log(tmsg);
                 }
             }
         }
