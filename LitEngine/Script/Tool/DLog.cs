@@ -14,7 +14,7 @@ public class DLog
         TrueLog,
     }
 
-    public static string LogTag = "[GuildSDK]";
+    public static string LogTag = "[DLog]";
 
     public static DLogType MinLogType = DLogType.Log;
     private static bool IsShow(DLogType type)
