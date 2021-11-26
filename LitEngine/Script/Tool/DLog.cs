@@ -14,7 +14,7 @@ public class DLog
         TrueLog,
     }
 
-    public static string LogTag = "[DLog]";
+    public static string LogTag = "[DLOG]";
 
     public static DLogType MinLogType = DLogType.Log;
     private static bool IsShow(DLogType type)
@@ -65,14 +65,8 @@ public class DLog
         if (!IsShow(DLogType.Error)) return;
         try
         {
-            StringBuilder tbuild = new StringBuilder();
-            tbuild.Append("[MSG]");
-            tbuild.AppendLine(msg);
-
-            tbuild.Append("[Exception]");
-            tbuild.AppendLine(error.ToString());
-
-            UnityEngine.Debug.LogError(tbuild.ToString());
+            UnityEngine.Debug.LogError("[MSG]" + msg);
+            UnityEngine.Debug.LogError("[Exception]" + error.ToString());
         }
         catch (System.Exception e)
         {
