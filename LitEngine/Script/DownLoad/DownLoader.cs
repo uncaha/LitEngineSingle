@@ -379,7 +379,7 @@ namespace LitEngine.DownLoad
         {
             try
             {
-                FileStream fs = new FileStream(file, FileMode.Open);
+                FileStream fs = File.OpenRead(file);
                 System.Security.Cryptography.MD5 md5 = new System.Security.Cryptography.MD5CryptoServiceProvider();
                 byte[] retVal = md5.ComputeHash(fs);
                 fs.Close();
