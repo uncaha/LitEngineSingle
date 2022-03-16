@@ -46,6 +46,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="UnityEngine">
       <HintPath>Mylib\UnityEngine.dll</HintPath>
       <Private>False</Private>
@@ -76,6 +77,10 @@
     <Compile Include="Script\Data\DataRow.cs" />
     <Compile Include="Script\Data\DataTable.cs" />
     <Compile Include="Script\EngineInterface\Event\ObjectEventCallScript.cs" />
+    <Compile Include="Script\Net\Http\HttpCacheManager.cs" />
+    <Compile Include="Script\Net\Http\HttpCacheObject.cs" />
+    <Compile Include="Script\Net\Http\HttpObject.cs" />
+    <Compile Include="Script\Net\Http\HttpObjectSharp.cs" />
     <Compile Include="Script\TemPlate\Event\EventDispatch.cs" />
     <Compile Include="Script\TemPlate\Event\EventGroup.cs" />
     <Compile Include="Script\TemPlate\Event\EventObject.cs" />

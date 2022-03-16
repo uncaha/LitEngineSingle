@@ -10,346 +10,299 @@ using System;
 
 namespace LitEngine.Net
 {
-    public class HttpNet : MonoBehaviour
+    public delegate void HttpResponseEvent<TResponse>(TResponse response, string errorMsg, int errorCode = 0);
+
+    public interface IHttpManager
     {
-        public enum HttpMethod
-        {
-            none = 0,
-            POST,
-            GET,
-            PUT,
-            DELETE,
-        }
-        public delegate void HttpObjectCompleteEvent(int code, string responseData, string error);
-        public class HttpObject : IDisposable
-        {
-            public enum State
-            {
-                normal = 0,
-                sending,
-                disposed,
-            }
-
-            public event HttpObjectCompleteEvent OnComplete = null;
-
-            public string Url { get; private set; }
-            public int timeOut { get; private set; } = 60;
-            public HttpMethod methodType { get; private set; } = HttpMethod.POST;
-            public byte[] sendData { get; private set; } = null;
-
-            public bool IsDone { get; private set; } = false;
-            public string ResponseData { get; private set; } = null;
-            public string Error { get; private set; } = null;
-            public int statusCode { get; private set; } = -1;
-            public bool IsStart { get; private set; } = false;
-
-            public Task task { get; private set; } = null;
-            public State state { get; private set; } = State.normal;
-
-            private HttpWebRequest httpRequest;
-            private HttpWebResponse webResponse;
-            private Stream httpResponseStream;
-            public HttpObject(string pUrl, HttpMethod pMethod, byte[] pData, int pTimeOut)
-            {
-                Url = pUrl;
-                sendData = pData;
-                methodType = pMethod;
-                timeOut = pTimeOut;
-
-                headers.Add("Content-Type", "application/json");
-            }
-
-            bool mDisposed = false;
-            public void Dispose()
-            {
-                Dispose(true);
-                GC.SuppressFinalize(this);
-            }
-
-            protected void Dispose(bool _disposing)
-            {
-                if (mDisposed)
-                    return;
-                CloseHttpClient();
-                task = null;
-                state = State.disposed;
-                mDisposed = true;
-            }
-
-            ~HttpObject()
-            {
-                Dispose(false);
-            }
-
-            private void CloseHttpClient()
-            {
-                try
-                {
-                    if (httpResponseStream != null)
-                    {
-                        httpResponseStream.Close();
-                        httpResponseStream = null;
-                    }
-
-                    if (webResponse != null)
-                    {
-                        webResponse.Close();
-                        webResponse = null;
-                    }
-
-                    if (httpRequest != null)
-                    {
-                        httpRequest.Abort();
-                        httpRequest = null;
-                    }
-                }
-                catch (System.Exception erro)
-                {
-                    Debug.LogError(string.Format("[URL] = {0},[Error] = {1}", Url, erro.Message));
-                }
-            }
-
-            Dictionary<string, string> headers = new Dictionary<string, string>();
-            public void SetHeader(string pKey, string pValue)
-            {
-                if (!headers.ContainsKey(pKey))
-                {
-                    headers.Add(pKey, pValue);
-                }
-                else
-                {
-                    headers[pKey] = pValue;
-                }
-            }
-
-            public void SetHeader(Dictionary<string, string> pValues)
-            {
-                if (pValues == null) return;
-                headers = pValues;
-            }
-
-            public void Abort()
-            {
-                CloseHttpClient();
-            }
-
-            public void SendAsync()
-            {
-                if (state != State.normal) return;
-                state = State.sending;
-                task = Task.Run(ReadNetBytes);
-
-                Instance.httpObjects.Add(this);
-            }
-
-            public void Send()
-            {
-                if (state != State.normal) return;
-                state = State.sending;
-                ReadNetBytes();
-                CloseHttpClient();
-            }
+        void AddSlowHttpObject(HttpObject pObj);
+        void OnHttpStartSend(HttpObject pObj);
 
 
-            void ReadNetBytes()
-            {
-                try
-                {
-                    statusCode = -1;
-                    httpRequest = HttpWebRequest.CreateHttp(Url);
-                    httpRequest.Timeout = timeOut;
-                    httpRequest.KeepAlive = true;
+        void OnHttpFinished(HttpObject pObj);
 
-                    CheckHeader();
-                    CheckRequestData();
-                    CheckRespose();
-                }
-                catch (System.Exception ex)
-                {
-                    Error = ex.ToString();
-                }
+        void Add(HttpObject pObj);
 
-                IsDone = true;
-            }
+        void Remove(int pKey);
 
-            void CheckRequestData()
-            {
-                if (sendData != null)
-                {
-                    httpRequest.ContentLength = sendData.Length;
-
-                    Stream stream = httpRequest.GetRequestStream();
-                    stream.Write(sendData, 0, sendData.Length);
-                    stream.Close();
-                }
-            }
-
-            void CheckHeader()
-            {
-                httpRequest.Method = methodType.ToString();
-                httpRequest.Headers.Clear();
-                foreach (var item in headers)
-                {
-                    switch (item.Key)
-                    {
-                        case "Content-Type":
-                            httpRequest.ContentType = item.Value;
-                            break;
-                        default:
-                            httpRequest.Headers.Add(item.Key, item.Value);
-                            break;
-                    }
-                }
-
-            }
-
-            void CheckRespose()
-            {
-                try
-                {
-                    try
-                    {
-                        webResponse = (HttpWebResponse)httpRequest.GetResponse();
-                    }
-                    catch (System.Exception _error)
-                    {
-                        Error = _error.Message;
-                    }
-
-                    if (webResponse == null || Error != null)
-                    {
-                        string terro = string.Format("ReadNetByte Get Response fail.[Error] = {0}", Error);
-                        throw new System.NullReferenceException(terro);
-                    }
+    }
 
 
-                    if (webResponse.StatusCode == HttpStatusCode.OK)
-                    {
-                        httpResponseStream = webResponse.GetResponseStream();
+    public enum HTTPMethodType : byte
+    {
+        none = 0,
+        GET,
+        POST,
+        PUT,
+        DELETE,
+        HEAD,
+        PATCH,
+        OPTIONS,
+    }
 
-                        using (StreamReader reader = new StreamReader(httpResponseStream))
-                        {
-                            ResponseData = reader.ReadToEnd();
-                        }
-                        statusCode = 0;
-                    }
-                    else
-                    {
-                        statusCode = (int)webResponse.StatusCode;
-                        Error = string.Format("Http statusCode = {0}", webResponse.StatusCode);
-                    }
-                }
-                catch (System.Exception ex)
-                {
-                    Error = ex.Message;
-                }
 
-            }
+    public class HttpNet : MonoBehaviour, IHttpManager
+    {
+        public long slowTimeBoundaries = -1;
+        public event System.Action<int> OnHttpTimeTooLong;
 
-            public void CallEvent()
-            {
-                try
-                {
-                    OnComplete?.Invoke(statusCode, ResponseData, Error);
-                }
-                catch (Exception ex)
-                {
-                    DLog.LogErrorFormat("URL = {0},error = {1}", Url, ex);
-                }
-            }
+        public event System.Action<HttpObject> OnHttpStartEvent;
+        public event System.Action<HttpObject> OnHttpFinishedEvent;
 
-        }
-        static private HttpNet sInstance = null;
-        static private HttpNet Instance
+        public Dictionary<string, string> publicHeaders = new Dictionary<string, string>();
+
+        private static HttpNet sInstance = null;
+        public static HttpNet Instance
         {
             get
             {
                 if (sInstance == null)
                 {
-                    GameObject tobj = new GameObject();
-                    DontDestroyOnLoad(tobj);
+                    GameObject tobj = new GameObject(typeof(HttpNet).Name);
+                    GameObject.DontDestroyOnLoad(tobj);
                     sInstance = tobj.AddComponent<HttpNet>();
-                    tobj.name = "Http" + "-Object";
                 }
                 return sInstance;
             }
         }
 
-        List<HttpObject> httpObjects = new List<HttpObject>();
-
-        public HttpNet()
+        public static void UnInit()
         {
-            //headers.Add("Content-Type", "application/json");
+            if (sInstance == null) return;
+            Destroy(sInstance);
+            sInstance = null;
         }
 
-        private void Update()
+        public static string EscapeURL(string pUrl)
         {
-            if (httpObjects.Count == 0) return;
+            return UnityEngine.Networking.UnityWebRequest.EscapeURL(pUrl);
+        }
 
-            for (int i = httpObjects.Count - 1; i >= 0; i--)
+        public static string UnEscapeURL(string pUrl)
+        {
+            return UnityEngine.Networking.UnityWebRequest.UnEscapeURL(pUrl);
+        }
+
+        protected Dictionary<int, HttpObject> httpObjectMap = new Dictionary<int, HttpObject>();
+        protected Dictionary<int, HttpObject> slowHttpObjectMap = new Dictionary<int, HttpObject>();
+        protected List<HttpObject> updateList = new List<HttpObject>(100);
+
+        protected void OnDestroy()
+        {
+            sInstance = null;
+        }
+
+        protected void Update()
+        {
+            try
             {
-                var item = httpObjects[i];
-                if (item.IsDone)
+                if (httpObjectMap.Count == 0) return;
+
+                updateList.Clear();
+                updateList.AddRange(httpObjectMap.Values);
+
+                for (int i = 0, length = updateList.Count; i < length; i++)
                 {
-                    httpObjects.RemoveAt(i);
-                    item.CallEvent();
-                    item.Dispose();
+                    updateList[i].Update();
                 }
             }
-        }
-
-        public static HttpObject SendDelete(string pUrl, HttpObjectCompleteEvent pOnComplete, int pTimeOut = 60, Dictionary<string, string> pHeaders = null)
-        {
-            HttpObject ret = GetHttpObject(pUrl, HttpMethod.DELETE, null, pOnComplete, pTimeOut, pHeaders);
-
-            ret.SendAsync();
-
-            return ret;
-        }
-
-        public static HttpObject SendPut(string pUrl, byte[] pPostData, HttpObjectCompleteEvent pOnComplete, int pTimeOut = 60, Dictionary<string, string> pHeaders = null)
-        {
-            HttpObject ret = GetHttpObject(pUrl, HttpMethod.PUT, pPostData, pOnComplete, pTimeOut, pHeaders);
-
-            ret.SendAsync();
-
-            return ret;
-        }
-
-        public static HttpObject SendPost(string pUrl, byte[] pPostData, HttpObjectCompleteEvent pOnComplete, int pTimeOut = 60, Dictionary<string, string> pHeaders = null)
-        {
-            HttpObject ret = GetHttpObject(pUrl, HttpMethod.POST, pPostData, pOnComplete, pTimeOut, pHeaders);
-
-            ret.SendAsync();
-
-            return ret;
-        }
-
-        public static HttpObject SendGet(string pUrl, HttpObjectCompleteEvent pOnComplete, int pTimeOut = 60, Dictionary<string, string> pHeaders = null)
-        {
-            HttpObject ret = GetHttpObject(pUrl, HttpMethod.GET, null, pOnComplete, pTimeOut, pHeaders);
-
-            ret.SendAsync();
-
-            return ret;
-        }
-
-        public static HttpObject GetHttpObject(string pUrl, HttpMethod httpType, byte[] pPostData, HttpObjectCompleteEvent pOnComplete, int pTimeOut = 60, Dictionary<string, string> pHeaders = null)
-        {
-            HttpObject obj = new HttpObject(pUrl, httpType, pPostData, pTimeOut);
-
-            if (pOnComplete != null)
+            catch (Exception e)
             {
-                obj.OnComplete += pOnComplete;
+                DLog.LogError(e);
             }
 
-            if (pHeaders != null)
+        }
+
+        void OnSlowHttpChanged()
+        {
+            try
             {
-                obj.SetHeader(pHeaders);
+                OnHttpTimeTooLong?.Invoke(slowHttpObjectMap.Count);
+            }
+            catch (System.Exception err)
+            {
+                DLog.LogError(err);
+            }
+        }
+
+        public void ClearAllHttpRequest()
+        {
+            if (httpObjectMap.Count == 0) return;
+
+            var tmap = httpObjectMap;
+            List<HttpObject> tlist = new List<HttpObject>(tmap.Values);
+            tmap.Clear();
+            for (int i = 0, length = tlist.Count; i < length; i++)
+            {
+                var item = tlist[i];
+                item.Dispose();
             }
 
-            return obj;
+            HttpCSharpBase.httpClient?.CancelPendingRequests();
         }
+
+
+        #region send
+        public HttpObject GetRequestObject(string url, HTTPMethodType pType, string requestData, HttpFinishEvent<string> onFinish, HttpErorEvent onError = null, int pTimeOut = 60)
+        {
+
+            var thttpobj = new HttpObjectSharp(url, requestData, pType, pTimeOut);
+
+            thttpobj.httpManager = this;
+            thttpobj.slowTimeBoundaries = slowTimeBoundaries;
+            thttpobj.onFinish += onFinish;
+            thttpobj.onError += onError;
+            return thttpobj;
+        }
+
+        protected void CallOnComplete(string pKey, HttpResponseEvent<string> pOnComplete, string pUrl, object requestData, string response)
+        {
+            try
+            {
+                pOnComplete?.Invoke(response, null, 0);
+            }
+            catch (Exception ex)
+            {
+                DLog.LogErrorFormat("CallOnComplete:Fun = {0}, Url = {1},requestData = {2}, response = {3}", pKey, pUrl, requestData, response);
+                DLog.LogErrorFormat("CallOnComplete:{0}", ex);
+            }
+        }
+
+        protected void CallError(string pKey, HttpResponseEvent<string> pOnComplete, string pUrl, int pCode, string pErrMsg)
+        {
+            try
+            {
+                DLog.LogErrorFormat("[{0}]:URL={1},statuCode = {2}, error={3},", pKey, pUrl, pCode, pErrMsg);
+                pOnComplete?.Invoke(null, pErrMsg, 10000000 + pCode);
+            }
+            catch (Exception ex)
+            {
+                DLog.LogErrorFormat("[CallError]:Fun = {0} Url = {1},Code = {2}, ErrorMsg = {3}, error = {4}", pKey, pUrl, pCode, pErrMsg, ex.ToString());
+            }
+        }
+
+        protected HttpObject StartRequest(string pUrl, HTTPMethodType pType, string requestData,
+            HttpResponseEvent<string> pOnComplete)
+        {
+            var httpObject = GetRequestObject(pUrl, pType, requestData,
+                (response) => { CallOnComplete("StartRequestSend+" + pType, pOnComplete, pUrl, requestData, response); },
+                (statucode, msg, url) =>
+                {
+                    CallError("StartRequestSend+" + pType, pOnComplete, pUrl, 10000000 + statucode, msg);
+                }, 60);
+
+            InitHeaderData(httpObject);
+            httpObject.StartSend();
+
+            return httpObject;
+        }
+
+        public HttpObject StartPost(string pUrl, string requestData, HttpResponseEvent<string> pOnComplete)
+        {
+            return StartRequest(pUrl, HTTPMethodType.POST, requestData, pOnComplete);
+        }
+
+        public HttpObject StartPutSend(string pUrl, string requestData, HttpResponseEvent<string> pOnComplete)
+        {
+            return StartRequest(pUrl, HTTPMethodType.PUT, requestData, pOnComplete);
+        }
+
+        public HttpObject StartDeleteSend(string pUrl, string requestData, HttpResponseEvent<string> pOnComplete)
+        {
+            return StartRequest(pUrl, HTTPMethodType.DELETE, requestData, pOnComplete);
+        }
+
+        public HttpObject StartGetResponse(string pUrl, string requestData, HttpResponseEvent<string> pOnComplete)
+        {
+            return StartRequest(pUrl, HTTPMethodType.GET, requestData, pOnComplete);
+        }
+
+        public HttpObject StartPatchSend(string pUrl, string requestData, HttpResponseEvent<string> pOnComplete)
+        {
+            return StartRequest(pUrl, HTTPMethodType.PATCH, requestData, pOnComplete);
+        }
+
+        protected void InitHeaderData(HttpObject httpObject)
+        {
+            foreach (var item in publicHeaders)
+            {
+                httpObject.SetHeader(item.Key, item.Value);
+            }
+        }
+
+        public void SetPublicHeader(string key, string v)
+        {
+            if (publicHeaders.ContainsKey(key))
+            {
+                publicHeaders[key] = v;
+            }
+            else
+            {
+                publicHeaders.Add(key, v);
+            }
+        }
+        #endregion
+
+
+        #region interface
+        void IHttpManager.AddSlowHttpObject(HttpObject pObj)
+        {
+            if (slowHttpObjectMap.ContainsKey(pObj.Key)) return;
+            slowHttpObjectMap.Add(pObj.Key, pObj);
+            OnSlowHttpChanged();
+        }
+
+        void IHttpManager.OnHttpStartSend(HttpObject pObj)
+        {
+            try
+            {
+                OnHttpStartEvent?.Invoke(pObj);
+            }
+            catch (System.Exception err)
+            {
+                DLog.LogError(err);
+            }
+        }
+
+        void IHttpManager.OnHttpFinished(HttpObject pObj)
+        {
+            try
+            {
+                OnHttpFinishedEvent?.Invoke(pObj);
+            }
+            catch (System.Exception err)
+            {
+                DLog.LogError(err);
+            }
+        }
+
+        void IHttpManager.Add(HttpObject pObj)
+        {
+            if (!httpObjectMap.ContainsKey(pObj.Key))
+            {
+                httpObjectMap.Add(pObj.Key, pObj);
+            }
+            else
+            {
+                DLog.LogError(pObj.Key);
+            }
+        }
+
+        void IHttpManager.Remove(int pKey)
+        {
+            if (httpObjectMap.ContainsKey(pKey))
+            {
+                httpObjectMap.Remove(pKey);
+            }
+
+            if (slowHttpObjectMap.ContainsKey(pKey))
+            {
+                slowHttpObjectMap.Remove(pKey);
+                OnSlowHttpChanged();
+            }
+        }
+        #endregion
+
 
     }
+
 }
