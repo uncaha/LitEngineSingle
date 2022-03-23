@@ -14,8 +14,6 @@ public class DLog
         TrueLog,
     }
 
-    public static string LogTag = "[DLOG]";
-
     public static DLogType MinLogType = DLogType.Log;
     private static bool IsShow(DLogType type)
     {
@@ -138,7 +136,6 @@ public class DLog
 
     private static void OutputLog(DLogType type, string msg)
     {
-        //var tmsg = string.Format("{0}[Tick:{1}]: {2} ", LogTag, System.DateTime.Now.TimeOfDay, msg);
         switch (type)
         {
             case DLogType.TrueLog:

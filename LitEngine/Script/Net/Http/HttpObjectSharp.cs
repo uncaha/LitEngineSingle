@@ -290,7 +290,7 @@ namespace LitEngine.Net
         {
             if (!string.IsNullOrEmpty(pETag))
             {
-                var tcache = new HttpCacheObject();
+                var tcache = new HttpCacheObject(Url, true);
                 tcache.responseData = responseString;
                 tcache.Url = Url;
                 tcache.LastModified = pTime;

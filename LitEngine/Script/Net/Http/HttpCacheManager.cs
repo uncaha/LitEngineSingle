@@ -58,18 +58,22 @@ namespace LitEngine.Net
         private Dictionary<string, HttpCacheObject> cacheMap = new Dictionary<string, HttpCacheObject>(20);
         public HttpCacheObject GetCache(string pKey)
         {
+            HttpCacheObject ret = null;
             if (cacheMap.ContainsKey(pKey))
             {
-                return cacheMap[pKey];
+                ret = cacheMap[pKey];
             }
-
-            var tobj = LoadCache(pKey);
-            if (tobj != null)
+            else
             {
-                cacheMap.Add(tobj.Url, tobj);
+                ret = new HttpCacheObject(pKey);
+                ret.LoadCache();
+                if (ret != null)
+                {
+                    cacheMap.Add(ret.Url, ret);
+                }
             }
 
-            return tobj;
+            return ret.cached ? ret : null;
         }
 
         public void AddCache(HttpCacheObject pObj)
@@ -92,53 +96,10 @@ namespace LitEngine.Net
         {
             if (pObj == null) return;
 
-            try
-            {
-                pObj.file = GetFIlePathByKey(pObj.Url);
-
-                //var tjson = DataConvert.ToJson(pObj);
-
-                //if (tjson != null)
-                {
-                    // File.WriteAllText(pObj.file, tjson);
-                }
-            }
-            catch (System.Exception e)
-            {
-                // HabbyLog.LogError("CacheSave", e.Message);
-            }
-
+            pObj.SaveCache();
         }
 
-        private HttpCacheObject LoadCache(string pUrl)
-        {
-            try
-            {
-                string tpath = GetFIlePathByKey(pUrl);
-                if (File.Exists(tpath))
-                {
-                    var tstr = File.ReadAllText(tpath);
-
-                    // var tobj = DataConvert.FromJson<HttpCacheObject>(tstr);
-
-                    //if (tobj != null)
-                    {
-                        // cacheMap.Add(tobj.Url, tobj);
-                    }
-
-                    //return tobj;
-                }
-            }
-            catch (System.Exception e)
-            {
-                //HabbyLog.LogError("CacheLoad", e.Message);
-            }
-
-
-            return null;
-        }
-
-        private string GetFIlePathByKey(string pKey)
+        internal string GetFIlePathByKey(string pKey)
         {
             string tfile = GetMD5(pKey);
             string tpath = $"{cachePath}/{tfile}.cache";
