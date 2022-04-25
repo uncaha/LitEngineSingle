@@ -11,7 +11,7 @@ namespace LitEngine.Net
         public string LastModified { get { return dataList[2]; } internal set { dataList[2] = value; } }
         public string responseData { get { return dataList[3]; } internal set { dataList[3] = value; } }
 
-
+        public bool waitSave = false;
         public bool cached { get; private set; } = false;
         public string filePath { get; private set; } = "";
         string[] dataList = new string[fieldMax];

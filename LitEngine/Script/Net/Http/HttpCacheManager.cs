@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 using UnityEngine;
 using System.Text;
 using System.Security.Cryptography;
+using System.Collections.Concurrent;
 
 namespace LitEngine.Net
 {
-    public class HttpCacheManager
+    public class HttpCacheManager : MonoBehaviour
     {
         private static HttpCacheManager _instance = null;
 
@@ -20,9 +21,10 @@ namespace LitEngine.Net
             {
                 if (_instance == null)
                 {
-                    _instance = new HttpCacheManager();
+                    GameObject tobj = new GameObject("HttpCacheManager");
+                    GameObject.DontDestroyOnLoad(tobj);
+                    _instance = tobj.AddComponent<HttpCacheManager>();
                 }
-
                 return _instance;
             }
         }
@@ -95,8 +97,9 @@ namespace LitEngine.Net
         private void SaveCache(HttpCacheObject pObj)
         {
             if (pObj == null) return;
-
-            pObj.SaveCache();
+            if (pObj.waitSave) return;
+            pObj.waitSave = true;
+            waitingSaveObjects.Enqueue(pObj);
         }
 
         internal string GetFIlePathByKey(string pKey)
@@ -104,6 +107,29 @@ namespace LitEngine.Net
             string tfile = GetMD5(pKey);
             string tpath = $"{cachePath}/{tfile}.cache";
             return tpath;
+        }
+
+        ConcurrentQueue<HttpCacheObject> waitingSaveObjects = new ConcurrentQueue<HttpCacheObject>();
+
+        float saveTimeStep = 5;
+        void Update()
+        {
+            if (Time.realtimeSinceStartup < saveTimeStep) return;
+            saveTimeStep = Time.realtimeSinceStartup + 5;
+            if (waitingSaveObjects.Count <= 0) return;
+
+            while (waitingSaveObjects.Count > 0)
+            {
+                if (waitingSaveObjects.TryDequeue(out HttpCacheObject item))
+                {
+                    item.SaveCache();
+                    item.waitSave = false;
+                }
+                else
+                {
+                    break;
+                }
+            }
         }
     }
 }
