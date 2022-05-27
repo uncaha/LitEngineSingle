@@ -1,6 +1,10 @@
-﻿using System.Net;
+﻿
+using System.Net;
 using System;
 using System.IO;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 namespace LitEngine.Net
 {
     public class HttpCacheObject
@@ -11,10 +15,11 @@ namespace LitEngine.Net
         public string LastModified { get { return dataList[2]; } internal set { dataList[2] = value; } }
         public string responseData { get { return dataList[3]; } internal set { dataList[3] = value; } }
 
-        public bool waitSave = false;
+        public bool waitSave { get; private set; } = false;
         public bool cached { get; private set; } = false;
         public string filePath { get; private set; } = "";
         string[] dataList = new string[fieldMax];
+
         public HttpCacheObject(string pUrl, bool cache = false)
         {
             for (int i = 0; i < fieldMax; i++)
@@ -53,12 +58,39 @@ namespace LitEngine.Net
                 DLog.LogError(e.Message);
             }
         }
-        internal void SaveCache()
+
+        string savePath = "";
+        string[] waitSaveData = new string[fieldMax];
+        bool dataUpdated = false;
+        internal async void SaveCache()
         {
             if (string.IsNullOrEmpty(ETag) || string.IsNullOrEmpty(Url) || string.IsNullOrEmpty(responseData)) return;
+
+            if (waitSave)
+            {
+                dataUpdated = true;
+                return;
+            }
+
+            waitSave = true;
+            Array.Copy(dataList, 0, waitSaveData, 0, fieldMax);
+            savePath = filePath;
+            await Task.Run((Action)TaskSave);
+
+            waitSave = false;
+
+            if (dataUpdated)
+            {
+                dataUpdated = false;
+                SaveCache();
+            }
+        }
+
+        void TaskSave()
+        {
             try
             {
-                File.WriteAllLines(filePath, dataList);
+                File.WriteAllLines(savePath, waitSaveData);
                 cached = true;
             }
             catch (System.Exception e)

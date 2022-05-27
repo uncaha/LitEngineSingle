@@ -15,6 +15,7 @@ namespace LitEngine.Net
         static HttpCSharpBase()
         {
             httpClient = new HttpClient();
+            var cache = HttpCacheManager.Instance;
         }
     }
 
@@ -23,8 +24,9 @@ namespace LitEngine.Net
         public enum HttpCodeState
         {
             none = 0,
-            timeOUt = 5,
+            
             error = 4,
+            timeOUt = 5,
         }
 
         public event HttpErorEvent onError;
@@ -98,20 +100,20 @@ namespace LitEngine.Net
                 Url, tdalyTime, statusCode, responseString);
             try
             {
-                if (statusCode == 200 || statusCode == 304)
+                if (statusCode == (int)HttpStatusCode.OK || statusCode == (int)HttpStatusCode.NotModified)
                 {
                     OnHttpFinish(responseString);
                 }
                 else
                 {
-                    OnHttpError(ErrorMsg, null, statusCode);
+                    OnHttpError(ErrorMsg, responseString, statusCode);
                 }
             }
             catch (Exception e)
             {
                 DLog.LogError(e);
                 ErrorMsg = e.Message;
-                OnHttpError(ErrorMsg, null, statusCode);
+                OnHttpError(ErrorMsg, null, (int)HttpCodeState.error);
             }
         }
 
@@ -147,8 +149,7 @@ namespace LitEngine.Net
         void SendAsync()
         {
             if (task != null) return;
-            //task = System.Threading.Tasks.Task.Run((System.Action)ReadNetBytes);
-            ReadNetBytes();
+            task = System.Threading.Tasks.Task.Run((System.Action)ReadNetBytes);
         }
 
         void ReadNetBytes()
@@ -163,21 +164,53 @@ namespace LitEngine.Net
                 ErrorMsg = ex.ToString();
                 OnTaskDone();
             }
+
+            task = null;
         }
 
         async void SendRequest()
         {
-            statusCode = -1;
+            statusCode = (int)HttpCodeState.error;
+            try
+            {
 
-            var tmethod = new HttpMethod(methodType.ToString());
-            requestMsg = new HttpRequestMessage(tmethod, Url);
+                var tmethod = new HttpMethod(methodType.ToString());
+                requestMsg = new HttpRequestMessage(tmethod, Url);
 
-            var tResponse = await httpClient.SendAsync(requestMsg);
+                CheckRequest();
+                CheckHeader();
 
-            CheckRequest();
-            CheckHeader();
 
-            await CheckRespose(tResponse);
+                var response = httpClient.SendAsync(requestMsg).Result;
+
+                if (response == null)
+                {
+                    statusCode = (int)HttpCodeState.error;
+                    throw new NullReferenceException("response = null");
+                }
+
+                statusCode = (int)response.StatusCode;
+
+                if (response.StatusCode == HttpStatusCode.NotModified)
+                {
+                    var tcache = HttpCacheManager.Instance.GetCache(Url);
+                    responseString = tcache?.responseData;
+                }
+                else
+                {
+                    if (response.Content != null)
+                    {
+                        responseString = response.Content.ReadAsStringAsync().Result;
+                    }
+                }
+
+                CheckCache(response);
+            }
+            catch (Exception e)
+            {
+                ErrorMsg = e.Message;
+                DLog.LogError(e);
+            }
 
             OnTaskDone();
         }
@@ -219,30 +252,6 @@ namespace LitEngine.Net
                         break;
                 }
             }
-        }
-
-        async Task CheckRespose(HttpResponseMessage response)
-        {
-            if (response == null)
-            {
-                statusCode = (int)HttpCodeState.error;
-                ErrorMsg = "response = null";
-                return;
-            }
-
-            statusCode = (int)response.StatusCode;
-
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                responseString = await response.Content.ReadAsStringAsync();
-            }
-            else if (response.StatusCode == HttpStatusCode.NotModified)
-            {
-                var tcache = HttpCacheManager.Instance.GetCache(Url);
-                responseString = tcache?.responseData;
-            }
-
-            CheckCache(response);
         }
 
         void CheckCache(HttpResponseMessage response)
@@ -305,13 +314,11 @@ namespace LitEngine.Net
             state = HttpState.finish;
         }
 
-        void OnHttpError(string pMsg, HttpWebResponse response, int pState)
+        void OnHttpError(string pMsg, string response, int pState)
         {
             try
             {
-                int tstatecode = response != null ? (int)response.StatusCode : 100000;
-                int statuCode = tstatecode + pState;
-                onError?.Invoke(statuCode, pMsg, Url);
+                onError?.Invoke(pState, response ?? pMsg, Url);
             }
             catch (System.Exception erro)
             {

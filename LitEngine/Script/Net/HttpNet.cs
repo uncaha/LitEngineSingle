@@ -172,7 +172,7 @@ namespace LitEngine.Net
             try
             {
                 DLog.LogErrorFormat("[{0}]:URL={1},statuCode = {2}, error={3},", pKey, pUrl, pCode, pErrMsg);
-                pOnComplete?.Invoke(null, pErrMsg, 10000000 + pCode);
+                pOnComplete?.Invoke(null, pErrMsg, pCode);
             }
             catch (Exception ex)
             {

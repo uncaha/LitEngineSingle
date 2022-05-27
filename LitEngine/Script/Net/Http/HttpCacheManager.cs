@@ -11,38 +11,30 @@ using System.Collections.Concurrent;
 
 namespace LitEngine.Net
 {
-    public class HttpCacheManager : MonoBehaviour
+    public class HttpCacheManager
     {
         private static HttpCacheManager _instance = null;
-
+        private static object lockObj = new object();
         public static HttpCacheManager Instance
         {
             get
             {
                 if (_instance == null)
                 {
-                    GameObject tobj = new GameObject("HttpCacheManager");
-                    GameObject.DontDestroyOnLoad(tobj);
-                    _instance = tobj.AddComponent<HttpCacheManager>();
+                    lock (lockObj)
+                    {
+                        if (_instance == null)
+                        {
+                            _instance = new HttpCacheManager();
+                        }
+                    }
                 }
+
                 return _instance;
             }
         }
 
-        private string _cachePath;
-        public string cachePath
-        {
-            get
-            {
-                if (_cachePath == null)
-                {
-
-                    _cachePath = $"{Application.persistentDataPath}/habby/httpCache";
-                }
-
-                return _cachePath;
-            }
-        }
+        public string CachePath { get; private set; }
 
         public static string GetMD5(string pStr)
         {
@@ -57,13 +49,18 @@ namespace LitEngine.Net
             return tstr.ToString();
         }
 
-        private Dictionary<string, HttpCacheObject> cacheMap = new Dictionary<string, HttpCacheObject>(20);
+        private HttpCacheManager()
+        {
+            CachePath = $"{Application.persistentDataPath}/httpCache";
+        }
+
+        private ConcurrentDictionary<string, HttpCacheObject> cacheMap = new ConcurrentDictionary<string, HttpCacheObject>();
         public HttpCacheObject GetCache(string pKey)
         {
             HttpCacheObject ret = null;
             if (cacheMap.ContainsKey(pKey))
             {
-                ret = cacheMap[pKey];
+                cacheMap.TryGetValue(pKey, out ret);
             }
             else
             {
@@ -71,11 +68,11 @@ namespace LitEngine.Net
                 ret.LoadCache();
                 if (ret != null)
                 {
-                    cacheMap.Add(ret.Url, ret);
+                    cacheMap.TryAdd(ret.Url, ret);
                 }
             }
 
-            return ret.cached ? ret : null;
+            return ret != null && ret.cached ? ret : null;
         }
 
         public void AddCache(HttpCacheObject pObj)
@@ -83,9 +80,10 @@ namespace LitEngine.Net
             if (pObj == null || pObj.Url == null) return;
             if (cacheMap.ContainsKey(pObj.Url)) return;
 
-            cacheMap.Add(pObj.Url, pObj);
-
-            AddSave(pObj);
+            if (cacheMap.TryAdd(pObj.Url, pObj))
+            {
+                AddSave(pObj);
+            }
         }
 
         internal void AddSave(HttpCacheObject pObj)
@@ -97,39 +95,14 @@ namespace LitEngine.Net
         private void SaveCache(HttpCacheObject pObj)
         {
             if (pObj == null) return;
-            if (pObj.waitSave) return;
-            pObj.waitSave = true;
-            waitingSaveObjects.Enqueue(pObj);
+            pObj.SaveCache();
         }
 
         internal string GetFIlePathByKey(string pKey)
         {
             string tfile = GetMD5(pKey);
-            string tpath = $"{cachePath}/{tfile}.cache";
+            string tpath = $"{CachePath}/{tfile}.cache";
             return tpath;
-        }
-
-        ConcurrentQueue<HttpCacheObject> waitingSaveObjects = new ConcurrentQueue<HttpCacheObject>();
-
-        float saveTimeStep = 5;
-        void Update()
-        {
-            if (Time.realtimeSinceStartup < saveTimeStep) return;
-            saveTimeStep = Time.realtimeSinceStartup + 5;
-            if (waitingSaveObjects.Count <= 0) return;
-
-            while (waitingSaveObjects.Count > 0)
-            {
-                if (waitingSaveObjects.TryDequeue(out HttpCacheObject item))
-                {
-                    item.SaveCache();
-                    item.waitSave = false;
-                }
-                else
-                {
-                    break;
-                }
-            }
         }
     }
 }
