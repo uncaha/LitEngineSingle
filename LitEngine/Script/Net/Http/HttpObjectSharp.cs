@@ -148,8 +148,9 @@ namespace LitEngine.Net
 
         void SendAsync()
         {
-            if (task != null) return;
-            task = System.Threading.Tasks.Task.Run((System.Action)ReadNetBytes);
+            //if (task != null) return;
+            //task = System.Threading.Tasks.Task.Run((System.Action)ReadNetBytes);
+            ReadNetBytes();
         }
 
         void ReadNetBytes()
@@ -180,14 +181,19 @@ namespace LitEngine.Net
                 CheckRequest();
                 CheckHeader();
 
+                var tsendTask = httpClient.SendAsync(requestMsg);
 
-                var response = httpClient.SendAsync(requestMsg).Result;
+                await tsendTask;
 
-                if (response == null)
+
+                if (tsendTask.Exception != null)
                 {
                     statusCode = (int)HttpCodeState.error;
-                    throw new NullReferenceException("response = null");
+
+                    throw new NullReferenceException("GetResponse Error : " + tsendTask.Exception?.Message);
                 }
+
+                var response = tsendTask.Result;
 
                 statusCode = (int)response.StatusCode;
 
@@ -198,10 +204,15 @@ namespace LitEngine.Net
                 }
                 else
                 {
-                    if (response.Content != null)
+                    var treadTask = response.Content.ReadAsStringAsync();
+                    await treadTask;
+
+                    if (treadTask.Exception != null)
                     {
-                        responseString = response.Content.ReadAsStringAsync().Result;
+                        throw new NullReferenceException("ReadAsStringAsync Error : " + treadTask.Exception?.Message);
                     }
+
+                    responseString = treadTask.Result;
                 }
 
                 CheckCache(response);
@@ -318,7 +329,8 @@ namespace LitEngine.Net
         {
             try
             {
-                onError?.Invoke(pState, response ?? pMsg, Url);
+                string tmsg = "{" + $"\"response\":\"{response}\",\"Error\":\"{pMsg}\"" + "}";
+                onError?.Invoke(pState, tmsg, Url);
             }
             catch (System.Exception erro)
             {
