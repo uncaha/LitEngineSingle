@@ -190,7 +190,7 @@ namespace LitEngine.Net
                 {
                     statusCode = (int)HttpCodeState.error;
 
-                    throw new NullReferenceException("GetResponse Error : " + tsendTask.Exception?.Message);
+                    throw new NullReferenceException("GetResponse Error : " + tsendTask.Exception);
                 }
 
                 var response = tsendTask.Result;
@@ -209,7 +209,7 @@ namespace LitEngine.Net
 
                     if (treadTask.Exception != null)
                     {
-                        throw new NullReferenceException("ReadAsStringAsync Error : " + treadTask.Exception?.Message);
+                        throw new NullReferenceException("ReadAsStringAsync Error : " + treadTask.Exception);
                     }
 
                     responseString = treadTask.Result;
