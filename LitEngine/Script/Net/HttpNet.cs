@@ -14,6 +14,7 @@ namespace LitEngine.Net
 
     public interface IHttpManager
     {
+        Version defaultHttpVersion { get; }
         void AddSlowHttpObject(HttpObject pObj);
         void OnHttpStartSend(HttpObject pObj);
 
@@ -47,6 +48,8 @@ namespace LitEngine.Net
 
         public event System.Action<HttpObject> OnHttpStartEvent;
         public event System.Action<HttpObject> OnHttpFinishedEvent;
+        
+        public Version defaultHttpVersion { get; set; } = new Version(1, 1);
 
         public Dictionary<string, string> publicHeaders = new Dictionary<string, string>();
 

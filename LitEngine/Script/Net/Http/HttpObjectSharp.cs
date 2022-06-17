@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Threading;
 
 namespace LitEngine.Net
 {
@@ -74,8 +74,12 @@ namespace LitEngine.Net
         {
             try
             {
-                task?.Dispose();
-                task = null;
+                if (task != null)
+                {
+                    task.Dispose();
+                    task = null;
+                }
+                
                 CloseHttpClient();
             }
             catch (System.Exception erro)
@@ -148,9 +152,8 @@ namespace LitEngine.Net
 
         void SendAsync()
         {
-            //if (task != null) return;
-            //task = System.Threading.Tasks.Task.Run((System.Action)ReadNetBytes);
-            ReadNetBytes();
+            if (task != null) return;
+            task = System.Threading.Tasks.Task.Run((System.Action)ReadNetBytes);
         }
 
         void ReadNetBytes()
@@ -169,31 +172,45 @@ namespace LitEngine.Net
             task = null;
         }
 
-        async void SendRequest()
+        void SendRequest()
         {
             statusCode = (int)HttpCodeState.error;
             try
             {
+                HttpResponseMessage response = null;
 
-                var tmethod = new HttpMethod(methodType.ToString());
-                requestMsg = new HttpRequestMessage(tmethod, Url);
-
-                CheckRequest();
-                CheckHeader();
-
-                var tsendTask = httpClient.SendAsync(requestMsg);
-
-                await tsendTask;
-
-
-                if (tsendTask.Exception != null)
+                int treTryCount = 3;
+                Exception tsendError = null;
+                while (treTryCount-- > 0)
                 {
-                    statusCode = (int)HttpCodeState.error;
+                    try
+                    {
+                        var tmethod = new HttpMethod(methodType.ToString());
+                        requestMsg = new HttpRequestMessage(tmethod, Url);
+                        requestMsg.Version = httpManager.defaultHttpVersion;
 
-                    throw new NullReferenceException("GetResponse Error : " + tsendTask.Exception);
+                        CheckRequest();
+                        CheckHeader();
+
+                        var tsendTask =  httpClient.SendAsync(requestMsg);
+                        response = tsendTask.Result;
+                        break;
+                    }
+                    catch (Exception e)
+                    {
+                        tsendError = e;
+                    }
+                    Thread.Sleep(20);
                 }
 
-                var response = tsendTask.Result;
+                if (response == null)
+                {
+                    if (tsendError == null)
+                    {
+                        tsendError = new NullReferenceException("SendAsync Error : response == null");
+                    }
+                    throw tsendError;
+                }
 
                 statusCode = (int)response.StatusCode;
 
@@ -205,12 +222,6 @@ namespace LitEngine.Net
                 else
                 {
                     var treadTask = response.Content.ReadAsStringAsync();
-                    await treadTask;
-
-                    if (treadTask.Exception != null)
-                    {
-                        throw new NullReferenceException("ReadAsStringAsync Error : " + treadTask.Exception);
-                    }
 
                     responseString = treadTask.Result;
                 }
@@ -219,7 +230,7 @@ namespace LitEngine.Net
             }
             catch (Exception e)
             {
-                ErrorMsg = e.Message;
+                ErrorMsg = e.ToString();
                 DLog.LogError(e);
             }
 
