@@ -177,56 +177,23 @@ namespace LitEngine.Net
             statusCode = (int)HttpCodeState.error;
             try
             {
-                HttpResponseMessage response = null;
-
                 int treTryCount = 3;
-                Exception tsendError = null;
                 while (treTryCount-- > 0)
                 {
                     try
                     {
-                        var tmethod = new HttpMethod(methodType.ToString());
-                        requestMsg = new HttpRequestMessage(tmethod, Url);
-                        requestMsg.Version = httpManager.defaultHttpVersion;
-
-                        CheckRequest();
-                        CheckHeader();
-
-                        var tsendTask =  httpClient.SendAsync(requestMsg);
-                        response = tsendTask.Result;
+                        SendProcess();
                         break;
                     }
                     catch (Exception e)
                     {
-                        tsendError = e;
+                        if(treTryCount <= 0)
+                        {
+                            throw e;
+                        }
                     }
                     Thread.Sleep(20);
                 }
-
-                if (response == null)
-                {
-                    if (tsendError == null)
-                    {
-                        tsendError = new NullReferenceException("SendAsync Error : response == null");
-                    }
-                    throw tsendError;
-                }
-
-                statusCode = (int)response.StatusCode;
-
-                if (response.StatusCode == HttpStatusCode.NotModified)
-                {
-                    var tcache = HttpCacheManager.Instance.GetCache(Url);
-                    responseString = tcache?.responseData;
-                }
-                else
-                {
-                    var treadTask = response.Content.ReadAsStringAsync();
-
-                    responseString = treadTask.Result;
-                }
-
-                CheckCache(response);
             }
             catch (Exception e)
             {
@@ -235,6 +202,36 @@ namespace LitEngine.Net
             }
 
             OnTaskDone();
+        }
+
+        void SendProcess()
+        {
+            statusCode = (int)HttpCodeState.error;
+
+            var tmethod = new HttpMethod(methodType.ToString());
+            requestMsg = new HttpRequestMessage(tmethod, Url);
+            requestMsg.Version = httpManager.defaultHttpVersion;
+
+            CheckRequest();
+            CheckHeader();
+
+            var tsendTask = httpClient.SendAsync(requestMsg);
+            var response = tsendTask.Result;
+
+            statusCode = (int)response.StatusCode;
+
+            if (response.StatusCode == HttpStatusCode.NotModified)
+            {
+                var tcache = HttpCacheManager.Instance.GetCache(Url);
+                responseString = tcache?.responseData;
+            }
+            else
+            {
+                var treadTask = response.Content.ReadAsStringAsync();
+                responseString = treadTask.Result;
+            }
+
+            CheckCache(response);
         }
 
         void CheckRequest()
