@@ -16,8 +16,7 @@ namespace LitEngine.Net
         {
             httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Add("Connection","Keep-Alive");
-            httpClient.DefaultRequestHeaders.Add("Keep-Alive","3600");
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
             
             var cache = HttpCacheManager.Instance;
         }
