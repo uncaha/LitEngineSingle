@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -29,6 +30,8 @@ namespace LitEngine.Net
         public string responseString { get; protected set; }
         public HttpState state { get; protected set; } = HttpState.none;
         public int statusCode { get; protected set; } = -1;
+        public int requestCode { get; protected set; } = -1;
+        public WebExceptionStatus webExceptionStatus { get; protected set; } = WebExceptionStatus.Success;
         public string ErrorMsg { get; protected set; } = null;
 
         public bool IsCallStartEvent { get; private set; } = false;
@@ -190,5 +193,4 @@ namespace LitEngine.Net
             IsCallStartEvent = false;
         }
     }
-
 }

@@ -30,10 +30,15 @@ namespace LitEngine.Net
     {
         public enum HttpCodeState
         {
-            none = 0,
-            
-            error = 4,
-            timeOUt = 5,
+            Initial,
+            Queued,
+            Processing,
+            Finished,
+            error,
+            Aborted,
+            ConnectionTimedOut,
+            TimedOut,
+            jsonError,
         }
 
         public event HttpErorEvent onError;
@@ -222,9 +227,36 @@ namespace LitEngine.Net
             CheckRequest();
             CheckHeader();
 
-            var tsendTask = httpClient.SendAsync(requestMsg);
-            var response = tsendTask.Result;
+            HttpResponseMessage response = null;
+            string texception = null;
+            try
+            {
+                var tsendTask = httpClient.SendAsync(requestMsg);
+                response = tsendTask.Result;
+            }
+            catch (WebException eweb)
+            {
+                webExceptionStatus = eweb.Status;
+                switch (eweb.Status)
+                {
+                    case WebExceptionStatus.Timeout:
+                        requestCode = (int) HttpCodeState.TimedOut;
+                        break;
+                }
 
+                texception = eweb.ToString();
+            }
+            catch (Exception e)
+            {
+                texception = e.ToString();
+            }
+
+            if (response == null)
+            {
+                throw new NullReferenceException($"Get Response error = {texception}");
+            }
+            
+            requestCode = (int) HttpCodeState.Finished;
             statusCode = (int)response.StatusCode;
 
             if (response.StatusCode == HttpStatusCode.NotModified)
@@ -344,8 +376,27 @@ namespace LitEngine.Net
         {
             try
             {
-                string tmsg = "{" + $"\"response\":\"{response}\",\"Error\":\"{pMsg}\"" + "}";
-                onError?.Invoke(pState, tmsg, Url);
+                StringBuilder tbuildr = new StringBuilder();
+                tbuildr.Append("{");
+
+                tbuildr.Append($"\"statusCode\":\"{statusCode}\",");
+                tbuildr.Append($"\"requestCode\":\"{requestCode}\",");
+                tbuildr.Append($"\"ExceptionStatus\":\"{webExceptionStatus}\",");
+
+                if (!string.IsNullOrEmpty(response))
+                {
+                    tbuildr.Append($"\"response\":\"{response}\",");
+                }
+                
+                if (!string.IsNullOrEmpty(pMsg))
+                {
+                    tbuildr.Append($"\"errorMessage\":\"{pMsg}\"");
+                }
+
+                tbuildr.Append("}");
+
+                ErrorMsg = tbuildr.ToString();
+                onError?.Invoke(pState, ErrorMsg, Url);
             }
             catch (System.Exception erro)
             {
