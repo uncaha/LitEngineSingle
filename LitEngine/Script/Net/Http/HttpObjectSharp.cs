@@ -14,7 +14,11 @@ namespace LitEngine.Net
 
         static HttpCSharpBase()
         {
-            httpClient = new HttpClient();
+            HttpClientHandler handler = new HttpClientHandler()
+            {
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+            };
+            httpClient = new HttpClient(handler);
             httpClient.DefaultRequestHeaders.Add("Connection","Keep-Alive");
             ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
             
