@@ -234,20 +234,19 @@ namespace LitEngine.Net
                 var tsendTask = httpClient.SendAsync(requestMsg);
                 response = tsendTask.Result;
             }
-            catch (WebException eweb)
-            {
-                webExceptionStatus = eweb.Status;
-                switch (eweb.Status)
-                {
-                    case WebExceptionStatus.Timeout:
-                        requestCode = (int) HttpCodeState.TimedOut;
-                        break;
-                }
-
-                texception = eweb.ToString();
-            }
             catch (Exception e)
             {
+                if (e.InnerException is HttpRequestException thttpReq
+                    && thttpReq.InnerException is WebException twebexp)
+                {
+                    webExceptionStatus = twebexp.Status;
+                    switch (twebexp.Status)
+                    {
+                        case WebExceptionStatus.Timeout:
+                            requestCode = (int) HttpCodeState.TimedOut;
+                            break;
+                    }
+                }
                 texception = e.ToString();
             }
 
