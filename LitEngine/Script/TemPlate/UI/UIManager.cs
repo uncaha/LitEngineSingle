@@ -37,13 +37,12 @@ namespace LitEngine.TemPlate.UI
             }
         }
 
-        override public void DestroyManager()
+        public void DestroyManager()
         {
             UIManager.HideAll();
             UIManager.ReleaseAllHide();
             _Instance = null;
             GameObject.DestroyImmediate(gameObject);
-            base.DestroyManager();
         }
 
         private Dictionary<string, UIBase> mUiCache = new Dictionary<string, UIBase>();

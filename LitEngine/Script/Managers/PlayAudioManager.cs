@@ -222,10 +222,9 @@ namespace LitEngine
             audioSources.AddRange(mAudioMixerSounds.AudioList);
             audioSources.AddRange(mAudioSounds.AudioList);
         }
-        override protected void OnDestroy()
+        protected void OnDestroy()
         {
             audioSources.Clear();
-            base.OnDestroy();
         }
 
         static public bool IsChild(AudioSource targetAudio)

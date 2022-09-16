@@ -32,11 +32,10 @@ namespace LitEngine
             }
         }
 
-        override protected void OnDestroy()
+        protected void OnDestroy()
         {
             sInstance = null;
             mUpdateList.Clear();
-            base.OnDestroy();
         }
 
         public PublicUpdateManager()

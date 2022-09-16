@@ -79,8 +79,13 @@
     <Compile Include="Script\EngineInterface\Event\ObjectEventCallScript.cs" />
     <Compile Include="Script\Net\Http\HttpCacheManager.cs" />
     <Compile Include="Script\Net\Http\HttpCacheObject.cs" />
+    <Compile Include="Script\Net\Http\HttpNet.cs" />
     <Compile Include="Script\Net\Http\HttpObject.cs" />
     <Compile Include="Script\Net\Http\HttpObjectSharp.cs" />
+    <Compile Include="Script\Net\Http\UnityHttp.cs" />
+    <Compile Include="Script\Net\KCP\KCPNet.cs" />
+    <Compile Include="Script\Net\TCP\TCPNet.cs" />
+    <Compile Include="Script\Net\UDP\UDPNet.cs" />
     <Compile Include="Script\TemPlate\Event\EventDispatch.cs" />
     <Compile Include="Script\TemPlate\Event\EventGroup.cs" />
     <Compile Include="Script\TemPlate\Event\EventObject.cs" />
@@ -161,9 +166,6 @@
     <Compile Include="Script\Net\NetData\ReceiveData.cs" />
     <Compile Include="Script\Net\NetData\SendData.cs" />
     <Compile Include="Script\Net\NetData\SocketDataBase.cs" />
-    <Compile Include="Script\Net\TCPNet.cs" />
-    <Compile Include="Script\Net\UDPNet.cs" />
-    <Compile Include="Script\Net\UnityHttp.cs" />
     <Compile Include="Script\EngineInterface\UnityInterface\Enable-Collision-Trigger\ScriptInterfaceCET.cs" />
     <Compile Include="Script\Managers\ScriptManager.cs" />
     <Compile Include="Script\ScriptOnCullDisable.cs" />
@@ -233,7 +235,6 @@
     <Compile Include="Script\Loader\LoadTool\LoadGroup.cs" />
     <Compile Include="Script\Net\KCP\kcp.cs" />
     <Compile Include="Script\Net\KCP\switch_queue.cs" />
-    <Compile Include="Script\Net\KCPNet.cs" />
     <Compile Include="Script\Net\TestServer\ServerTestTCP.cs" />
     <Compile Include="Script\Net\TestServer\ServerTestUDP.cs" />
     <Compile Include="Script\Net\TestServer\ServerTestKCP.cs" />
@@ -250,11 +251,8 @@
     <Compile Include="Script\Loader\ResourcesManager.cs" />
     <Compile Include="Script\Loader\LoadTool\ResourcesObject.cs" />
     <Compile Include="Script\Net\NetData\HttpRequestObject.cs" />
-    <Compile Include="Script\Net\HttpNet.cs" />
     <Compile Include="Script\Net\TestServer\NetTestMono.cs" />
   </ItemGroup>
-  <ItemGroup />
-  <ItemGroup />
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

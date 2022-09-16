@@ -27,11 +27,10 @@ namespace LitEngine
 
                 return sInstance;
             }
-        }
-        override protected void OnDestroy()
+        } 
+        protected void OnDestroy()
         {
             Clear();
-            base.OnDestroy();
         }
         public bool mIsFixedUpdate = true;
         public bool mIsUpdate = true;
