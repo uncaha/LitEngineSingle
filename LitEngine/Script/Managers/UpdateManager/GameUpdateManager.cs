@@ -4,30 +4,9 @@ using LitEngine.UpdateSpace;
 using LitEngine.Method;
 namespace LitEngine
 {
-    public class GameUpdateManager : MonoManagerBase
+    public class GameUpdateManager : MonoManagerGeneric<GameUpdateManager>
     {
-        private static object lockobj = new object();
-        private static GameUpdateManager sInstance = null;
-        private static GameUpdateManager Instance
-        {
-            get
-            {
-                if (sInstance == null)
-                {
-                    lock (lockobj)
-                    {
-                        if (sInstance == null)
-                        {
-                            GameObject tobj = new GameObject("GameUpdateManager");
-                            GameObject.DontDestroyOnLoad(tobj);
-                            sInstance = tobj.AddComponent<GameUpdateManager>();
-                        }
-                    }
-                }
-
-                return sInstance;
-            }
-        } 
+         
         protected void OnDestroy()
         {
             Clear();

@@ -6,23 +6,9 @@ namespace LitEngine
     using UpdateSpace;
     using DownLoad;
     using UnZip;
-    public class PublicUpdateManager : MonoManagerBase
+    public class PublicUpdateManager : MonoManagerGeneric<PublicUpdateManager>
     {
         private UpdateObjectVector mUpdateList = new UpdateObjectVector(UpdateType.Update);
-        private static PublicUpdateManager sInstance = null;
-        private static PublicUpdateManager Instance
-        {
-            get
-            {
-                if (sInstance == null)
-                {
-                    GameObject tobj = new GameObject("PublicUpdateManager");
-                    GameObject.DontDestroyOnLoad(tobj);
-                    sInstance = tobj.AddComponent<PublicUpdateManager>();
-                }
-                return sInstance;
-            }
-        }
 
         public static UpdateObjectVector UpdateList
         {

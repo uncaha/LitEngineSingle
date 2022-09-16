@@ -88,31 +88,8 @@ namespace LitEngine
             return AudioList.Contains(_audio);
         }
     }
-    public class PlayAudioManager : MonoManagerBase
+    public class PlayAudioManager : MonoManagerGeneric<PlayAudioManager>
     {
-        private static object lockobj = new object();
-        private static PlayAudioManager sInstance = null;
-        private static PlayAudioManager Instance
-        {
-            get
-            {
-                if (sInstance == null)
-                {
-                    lock (lockobj)
-                    {
-                        if (sInstance == null)
-                        {
-                            GameObject tobj = new GameObject("PlayAudioManager");
-                            GameObject.DontDestroyOnLoad(tobj);
-                            sInstance = tobj.AddComponent<PlayAudioManager>();
-                            sInstance.Init();
-                        }
-                    }
-                }
-
-                return sInstance;
-            }
-        }
         private PlayAudioManager() { }
 
         private AudioMixerGroup _BackMusicMixer = null;
@@ -202,7 +179,7 @@ namespace LitEngine
         {
 
         }
-        private void Init()
+        override protected void Init()
         {
             if (isInit) return;
             isInit = true;
