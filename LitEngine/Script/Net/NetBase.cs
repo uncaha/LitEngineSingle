@@ -125,8 +125,9 @@ namespace LitEngine.Net
                 {
                     GameObject tobj = new GameObject();
                     DontDestroyOnLoad(tobj);
+                    tobj.hideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector;
                     sInstance = tobj.AddComponent<T>();
-                    sInstance.InitNet();
+                    sInstance.Oninit();
                     tobj.name = sInstance.mNetTag + "-Object";
                 }
                 return sInstance;
@@ -230,7 +231,7 @@ namespace LitEngine.Net
             receiveAsyncEvent.SocketFlags = SocketFlags.None;
         }
 
-        virtual protected void InitNet()
+        virtual protected void Oninit()
         {
 
         }

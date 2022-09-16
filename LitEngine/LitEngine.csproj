@@ -83,8 +83,11 @@
     <Compile Include="Script\Net\Http\HttpObject.cs" />
     <Compile Include="Script\Net\Http\HttpObjectSharp.cs" />
     <Compile Include="Script\Net\Http\UnityHttp.cs" />
+    <Compile Include="Script\Net\KCP\KCPManager.cs" />
     <Compile Include="Script\Net\KCP\KCPNet.cs" />
+    <Compile Include="Script\Net\TCP\TcpManager.cs" />
     <Compile Include="Script\Net\TCP\TCPNet.cs" />
+    <Compile Include="Script\Net\UDP\UDPManager.cs" />
     <Compile Include="Script\Net\UDP\UDPNet.cs" />
     <Compile Include="Script\TemPlate\Event\EventDispatch.cs" />
     <Compile Include="Script\TemPlate\Event\EventGroup.cs" />
