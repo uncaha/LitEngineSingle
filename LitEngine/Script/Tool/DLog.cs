@@ -32,18 +32,7 @@ public class DLog
 
     public static void LogJson(object pJsonObj)
     {
-        if (pJsonObj == null) return;
-        if (!IsShow(DLogType.Log)) return;
-        try
-        {
-            var tmsg = UnityEngine.JsonUtility.ToJson(pJsonObj);
-
-            Log(null, tmsg);
-        }
-        catch (Exception e)
-        {
-            LogError("LogJsonError:" + pJsonObj);
-        }
+        LogJson(null, pJsonObj);
     }
 
     public static void LogException(string msg, System.Exception error)
@@ -101,7 +90,7 @@ public class DLog
         }
         catch (Exception e)
         {
-            LogError(tag, "LogJsonError:" + pJsonObj);
+            LogError(tag, "LogJsonError:" + e);
         }
     }
 
