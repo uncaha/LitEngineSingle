@@ -163,6 +163,7 @@
     <Compile Include="Script\TemPlate\Task\TaskWaitCallNoTimeScale.cs" />
     <Compile Include="Script\TemPlate\UI\UIBase.cs" />
     <Compile Include="Script\TemPlate\UI\UIManager.cs" />
+    <Compile Include="Script\Tool\DataUtile.cs" />
     <Compile Include="Script\Tool\Helper.cs" />
     <Compile Include="Script\Tool\LogWIndow.cs" />
     <Compile Include="Script\ValueType\LValueTypeBase.cs" />

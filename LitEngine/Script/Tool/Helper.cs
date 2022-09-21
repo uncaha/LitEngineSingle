@@ -99,7 +99,7 @@ namespace LitEngine.Tool
 
         static public long GetUnixTime()
         {
-            return (System.DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000000;
+            return (System.DateTime.UtcNow.Ticks - 621355968000000000) / 10000000;
         }
 
         static public int GetBitCount(long _res)
