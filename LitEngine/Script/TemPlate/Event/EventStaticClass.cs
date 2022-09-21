@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System;
-namespace LitEngine.TemPlate.Event
+namespace LitEngine.Event
 {
     public static class EventStaticClass
     {

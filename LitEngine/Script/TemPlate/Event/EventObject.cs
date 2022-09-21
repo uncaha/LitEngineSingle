@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-namespace LitEngine.TemPlate.Event
+namespace LitEngine.Event
 {
     internal class EventObject
     {

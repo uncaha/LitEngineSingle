@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System;
-namespace LitEngine.TemPlate.Event
+namespace LitEngine.Event
 {
     public class EventDispatch
     {
