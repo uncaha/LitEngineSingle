@@ -11,12 +11,13 @@ namespace LitEngine
         public class BehaviourInterfaceBase : MonoBehaviour
         {
             #region 成员
+            [SerializeField]protected string mScriptClass = "";
+            
             protected bool mIsDestory = false;
             protected bool mInitScript = false;
 
             protected CodeToolBase mCodeTool = null;
 
-            public string mScriptClass = "";
             protected IBaseType mScriptType;
             protected object mObject = null;
 
@@ -174,7 +175,7 @@ namespace LitEngine
             {
                 try
                 {
-                    if (mObject == null || mScriptType == null || mCodeTool == null) return;
+                    if (!mInitScript || mObject == null || mScriptType == null || mCodeTool == null) return;
                     MethodBase tmethod = GetMethod(_FunctionName);
                     if (tmethod == null) return;
                     tmethod.Call();
