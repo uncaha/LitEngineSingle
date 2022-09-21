@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Text;
 using System.Collections.Generic;
 
@@ -11,98 +12,165 @@ public class DLog
         Warning,
         Error,
         Assert,
-        TrueLog,
+
+        NoLog = 999,
     }
 
+    public static string LogTag = "DLog";
+
     public static DLogType MinLogType = DLogType.Log;
+
     private static bool IsShow(DLogType type)
     {
-        int ret = (int)type - (int)MinLogType;
+        if (!Debug.unityLogger.logEnabled) return false;
+        int ret = (int) type - (int) MinLogType;
         if (ret < 0) return false;
         return true;
     }
 
+    #region notag
 
-
-    public static void TagLog(DLogType logType, string tag, object pObject)
+    public static void LogJson(object pJsonObj)
     {
+        if (pJsonObj == null) return;
         if (!IsShow(DLogType.Log)) return;
+        try
+        {
+            var tmsg = UnityEngine.JsonUtility.ToJson(pJsonObj);
 
-        OutputLog(logType, string.Format("[{0}]{1}", tag, pObject));
-    }
-
-    public static void TagLogFormat(DLogType logType, string tag, string format, params object[] paramObjs)
-    {
-        if (!IsShow(DLogType.Log)) return;
-
-        OutputLog(logType, string.Format("[{0}]{1}", tag, string.Format(format, paramObjs)));
-    }
-
-    public static void Log(object _object)
-    {
-        OutputString(DLogType.Log, _object);
-    }
-
-    public static void LogWarning(object _object)
-    {
-        OutputString(DLogType.Warning, _object);
-    }
-
-    public static void LogError(object _object)
-    {
-        OutputString(DLogType.Error, _object);
-    }
-
-    public static void LogAssertion(object _object)
-    {
-        OutputString(DLogType.Assert, _object);
+            Log(null, tmsg);
+        }
+        catch (Exception e)
+        {
+            LogError("LogJsonError:" + pJsonObj);
+        }
     }
 
     public static void LogException(string msg, System.Exception error)
     {
-        if (!IsShow(DLogType.Error)) return;
-        try
-        {
-            UnityEngine.Debug.LogError("[MSG]" + msg);
-            UnityEngine.Debug.LogError("[Exception]" + error.ToString());
-        }
-        catch (System.Exception e)
-        {
-            UnityEngine.Debug.LogError(e.ToString());
-        }
+        LogException(null, msg, error);
     }
+
+    public static void Log(object _object)
+    {
+        OutputString(DLogType.Log, null, _object);
+    }
+
+    public static void LogWarning(object _object)
+    {
+        OutputString(DLogType.Warning, null, _object);
+    }
+
+    public static void LogError(object _object)
+    {
+        OutputString(DLogType.Error, null, _object);
+    }
+
+    public static void LogAssertion(object _object)
+    {
+        OutputString(DLogType.Assert, null, _object);
+    }
+
 
     public static void LogFormat(string format, params object[] args)
     {
-        OutputFormatString(DLogType.Log, format, args);
+        OutputFormatString(DLogType.Log, null, format, args);
     }
 
     public static void LogWarningFormat(string format, params object[] args)
     {
-        OutputFormatString(DLogType.Warning, format, args);
+        OutputFormatString(DLogType.Warning, null, format, args);
     }
 
     public static void LogErrorFormat(string format, params object[] args)
     {
-        OutputFormatString(DLogType.Error, format, args);
+        OutputFormatString(DLogType.Error, null, format, args);
+    }
+
+    #endregion
+
+    public static void LogJson(string tag, object pJsonObj)
+    {
+        if (pJsonObj == null) return;
+        if (!IsShow(DLogType.Log)) return;
+        try
+        {
+            var tmsg = UnityEngine.JsonUtility.ToJson(pJsonObj);
+
+            Log(tag, tmsg);
+        }
+        catch (Exception e)
+        {
+            LogError(tag, "LogJsonError:" + pJsonObj);
+        }
     }
 
 
-    private static void OutputString(DLogType type, object tar)
+    public static void Log(string tag, object _object)
+    {
+        OutputString(DLogType.Log, tag, _object);
+    }
+
+    public static void LogWarning(string tag, object _object)
+    {
+        OutputString(DLogType.Warning, tag, _object);
+    }
+
+    public static void LogError(string tag, object _object)
+    {
+        OutputString(DLogType.Error, tag, _object);
+    }
+
+    public static void LogAssertion(string tag, object _object)
+    {
+        OutputString(DLogType.Assert, tag, _object);
+    }
+
+    public static void LogException(string tag, string msg, System.Exception error)
+    {
+        if (!IsShow(DLogType.Error)) return;
+        try
+        {
+            Log(tag, msg);
+            LogErrorFormat(tag, "[Exception]{0}", error);
+        }
+        catch (System.Exception e)
+        {
+            LogError(tag, e);
+        }
+    }
+
+    public static void LogFormat(string tag, string format, params object[] args)
+    {
+        OutputFormatString(DLogType.Log, tag, format, args);
+    }
+
+    public static void LogWarningFormat(string tag, string format, params object[] args)
+    {
+        OutputFormatString(DLogType.Warning, tag, format, args);
+    }
+
+    public static void LogErrorFormat(string tag, string format, params object[] args)
+    {
+        OutputFormatString(DLogType.Error, tag, format, args);
+    }
+
+
+    private static void OutputString(DLogType type, string tag, object tar)
     {
         try
         {
             if (!IsShow(type)) return;
-            OutputLog(type, tar == null ? "Null" : tar.ToString());
+            OutputLog(type, tag, tar == null ? "Null" : tar.ToString());
         }
         catch (System.Exception ex)
         {
             Debug.LogError(tar);
-            Debug.LogError(ex.ToString());
+            Debug.LogError(ex);
         }
     }
 
-    private static void OutputFormatString(DLogType type, string format, params object[] args)
+    private static void OutputFormatString(DLogType type, string tag, string format, params object[] args)
     {
         try
         {
@@ -125,36 +193,45 @@ public class DLog
                 msg = string.Format(format, args);
             }
 
-            OutputLog(type, msg);
+            OutputLog(type, tag, msg);
         }
         catch (System.Exception ex)
         {
             Debug.LogError(format);
-            Debug.LogError(ex.ToString());
+            Debug.LogError(ex);
         }
     }
 
-    private static void OutputLog(DLogType type, string msg)
+    private static void OutputLog(DLogType type, string tag, string msg)
     {
+        string tmsg = null;
+        if (string.IsNullOrEmpty(tag))
+        {
+            tmsg = $"[{LogTag}]: {msg} ";
+        }
+        else
+        {
+            tmsg = $"[{LogTag}][{tag}]: {msg} ";
+        }
+
         switch (type)
         {
-            case DLogType.TrueLog:
             case DLogType.Log:
-                UnityEngine.Debug.Log(msg);
+                UnityEngine.Debug.Log(tmsg);
                 break;
             case DLogType.Error:
-                UnityEngine.Debug.LogError(msg);
+                UnityEngine.Debug.LogError(tmsg);
                 break;
             case DLogType.Warning:
-                UnityEngine.Debug.LogWarning(msg);
+                UnityEngine.Debug.LogWarning(tmsg);
                 break;
             case DLogType.Assert:
-                UnityEngine.Debug.LogAssertion(msg);
+                UnityEngine.Debug.LogAssertion(tmsg);
+                break;
+            case DLogType.NoLog:
                 break;
             default:
                 break;
         }
     }
-
 }
-
