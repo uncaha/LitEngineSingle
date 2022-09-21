@@ -39,24 +39,13 @@ namespace LitEngine.CodeTool
         #region 写入类型
         #endregion
         #region 类型判断
-        virtual public IBaseType GetLType(string _name)
-        {
-            return null;
-        }
-        virtual public IBaseType GetObjectType(object _obj)
-        {
-            if (_obj == null)
-            {
-                throw new NullReferenceException("GetObjectType _obj = null");
-            }
-            return null;
-        }
+
+        abstract public IBaseType GetLType(string _name);
+        abstract public IBaseType GetObjectType(object _obj);
         #endregion
         #region 方法
-        virtual public MethodBase GetLMethod(IBaseType _type, object pTar, string _funname, int _pamcount)
-        {
-            return null;
-        }
+
+        abstract public MethodBase GetLMethod(IBaseType _type, object pTar, string _funname, int _pamcount);
         virtual public object CallMethod(MethodBase pMethod)
         {
             try
@@ -84,87 +73,48 @@ namespace LitEngine.CodeTool
 
         #endregion
         #region 属性
-        virtual public object GetTargetMemberByKey(string _key, object _target)
-        {
-            return null;
-        }
-
-        virtual public object GetTargetMemberByIndex(int _index, object _target)
-        {
-            return null;
-        }
-        virtual public object GetMemberByKey(IBaseType _type, string _key, object _object)
-        {
-            return null;
-        }
-
-        virtual public object GetMemberByIndex(IBaseType _type, int _index, object _object)
-        {
-            return null;
-        }
-
+        abstract public object GetTargetMemberByKey(string _key, object _target);
+        abstract public object GetTargetMemberByIndex(int _index, object _target);
+        abstract public object GetMemberByKey(IBaseType _type, string _key, object _object);
+        abstract public object GetMemberByIndex(IBaseType _type, int _index, object _object);
         virtual public void SetTargetMember(object _target, int _index, object _object)
         {
             IBaseType ttype = GetObjectType(_target);
             SetMember(ttype, _index, _object, _target);
         }
-
         virtual public void SetTargetMember(object _target, string _key, object _object)
         {
             IBaseType ttype = GetObjectType(_target);
             SetMember(ttype, _key, _object, _target);
         }
-        virtual public void SetMember(IBaseType _type, int _index, object _object, object _target)
-        {
-
-        }
-        virtual public void SetMember(IBaseType _type, string _key, object _object, object _target)
-        {
-
-        }
+        abstract public void SetMember(IBaseType _type, int _index, object _object, object _target);
+        abstract public void SetMember(IBaseType _type, string _key, object _object, object _target);
         #endregion
         #region 对象获取
-        virtual public object GetObject(IBaseType _type, params object[] _parmas)
+
+        abstract public object GetObject(IBaseType _type, params object[] _parmas);
+
+        virtual public object GetObject(string pClassName, params object[] _parmas)
         {
-            return null;
-        }
-        virtual public object GetObject(string _classname, params object[] _parmas)
-        {
-            if (_classname == null || _classname.Length == 0) return null;
-            return GetObject(GetLType(_classname), _parmas);
+            if (string.IsNullOrEmpty(pClassName)) return null;
+            return GetObject(GetLType(pClassName), _parmas);
         }
         #endregion
 
         #region 委托
-        virtual public UpdateBase GetUpdateObjectAction(string _Function, string _classname, object _target)
-        {
 
-            return null;
-        }
+        public abstract UpdateBase GetUpdateObjectAction(string _Function, string _classname, object _target);
 
-        virtual public K GetCSLEDelegate<K>(string _Function, IBaseType _classtype, object _target)
-        {
-            return default(K);
-        }
+        abstract public K GetCSLEDelegate<K>(string _Function, IBaseType _classtype, object _target);
+        
+        abstract public K GetCSLEDelegate<K, T1>(string _Function, IBaseType _classtype, object _target);
 
-        virtual public K GetCSLEDelegate<K, T1>(string _Function, IBaseType _classtype, object _target)
-        {
-            return default(K);
-        }
+        abstract public K GetCSLEDelegate<K, T1, T2>(string _Function, IBaseType _classtype, object _target);
 
-        virtual public K GetCSLEDelegate<K, T1, T2>(string _Function, IBaseType _classtype, object _target)
-        {
-            return default(K);
-        }
+        abstract public K GetCSLEDelegate<K, T1, T2, T3>(string _Function, IBaseType _classtype, object _target);
 
-        virtual public K GetCSLEDelegate<K, T1, T2, T3>(string _Function, IBaseType _classtype, object _target)
-        {
-            return default(K);
-        }
-        virtual public K GetCSLEDelegate<K, T1, T2, T3, T4>(string _Function, IBaseType _classtype, object _target)
-        {
-            return default(K);
-        }
+        abstract public K GetCSLEDelegate<K, T1, T2, T3, T4>(string _Function, IBaseType _classtype, object _target);
+        
         #endregion
     }
 }
