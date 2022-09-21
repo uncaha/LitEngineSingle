@@ -45,7 +45,7 @@ namespace LitEngine
 
         static public string GetRealPath(string pPath)
         {
-            return GameCore.CombinePath(GameCore.ExportPath, pPath);
+            return $"{GameCore.ExportPath}/{pPath}";
         }
 
         static public bool ReleaseAsset(string path)

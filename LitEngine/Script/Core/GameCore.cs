@@ -47,22 +47,7 @@ namespace LitEngine
             {
                 if (sAppPersistentAssetsPath == null)
                 {
-                    switch (Application.platform)
-                    {
-                        case RuntimePlatform.OSXEditor:
-                        case RuntimePlatform.WindowsEditor:
-                        case RuntimePlatform.LinuxEditor:
-                            sAppPersistentAssetsPath = CombinePath(UnityEngine.Application.dataPath, "../");
-                            break;
-                        case RuntimePlatform.WindowsPlayer:
-                            sAppPersistentAssetsPath = CombinePath(UnityEngine.Application.dataPath, "");
-                            break;
-                        default:
-                            sAppPersistentAssetsPath = CombinePath(UnityEngine.Application.persistentDataPath, "");
-                            break;
-                    }
-
-
+                    sAppPersistentAssetsPath = UnityEngine.Application.persistentDataPath;
                 }
                 return sAppPersistentAssetsPath;
             }
@@ -75,7 +60,7 @@ namespace LitEngine
             {
                 if(sAppStreamingAssetsPath == null)
                 {
-                    sAppStreamingAssetsPath = CombinePath(UnityEngine.Application.streamingAssetsPath,"");
+                    sAppStreamingAssetsPath = UnityEngine.Application.streamingAssetsPath;
                 }
                 return sAppStreamingAssetsPath;
             }
@@ -108,7 +93,7 @@ namespace LitEngine
         {
             SetPath();
         }
-        static public void InitGameCore(CodeToolBase _codeTool)
+        static public void InitGameCore(CodeToolBase pCodeTool)
         {
             if (Core.mIsInited)
             {
@@ -118,7 +103,7 @@ namespace LitEngine
 
             Core.SetPath();
 
-            Core.mScriptManager = new ScriptManager(_codeTool);
+            Core.mScriptManager = new ScriptManager(pCodeTool);
             Core.mIsInited = true;
         }
 
@@ -126,11 +111,11 @@ namespace LitEngine
         #region 方法
         private void SetPath()
         {
-            mPersistentDataPath = CombinePath(AppPersistentAssetsPath,DataPath,"");
-            mStreamingAssetsDataPath = CombinePath(AppStreamingAssetsPath,DataPath,"");
+            mPersistentDataPath = $"{AppPersistentAssetsPath}/{DataPath}";
+            mStreamingAssetsDataPath = $"{AppStreamingAssetsPath}/{DataPath}";
 
-            mPersistentResDataPath = CombinePath(mPersistentDataPath,ResDataPath,"");
-            mStreamingAssetsResDataPath = CombinePath(mStreamingAssetsDataPath,ResDataPath,"");
+            mPersistentResDataPath = $"{mPersistentDataPath}/{ResDataPath}";
+            mStreamingAssetsResDataPath = $"{mStreamingAssetsDataPath}/{ResDataPath}";
         }
         static public object GetScriptObject(string _classname, params object[] _parmas)
         {
@@ -141,30 +126,7 @@ namespace LitEngine
         {
             return string.Join("/", pPath.Replace("\\", "/").Split('/'));
         }
-
-        static System.Text.StringBuilder cCombineBuilder = new System.Text.StringBuilder();
-        static public string CombinePath(params string[] paths)
-        {
-            if(paths == null || paths.Length == 0) return null;
-            cCombineBuilder.Clear();
-            for (int i = 0, length = paths.Length; i < length; i++)
-            {
-                bool thavenext = i + 1 < length;
-                string item = paths[i];
-                string next = thavenext ? paths[i + 1] : "";
-                bool thv = item.EndsWith("/");
-                bool tnexthv = !thavenext || next.StartsWith("/");
-
-                cCombineBuilder.Append(item);
-
-                if (!thv && !tnexthv)
-                {
-                    cCombineBuilder.Append("/");
-                }
-            }
-
-            return cCombineBuilder.ToString();
-        }
+        
 
         #endregion
     }

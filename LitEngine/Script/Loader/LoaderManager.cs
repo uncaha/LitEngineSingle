@@ -140,7 +140,7 @@ namespace LitEngine
         #region 资源管理
         static public string GetRealAssetName(string pAssetName)
         {
-            return GameCore.CombinePath(GameCore.ExportPath, pAssetName);
+            return $"{GameCore.ExportPath}/{pAssetName}";
         }
 
         static public string[] GetAllDependencies(string _assetBundleName)

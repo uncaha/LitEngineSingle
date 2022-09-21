@@ -310,7 +310,7 @@ namespace LitEngine.UpdateTool
                 string tline = DataConvert.ToJson(pInfo);
                 List<string> tlines = new List<string>();
                 tlines.Add(tline);
-                string tdedfile = GameCore.CombinePath(GameCore.PersistentResDataPath, downloadedfile);
+                string tdedfile = $"{GameCore.PersistentResDataPath}/{downloadedfile}";
                 File.AppendAllLines(tdedfile, tlines);
             }
             catch (System.Exception erro)
@@ -353,7 +353,7 @@ namespace LitEngine.UpdateTool
 
             string tuf = GetServerUrl(LoaderManager.byteFileInfoFileName + BaseBundle.sSuffixName);
             string tcheckfile = GetCheckFileName();
-            string tfilePath = GameCore.CombinePath(GameCore.PersistentResDataPath, tcheckfile);
+            string tfilePath = $"{GameCore.PersistentResDataPath}/{tcheckfile}";
             
             if (!useCache || !File.Exists(tfilePath))
             {
@@ -387,7 +387,7 @@ namespace LitEngine.UpdateTool
         void DownLoadCheckFileFail(DownLoader dloader,CheckComplete onComplete, bool useCache, bool needRetry)
         {
             isChecking = false;
-            string tfilePath = GameCore.CombinePath(GameCore.PersistentResDataPath, GetCheckFileName());
+            string tfilePath = $"{GameCore.PersistentResDataPath}/{GetCheckFileName()}";
             bool isfileExit = File.Exists(tfilePath);
             if (dloader.IsCompleteDownLoad && isfileExit)
             {
@@ -458,7 +458,7 @@ namespace LitEngine.UpdateTool
             var tcmp = new ByteFileInfoList();
             tcmp.AddRange(pList);
 
-            string tdedfile = GameCore.CombinePath(GameCore.PersistentResDataPath, downloadedfile);
+            string tdedfile = $"{GameCore.PersistentResDataPath}/{downloadedfile}";
             var tdedinfo = new ByteFileInfoList(tdedfile);
             var tneedList = tdedinfo.Comparison(tcmp);
 
@@ -480,7 +480,7 @@ namespace LitEngine.UpdateTool
         {
             List<ByteFileInfo> ret = null;
             var tinfo = new ByteFileInfoList();
-            string tfilePath = GameCore.CombinePath(GameCore.PersistentResDataPath, GetCheckFileName());
+            string tfilePath = $"{GameCore.PersistentResDataPath}/{GetCheckFileName()}";
 
             if (File.Exists(tfilePath))
             {
@@ -507,8 +507,8 @@ namespace LitEngine.UpdateTool
 
         void UpdateLocalList()
         {
-            string tfilePath = GameCore.CombinePath(GameCore.PersistentResDataPath, GetCheckFileName());
-            string tsavefile = GameCore.CombinePath(GameCore.PersistentResDataPath, LoaderManager.byteFileInfoFileName + BaseBundle.sSuffixName);
+            string tfilePath = $"{GameCore.PersistentResDataPath}/{GetCheckFileName()}";
+            string tsavefile = $"{GameCore.PersistentResDataPath}/{LoaderManager.byteFileInfoFileName + BaseBundle.sSuffixName}";
 
             if (File.Exists(tfilePath))
             {
@@ -521,7 +521,7 @@ namespace LitEngine.UpdateTool
                 LoaderManager.ReLoadResInfo();
             }
 
-            string tdedfile = GameCore.CombinePath(GameCore.PersistentResDataPath, downloadedfile);
+            string tdedfile = $"{GameCore.PersistentResDataPath}/{downloadedfile}";
             if (File.Exists(tdedfile))
             {
                 File.Delete(tdedfile);
