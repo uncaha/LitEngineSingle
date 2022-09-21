@@ -129,10 +129,10 @@ namespace LitEngine
                 }
 
             }
-            virtual public void InitScript(string _class)
+            virtual public void InitScript(string pClassName)
             {
-                if (string.IsNullOrEmpty(_class) || mInitScript) return;
-                mScriptClass = _class;
+                if (string.IsNullOrEmpty(pClassName) || mInitScript) return;
+                mScriptClass = pClassName;
                 InitScriptOnAwake();
                 if (gameObject.activeInHierarchy)
                 {
