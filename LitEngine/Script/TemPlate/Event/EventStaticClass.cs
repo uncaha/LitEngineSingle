@@ -33,7 +33,7 @@ namespace LitEngine.TemPlate.Event
             Type tkey = pObject.GetType();
             EventDispatch.Send(tkey, pObject);
         }
-        static public void Send<T>(this object target, object pObject = null)
+        static public void Send<T>(this object target, T pObject = null) where T : class
         {
             EventDispatch.Send(typeof(T), pObject);
         }
