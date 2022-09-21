@@ -1,11 +1,10 @@
-﻿
-using System.Net;
+﻿using System.Net;
 using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace LitEngine.Net
+namespace LitEngine.Net.Http
 {
     public class HttpCacheObject
     {
@@ -20,7 +19,7 @@ namespace LitEngine.Net
         public string filePath { get; private set; } = "";
         string[] dataList = new string[fieldMax];
 
-        public HttpCacheObject(string pUrl, bool cache = false)
+        public HttpCacheObject(string pUrl,bool cache = false)
         {
             for (int i = 0; i < fieldMax; i++)
             {
@@ -29,8 +28,8 @@ namespace LitEngine.Net
 
             Url = pUrl;
             cached = cache;
-
-            filePath = HttpCacheManager.Instance.GetFIlePathByKey(Url);
+            
+            filePath =  HttpCacheManager.Instance.GetFIlePathByKey(Url);
         }
 
         internal void LoadCache()
@@ -41,7 +40,7 @@ namespace LitEngine.Net
                 if (File.Exists(filePath))
                 {
                     var tlist = File.ReadAllLines(filePath);
-                    if (tlist.Length == fieldMax)
+                    if(tlist.Length == fieldMax)
                     {
                         dataList = tlist;
                         cached = true;
@@ -55,7 +54,7 @@ namespace LitEngine.Net
             }
             catch (System.Exception e)
             {
-                DLog.LogError(e.Message);
+                DLog.LogError("CacheLoad", e.Message);
             }
         }
 
@@ -71,7 +70,7 @@ namespace LitEngine.Net
                 dataUpdated = true;
                 return;
             }
-
+            
             waitSave = true;
             Array.Copy(dataList, 0, waitSaveData, 0, fieldMax);
             savePath = filePath;
@@ -79,7 +78,7 @@ namespace LitEngine.Net
 
             waitSave = false;
 
-            if (dataUpdated)
+            if(dataUpdated)
             {
                 dataUpdated = false;
                 SaveCache();
@@ -95,9 +94,9 @@ namespace LitEngine.Net
             }
             catch (System.Exception e)
             {
-                DLog.LogError(e.Message);
+                DLog.LogError("CacheSave", e.Message);
             }
         }
-
+        
     }
 }

@@ -2,6 +2,7 @@
 using UnityEngine;
 using System.Text;
 using System.Collections.Generic;
+using LitEngine.Tool;
 
 
 public class DLog
@@ -84,7 +85,7 @@ public class DLog
         if (!IsShow(DLogType.Log)) return;
         try
         {
-            var tmsg = UnityEngine.JsonUtility.ToJson(pJsonObj);
+            var tmsg = DataConvert.ToJson(pJsonObj);
 
             Log(tag, tmsg);
         }

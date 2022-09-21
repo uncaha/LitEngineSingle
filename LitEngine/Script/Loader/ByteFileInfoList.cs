@@ -2,6 +2,8 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using LitEngine.Tool;
+
 namespace LitEngine.LoadAsset
 {
     public class ByteFileInfo
@@ -154,7 +156,7 @@ namespace LitEngine.LoadAsset
                 for (int i = 0,tcount = fileInfoList.Count; i < tcount; i++)
                 {
                     var item = fileInfoList[i];
-                    string tline = UnityEngine.JsonUtility.ToJson(item);
+                    string tline = DataConvert.ToJson(item);
                     tstrbd.AppendLine(tline);
                 }
                 File.AppendAllText(tfilePath, tstrbd.ToString());
@@ -176,7 +178,7 @@ namespace LitEngine.LoadAsset
             {
                 for (; i < len; i++)
                 {
-                    ByteFileInfo tinfo = UnityEngine.JsonUtility.FromJson<ByteFileInfo>(pLines[i]);
+                    ByteFileInfo tinfo = DataConvert.FromJson<ByteFileInfo>(pLines[i]);
                     Add(tinfo);
                 }
             }

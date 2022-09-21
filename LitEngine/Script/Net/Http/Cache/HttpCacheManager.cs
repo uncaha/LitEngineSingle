@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.IO;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -9,9 +10,9 @@ using System.Text;
 using System.Security.Cryptography;
 using System.Collections.Concurrent;
 
-namespace LitEngine.Net
+namespace LitEngine.Net.Http
 {
-    public class HttpCacheManager
+   public class HttpCacheManager
     {
         private static HttpCacheManager _instance = null;
         private static object lockObj = new object();
@@ -51,7 +52,19 @@ namespace LitEngine.Net
 
         private HttpCacheManager()
         {
-            CachePath = $"{Application.persistentDataPath}/httpCache";
+            try
+            {
+                CachePath = $"{Application.persistentDataPath}/HabbyHttpCache";
+                if (!Directory.Exists(CachePath))
+                {
+                    Directory.CreateDirectory(CachePath);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"HttpCacheManager init error = {e}");
+            }
+
         }
 
         private ConcurrentDictionary<string, HttpCacheObject> cacheMap = new ConcurrentDictionary<string, HttpCacheObject>();
@@ -66,10 +79,7 @@ namespace LitEngine.Net
             {
                 ret = new HttpCacheObject(pKey);
                 ret.LoadCache();
-                if (ret != null)
-                {
-                    cacheMap.TryAdd(ret.Url, ret);
-                }
+                cacheMap.TryAdd(ret.Url, ret);
             }
 
             return ret != null && ret.cached ? ret : null;
@@ -77,12 +87,18 @@ namespace LitEngine.Net
 
         public void AddCache(HttpCacheObject pObj)
         {
-            if (pObj == null || pObj.Url == null) return;
-            if (cacheMap.ContainsKey(pObj.Url)) return;
-
-            if (cacheMap.TryAdd(pObj.Url, pObj))
+            if (pObj == null || string.IsNullOrEmpty(pObj.Url)) return;
+            if (cacheMap.ContainsKey(pObj.Url))
             {
+                cacheMap[pObj.Url] = pObj;
                 AddSave(pObj);
+            }
+            else
+            {
+                if (cacheMap.TryAdd(pObj.Url, pObj))
+                {
+                    AddSave(pObj);
+                }
             }
         }
 

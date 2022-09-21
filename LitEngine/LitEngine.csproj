@@ -45,6 +45,10 @@
     </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>Mylib\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Numerics" />
@@ -137,11 +141,13 @@
     <Compile Include="Script\Data\DataRow.cs" />
     <Compile Include="Script\Data\DataTable.cs" />
     <Compile Include="Script\EngineInterface\Event\ObjectEventCallScript.cs" />
-    <Compile Include="Script\Net\Http\HttpCacheManager.cs" />
-    <Compile Include="Script\Net\Http\HttpCacheObject.cs" />
+    <Compile Include="Script\Net\Http\Cache\HttpCacheManager.cs" />
+    <Compile Include="Script\Net\Http\Cache\HttpCacheObject.cs" />
+    <Compile Include="Script\Net\Http\HttpManager.cs" />
     <Compile Include="Script\Net\Http\HttpNet.cs" />
     <Compile Include="Script\Net\Http\HttpObject.cs" />
     <Compile Include="Script\Net\Http\HttpObjectSharp.cs" />
+    <Compile Include="Script\Net\Http\HttpPamarsInvalid.cs" />
     <Compile Include="Script\Net\KCP\KCPManager.cs" />
     <Compile Include="Script\Net\KCP\KCPNet.cs" />
     <Compile Include="Script\Net\TCP\TcpManager.cs" />
@@ -163,6 +169,7 @@
     <Compile Include="Script\TemPlate\Task\TaskWaitCallNoTimeScale.cs" />
     <Compile Include="Script\TemPlate\UI\UIBase.cs" />
     <Compile Include="Script\TemPlate\UI\UIManager.cs" />
+    <Compile Include="Script\Tool\DataConvert.cs" />
     <Compile Include="Script\Tool\DataUtile.cs" />
     <Compile Include="Script\Tool\Helper.cs" />
     <Compile Include="Script\Tool\LogWIndow.cs" />
@@ -316,6 +323,5 @@
     <Compile Include="Script\Net\NetData\HttpRequestObject.cs" />
     <Compile Include="Script\Net\TestServer\NetTestMono.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -6,6 +6,8 @@ using LitEngine.DownLoad;
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
+using LitEngine.Tool;
+
 namespace LitEngine.UpdateTool
 {
     public class UpdateManager : MonoBehaviour
@@ -57,7 +59,7 @@ namespace LitEngine.UpdateTool
             TextAsset datatxt = Resources.Load<TextAsset>(upateMgrData);
             if (datatxt != null)
             {
-                UnityEngine.JsonUtility.FromJsonOverwrite(datatxt.text, updateData);
+                DataConvert.MergeFromJson(updateData,datatxt.text);
             }
             else
             {
@@ -305,7 +307,7 @@ namespace LitEngine.UpdateTool
             if (pInfo == null) return;
             try
             {
-                string tline = UnityEngine.JsonUtility.ToJson(pInfo);
+                string tline = DataConvert.ToJson(pInfo);
                 List<string> tlines = new List<string>();
                 tlines.Add(tline);
                 string tdedfile = GameCore.CombinePath(GameCore.PersistentResDataPath, downloadedfile);
