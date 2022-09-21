@@ -42,7 +42,6 @@ namespace LitEngine.DownLoad
         private ArrayList sWaitDownLoad = ArrayList.Synchronized(new ArrayList());
 
         private Hashtable sGroupMap = Hashtable.Synchronized(new Hashtable());
-        private bool mInited = false;
 
         private DownLoadManager()
         {

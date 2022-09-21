@@ -210,7 +210,6 @@ namespace LitEngine
         #endregion
 
         #region member
-        private bool mInited = false;
         private Dictionary<string,IResourcesLoader> asyncLoaderList = new Dictionary<string,IResourcesLoader>(500);
         private Dictionary<string, IResourcesObject> resCacheDic = new Dictionary<string, IResourcesObject>();
         private AssetMap assetMap;

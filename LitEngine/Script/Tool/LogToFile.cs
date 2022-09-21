@@ -112,16 +112,18 @@ namespace LitEngine.Log
                 }
                 logWriger = null;
             }
-            catch (Exception ex)
+            catch
             {
+                // ignored
             }
 
             try
             {
                 saveThread.Abort();
             }
-            catch (ThreadInterruptedException ex)
+            catch
             {
+                // ignored
             }
 
         }
@@ -253,10 +255,10 @@ namespace LitEngine.Log
 
                 logWriger.Flush();
             }
-            catch (Exception _e)
+            catch
             {
+                // ignored
             }
-
         }
     }
 }

@@ -371,9 +371,9 @@ namespace LitEngine.Net
                     mSocket.Close();
                 }
             }
-            catch (Exception err)
+            catch
             {
-                // DLog.LogError(mNetTag + "socket的关闭时出现异常:" + err);
+                // ignored
             }
             
             mSocket = null;

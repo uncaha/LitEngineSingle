@@ -139,7 +139,7 @@ namespace LitEngine.Log
             {
                 IsOpen = false;
             }
-
+            
             if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Moved)
             {
                 Vector2 scrollPosition = this.ScrollPosition;
