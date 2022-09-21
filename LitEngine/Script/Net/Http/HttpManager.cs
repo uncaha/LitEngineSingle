@@ -103,7 +103,7 @@ namespace LitEngine.Net.Http
     }
 
 
-    public class HttpManager<T> : HttpManagerBase, IHttpManager where T : HttpManagerBase
+    public abstract class HttpManager<T> : HttpManagerBase, IHttpManager where T : HttpManagerBase
     {
         public string Tag { get; protected set; } = "Http";
 

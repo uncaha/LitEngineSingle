@@ -11,13 +11,12 @@ using System;
 namespace LitEngine.Net.Http
 {
     
-
-
-    public class HttpNet : HttpManager<HttpNet>
+    public sealed class HttpNet : HttpManager<HttpNet>
     {
-       
-
-
+        public HttpNet()
+        {
+            Tag = "HttpNet";
+        }
     }
 
 }
