@@ -122,19 +122,19 @@
     <Compile Include="CreatCLRBindingFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Script\CodeTool\BaseType.cs" />
-    <Compile Include="Script\CodeTool\CSharp\CodeTool_SYS.cs" />
-    <Compile Include="Script\CodeTool\CSharp\Method_Action.cs" />
-    <Compile Include="Script\CodeTool\CSharp\Method_CS.cs" />
-    <Compile Include="Script\CodeTool\CSharp\SystemType.cs" />
-    <Compile Include="Script\CodeTool\ILR\CodeTool_LS.cs" />
-    <Compile Include="Script\CodeTool\ILR\IEnumeratorAdaptor.cs" />
-    <Compile Include="Script\CodeTool\ILR\ILRuntimePartialClass.cs" />
-    <Compile Include="Script\CodeTool\ILR\Method_LS.cs" />
-    <Compile Include="Script\CodeTool\ILR\overrideDelegateAdaptre.cs" />
-    <Compile Include="Script\CodeTool\Lua\CodeTool_Lua.cs" />
-    <Compile Include="Script\CodeTool\Lua\LuaType.cs" />
-    <Compile Include="Script\CodeTool\Lua\Method_Lua.cs" />
-    <Compile Include="Script\CodeTool\MethodBase.cs" />
+    <Compile Include="Script\CodeTool\CodeModule\CSharp\CodeTool_SYS.cs" />
+    <Compile Include="Script\CodeTool\CodeModule\CSharp\Method_Action.cs" />
+    <Compile Include="Script\CodeTool\CodeModule\CSharp\Method_CS.cs" />
+    <Compile Include="Script\CodeTool\CodeModule\CSharp\SystemType.cs" />
+    <Compile Include="Script\CodeTool\CodeModule\ILR\CodeTool_LS.cs" />
+    <Compile Include="Script\CodeTool\CodeModule\ILR\IEnumeratorAdaptor.cs" />
+    <Compile Include="Script\CodeTool\CodeModule\ILR\ILRuntimePartialClass.cs" />
+    <Compile Include="Script\CodeTool\CodeModule\ILR\Method_LS.cs" />
+    <Compile Include="Script\CodeTool\CodeModule\ILR\overrideDelegateAdaptre.cs" />
+    <Compile Include="Script\CodeTool\CodeModule\Lua\CodeTool_Lua.cs" />
+    <Compile Include="Script\CodeTool\CodeModule\Lua\LuaType.cs" />
+    <Compile Include="Script\CodeTool\CodeModule\Lua\Method_Lua.cs" />
+    <Compile Include="Script\CodeTool\Method\MethodBase.cs" />
     <Compile Include="Script\Core\AppCore.cs" />
     <Compile Include="Script\CodeTool\CodeToolBase.cs" />
     <Compile Include="Script\Data\DataAttribute.cs" />
@@ -327,6 +327,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Script\CodeTool\Action" />
+    <Folder Include="Script\CodeTool\CodeModule" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
