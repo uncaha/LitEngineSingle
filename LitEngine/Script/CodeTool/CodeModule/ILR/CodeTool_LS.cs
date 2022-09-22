@@ -241,7 +241,7 @@ namespace LitEngine.CodeTool
         override public IBaseType GetLType(string pName)
         {
             if (typesMap.ContainsKey(pName)) return typesMap[pName];
-            if (mApp.GetType(pName) is not ILType ttype) return null;
+            if (!(mApp.GetType(pName) is ILType ttype)) return null;
             var ret = new ILRType(pName, ttype);
             typesMap.Add(pName, ret);
             return ret;
