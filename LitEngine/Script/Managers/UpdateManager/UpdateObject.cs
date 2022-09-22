@@ -138,7 +138,7 @@ namespace LitEngine.UpdateSpace
         {
             if (_disposable == null) throw new NullReferenceException("释放委托不可为NULL. _disposable = null");
             mDisposable = _disposable;
-            method = new Method_Action(_delegate);
+            method = new MethodActionSharp(_delegate);
         }
 
         override protected void DisposeObj()

@@ -58,7 +58,7 @@ namespace LitEngine.TemPlate.UI
 
         private void Awake()
         {
-            UpdateObject tobj = new UpdateObject("UIManager", new Method.Method_Action(UIUpdate),null);
+            UpdateObject tobj = new UpdateObject("UIManager", new Method.MethodActionSharp(UIUpdate),null);
             tobj.MaxTime = 0;
             GameUpdateManager.RegUpdate(tobj);
         }

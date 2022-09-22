@@ -33,7 +33,7 @@ namespace LitEngine.TemPlate.Task
         static public float unscaledDeltaTime { get; private set; }
         private TaskManager()
         {
-            UpdateObject tobj = new UpdateObject("TaskManager", new Method.Method_Action(Update), null);
+            UpdateObject tobj = new UpdateObject("TaskManager", new Method.MethodActionSharp(Update), null);
             tobj.MaxTime = MaxStep;
             GameUpdateManager.RegUpdate(tobj);
         }

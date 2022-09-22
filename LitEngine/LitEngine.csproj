@@ -124,6 +124,7 @@
     <Compile Include="Script\CodeTool\CodeAction\DelgateBase.cs" />
     <Compile Include="Script\CodeTool\BaseType.cs" />
     <Compile Include="Script\CodeTool\CodeModule\CSharp\CodeTool_SYS.cs" />
+    <Compile Include="Script\CodeTool\CodeModule\CSharp\MethodActionSharp.cs" />
     <Compile Include="Script\CodeTool\CodeModule\CSharp\Method_CS.cs" />
     <Compile Include="Script\CodeTool\CodeModule\CSharp\SystemType.cs" />
     <Compile Include="Script\CodeTool\CodeModule\ILR\CodeTool_LS.cs" />

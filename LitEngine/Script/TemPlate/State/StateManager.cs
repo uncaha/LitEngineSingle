@@ -24,7 +24,7 @@ namespace LitEngine.TemPlate.State
             }
         }
         private StateManager() {
-            updateObject = new UpdateObject("StateManager", new Method.Method_Action(Update), null);
+            updateObject = new UpdateObject("StateManager", new Method.MethodActionSharp(Update), null);
             updateObject.MaxTime = 0;
             GameUpdateManager.RegUpdate(updateObject);
         }

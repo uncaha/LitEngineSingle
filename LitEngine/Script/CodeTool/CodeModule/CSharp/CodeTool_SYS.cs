@@ -188,7 +188,7 @@ namespace LitEngine.CodeTool
             if (ttype == null) return null;
             Action tact = GetCSLEDelegate(_Function, ttype, _target);
             if (tact == null) return null;
-            return new Method_Action(tact);
+            return new MethodActionSharp(tact);
         }
 
         public override MethodAction<T> GetMethodAction<T>(string _Function, string _classname, object _target)

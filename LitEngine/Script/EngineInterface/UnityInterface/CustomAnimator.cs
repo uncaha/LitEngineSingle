@@ -39,7 +39,7 @@ namespace LitEngine.ScriptInterface
             GetCanPlay();
             enabled = false;
 
-            lateUpdateobject = new UpdateObject("CustomAnimator", new Method_Action(AniUpdate),this);
+            lateUpdateobject = new UpdateObject("CustomAnimator", new MethodActionSharp(AniUpdate),this);
             lateUpdateobject.MaxTime = 0;
             GameUpdateManager.SetLateUpdateOwner(lateUpdateobject);
         }

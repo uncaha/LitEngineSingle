@@ -80,25 +80,25 @@ namespace LitEngine
 
         static public UpdateBase RegUpdate(System.Action pDelgate,string pKey)
         {
-            var ret = new UpdateObject(pKey, new Method_Action(pDelgate),pDelgate.Target);
+            var ret = new UpdateObject(pKey, new MethodActionSharp(pDelgate),pDelgate.Target);
             Instance.UpdateList.Add(ret);
             return ret;
         }
         static public UpdateBase RegLateUpdate(System.Action pDelgate, string pKey = null)
         {
-            var ret = new UpdateObject(pKey, new Method_Action(pDelgate), pDelgate.Target);
+            var ret = new UpdateObject(pKey, new MethodActionSharp(pDelgate), pDelgate.Target);
             Instance.LateUpdateList.Add(ret);
             return ret;
         }
         static public UpdateBase RegFixedUpdate(System.Action pDelgate, string pKey)
         {
-            var ret = new UpdateObject(pKey, new Method_Action(pDelgate), pDelgate.Target);
+            var ret = new UpdateObject(pKey, new MethodActionSharp(pDelgate), pDelgate.Target);
             Instance.FixedUpdateList.Add(ret);
             return ret;
         }
         static public UpdateBase RegGUIUpdate(System.Action pDelgate, string pKey)
         {
-            var ret = new UpdateObject(pKey, new Method_Action(pDelgate), pDelgate.Target);
+            var ret = new UpdateObject(pKey, new MethodActionSharp(pDelgate), pDelgate.Target);
             Instance.OnGUIList.Add(ret);
             return ret;
         }
