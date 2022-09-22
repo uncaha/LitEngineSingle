@@ -162,7 +162,7 @@ namespace LitEngine.CodeTool
             if (tact == null) return null;
             return new UpdateObject(string.Format("{0}->{1}", _classname, _Function), new Method_Action(tact), _target);
         }
-        override public K GetCSLEDelegate<K>(string _Function, IBaseType _classtype, object _target)
+        K GetCSLEDelegate<K>(string _Function, IBaseType _classtype, object _target)
         {
             if (_classtype == null || _target == null) return default(K);
             object ret = null;
@@ -181,25 +181,6 @@ namespace LitEngine.CodeTool
             }
 
 
-        }
-
-        override public K GetCSLEDelegate<K, T1>(string _Function, IBaseType _classtype, object _target)
-        {
-            return GetCSLEDelegate<K>(_Function, _classtype, _target);
-        }
-
-        override public K GetCSLEDelegate<K, T1, T2>(string _Function, IBaseType _classtype, object _target)
-        {
-            return GetCSLEDelegate<K>(_Function, _classtype, _target);
-        }
-
-        override public K GetCSLEDelegate<K, T1, T2, T3>(string _Function, IBaseType _classtype, object _target)
-        {
-            return GetCSLEDelegate<K>(_Function, _classtype, _target);
-        }
-        override public K GetCSLEDelegate<K, T1, T2, T3, T4>(string _Function, IBaseType _classtype, object _target)
-        {
-            return GetCSLEDelegate<K>(_Function, _classtype, _target);
         }
         #endregion
     }

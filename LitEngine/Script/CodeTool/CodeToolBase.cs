@@ -104,16 +104,6 @@ namespace LitEngine.CodeTool
         #region 委托
 
         public abstract UpdateBase GetUpdateObjectAction(string _Function, string _classname, object _target);
-
-        abstract public K GetCSLEDelegate<K>(string _Function, IBaseType _classtype, object _target);
-        
-        abstract public K GetCSLEDelegate<K, T1>(string _Function, IBaseType _classtype, object _target);
-
-        abstract public K GetCSLEDelegate<K, T1, T2>(string _Function, IBaseType _classtype, object _target);
-
-        abstract public K GetCSLEDelegate<K, T1, T2, T3>(string _Function, IBaseType _classtype, object _target);
-
-        abstract public K GetCSLEDelegate<K, T1, T2, T3, T4>(string _Function, IBaseType _classtype, object _target);
         
         #endregion
     }

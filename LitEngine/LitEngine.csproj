@@ -121,20 +121,22 @@
   <ItemGroup>
     <Compile Include="CreatCLRBindingFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Script\CodeTool\CodeTool_Lua.cs" />
-    <Compile Include="Script\CodeTool\IEnumeratorAdaptor.cs" />
-    <Compile Include="Script\CodeTool\LuaType.cs" />
-    <Compile Include="Script\CodeTool\Method\MethodBase.cs" />
-    <Compile Include="Script\CodeTool\Method\Method_Action.cs" />
-    <Compile Include="Script\CodeTool\Method\Method_CS.cs" />
-    <Compile Include="Script\CodeTool\Method\Method_LS.cs" />
-    <Compile Include="Script\CodeTool\Method\Method_Lua.cs" />
-    <Compile Include="Script\CodeTool\overrideDelegateAdaptre.cs" />
+    <Compile Include="Script\CodeTool\BaseType.cs" />
+    <Compile Include="Script\CodeTool\CSharp\CodeTool_SYS.cs" />
+    <Compile Include="Script\CodeTool\CSharp\Method_Action.cs" />
+    <Compile Include="Script\CodeTool\CSharp\Method_CS.cs" />
+    <Compile Include="Script\CodeTool\CSharp\SystemType.cs" />
+    <Compile Include="Script\CodeTool\ILR\CodeTool_LS.cs" />
+    <Compile Include="Script\CodeTool\ILR\IEnumeratorAdaptor.cs" />
+    <Compile Include="Script\CodeTool\ILR\ILRuntimePartialClass.cs" />
+    <Compile Include="Script\CodeTool\ILR\Method_LS.cs" />
+    <Compile Include="Script\CodeTool\ILR\overrideDelegateAdaptre.cs" />
+    <Compile Include="Script\CodeTool\Lua\CodeTool_Lua.cs" />
+    <Compile Include="Script\CodeTool\Lua\LuaType.cs" />
+    <Compile Include="Script\CodeTool\Lua\Method_Lua.cs" />
+    <Compile Include="Script\CodeTool\MethodBase.cs" />
     <Compile Include="Script\Core\AppCore.cs" />
     <Compile Include="Script\CodeTool\CodeToolBase.cs" />
-    <Compile Include="Script\CodeTool\CodeTool_LS.cs" />
-    <Compile Include="Script\CodeTool\CodeTool_SYS.cs" />
-    <Compile Include="Script\CodeTool\ILRuntimePartialClass.cs" />
     <Compile Include="Script\Data\DataAttribute.cs" />
     <Compile Include="Script\Data\DataBase.cs" />
     <Compile Include="Script\Data\DataBaseElement.cs" />
@@ -206,7 +208,6 @@
     <Compile Include="Script\Tool\SpriteArray.cs" />
     <Compile Include="Script\UnZip\UnZipFile.cs" />
     <Compile Include="Script\Core\GameCore.cs" />
-    <Compile Include="Script\CodeTool\SystemType.cs" />
     <Compile Include="Script\Loader\Bundle\AssetsBundleHaveDependencie.cs" />
     <Compile Include="Script\Loader\Bundle\AssetsBundleHaveDependencieAsync.cs" />
     <Compile Include="Script\Managers\MonoManagerBase.cs" />
@@ -323,6 +324,9 @@
     <Compile Include="Script\Loader\LoadTool\ResourcesObject.cs" />
     <Compile Include="Script\Net\NetData\HttpRequestObject.cs" />
     <Compile Include="Script\Net\TestServer\NetTestMono.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Script\CodeTool\Action" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
