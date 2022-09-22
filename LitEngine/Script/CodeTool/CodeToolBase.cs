@@ -104,7 +104,8 @@ namespace LitEngine.CodeTool
         #region 委托
 
         public abstract UpdateBase GetUpdateObjectAction(string _Function, string _classname, object _target);
-        
+        public abstract Method_Action GetMethodAction(string _Function, string _classname, object _target);
+        public abstract MethodAction<T> GetMethodAction<T>(string _Function, string _classname, object _target);
         #endregion
     }
 }

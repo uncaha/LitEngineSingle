@@ -7,8 +7,8 @@ namespace LitEngine
         public class ScriptInterfaceCollision : ScriptInterfaceCETBase
         {
             #region mymethod
-            protected Action<Collision> mOnCollisionEnter;
-            protected Action<Collision> mOnCollisionExit;
+            protected LitEngine.Method.MethodAction<Collision> mOnCollisionEnter;
+            protected LitEngine.Method.MethodAction<Collision> mOnCollisionExit;
 
             public Collider AptCol { get; set; }
             #endregion
@@ -26,8 +26,8 @@ namespace LitEngine
             override protected void InitParamList()
             {
                 base.InitParamList();
-                mOnCollisionEnter = mCodeTool.GetCSLEDelegate<Action<Collision>, Collision>("OnCollisionEnter", mScriptType, ScriptObject);
-                mOnCollisionExit = mCodeTool.GetCSLEDelegate<Action<Collision>, Collision>("OnCollisionExit", mScriptType, ScriptObject);
+                mOnCollisionEnter = mCodeTool.GetMethodAction< Collision>("OnCollisionEnter", mScriptClass, ScriptObject);
+                mOnCollisionExit = mCodeTool.GetMethodAction<Collision>("OnCollisionExit", mScriptClass, ScriptObject);
             }
             #endregion
             #region Unity 
@@ -38,7 +38,8 @@ namespace LitEngine
                 if (!IsInTagList(_collision.gameObject)) return;
                 if (mCollEnterTimer > Time.realtimeSinceStartup) return;
                 mCollEnterTimer = Time.realtimeSinceStartup + mCollEnterInterval;
-                CallAction(mOnCollisionEnter,_collision);
+
+                mOnCollisionEnter.Call(_collision);
             }
 
             protected void OnCollisionExit(Collision _collision)
@@ -46,7 +47,7 @@ namespace LitEngine
                 if (mOnCollisionExit == null) return;
                // if (AptCol != null && !AptCol.Equals(_collision.contacts[0].thisCollider)) return;
                 if (!IsInTagList(_collision.gameObject)) return;
-                CallAction(mOnCollisionExit, _collision);
+                mOnCollisionExit.Call(_collision);
             }
 
             override protected void OnDestroy()

@@ -28,7 +28,7 @@ namespace LitEngine.ScriptInterface
 
             mTriggerEnterTimer = Time.realtimeSinceStartup + mTriggerEnterInterval;
             if(mOnTriggerEnter != null)
-                CallAction(mOnTriggerEnter, _other);
+                mOnTriggerEnter.Call(_other);
 
             OnEventEnter();
         }

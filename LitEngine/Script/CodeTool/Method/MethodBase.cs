@@ -4,13 +4,26 @@ namespace LitEngine.Method
     public abstract class MethodBase
     {
         protected object target;
-        public MethodBase(object pTar)
+
+        protected MethodBase()
+        {
+            
+        }
+
+        protected MethodBase(object pTar)
         {
             target = pTar;
         }
 
-        public abstract object Invoke(params object[] parameters);
-        public abstract void Call();
+        virtual public object Invoke(params object[] parameters)
+        {
+            return null;
+        }
+
+        virtual public void Call()
+        {
+            
+        }
 
     }
 }

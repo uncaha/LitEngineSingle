@@ -22,8 +22,8 @@ namespace LitEngine
 
             protected Collider SelfCollider = null;
             #region mymethod
-            protected Action<Collider> mOnTriggerEnter;
-            protected Action<Collider> mOnTriggerExit;
+            protected LitEngine.Method.MethodAction<Collider> mOnTriggerEnter;
+            protected LitEngine.Method.MethodAction<Collider> mOnTriggerExit;
             #endregion
             #region 脚本初始化以及析构
             public ScriptInterfaceTrigger()
@@ -46,8 +46,8 @@ namespace LitEngine
             override protected void InitParamList()
             {
                 base.InitParamList();
-                mOnTriggerEnter = mCodeTool.GetCSLEDelegate<Action<Collider>, Collider>("OnTriggerEnter", mScriptType, ScriptObject);
-                mOnTriggerExit = mCodeTool.GetCSLEDelegate<Action<Collider>, Collider>("OnTriggerExit", mScriptType, ScriptObject);
+                mOnTriggerEnter = mCodeTool.GetMethodAction<Collider>("OnTriggerEnter", mScriptClass, ScriptObject);
+                mOnTriggerExit = mCodeTool.GetMethodAction<Collider>("OnTriggerExit", mScriptClass, ScriptObject);
             }
             #endregion
             #region Unity 
@@ -60,14 +60,16 @@ namespace LitEngine
 
                 if (mTriggerEnterTimer > Time.realtimeSinceStartup) return;
                 mTriggerEnterTimer = Time.realtimeSinceStartup + mTriggerEnterInterval;
-                CallAction(mOnTriggerEnter, _other);
+   
+                mOnTriggerEnter.Call(_other);
             }
             virtual protected void OnTriggerExit(Collider _other)
             {
                 if (mOnTriggerExit == null) return;
                 if (mTriggerTarget != null && mTriggerTarget != _other.transform) return;
                 if (!string.IsNullOrEmpty(TriggerTargetName) && !_other.name.Equals(TriggerTargetName)) return;
-                CallAction(mOnTriggerExit, _other);
+
+                mOnTriggerExit.Call(_other);
             }
 
             override protected void OnDestroy()

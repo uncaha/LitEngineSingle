@@ -1,4 +1,6 @@
 ﻿using System;
+using LitEngine.Method;
+
 namespace LitEngine
 {
     namespace ScriptInterface
@@ -6,11 +8,11 @@ namespace LitEngine
         public class ScriptInterfaceMouse : BehaviourInterfaceBase
         {
             #region mymethod
-            protected Action mOnMouseDown;
-            protected Action mOnMouseDrag;
-            protected Action mOnMouseEnter;
-            protected Action mOnMouseExit;
-            protected Action mOnMouseOver;
+            protected Method_Action mOnMouseDown;
+            protected Method_Action mOnMouseDrag;
+            protected Method_Action mOnMouseEnter;
+            protected Method_Action mOnMouseExit;
+            protected Method_Action mOnMouseOver;
             #endregion
             #region 脚本初始化以及析构
             public ScriptInterfaceMouse()
@@ -30,34 +32,34 @@ namespace LitEngine
             override protected void InitParamList()
             {
                 base.InitParamList();
-                mOnMouseDown = mCodeTool.GetCSLEDelegate<Action>("OnMouseDown", mScriptType, ScriptObject);
-                mOnMouseDrag = mCodeTool.GetCSLEDelegate<Action>("OnMouseDrag", mScriptType, ScriptObject);
-                mOnMouseEnter = mCodeTool.GetCSLEDelegate<Action>("OnMouseEnter", mScriptType, ScriptObject);
-                mOnMouseExit = mCodeTool.GetCSLEDelegate<Action>("OnMouseExit", mScriptType, ScriptObject);
-                mOnMouseOver = mCodeTool.GetCSLEDelegate<Action>("OnMouseOver", mScriptType, ScriptObject);
+                mOnMouseDown = mCodeTool.GetMethodAction("OnMouseDown", mScriptClass, ScriptObject);
+                mOnMouseDrag = mCodeTool.GetMethodAction("OnMouseDrag", mScriptClass, ScriptObject);
+                mOnMouseEnter = mCodeTool.GetMethodAction("OnMouseEnter", mScriptClass, ScriptObject);
+                mOnMouseExit = mCodeTool.GetMethodAction("OnMouseExit", mScriptClass, ScriptObject);
+                mOnMouseOver = mCodeTool.GetMethodAction("OnMouseOver", mScriptClass, ScriptObject);
             }
             #endregion
             #region Unity 
             
             protected void OnMouseDown()
             {
-                CallAction(mOnMouseDown);
+                mOnMouseDown.Call();
             }
             protected void OnMouseDrag()
             {
-                CallAction(mOnMouseDrag);
+                mOnMouseDrag.Call();
             }
             protected void OnMouseEnter()
             {
-                CallAction(mOnMouseEnter);
+                mOnMouseEnter.Call();
             }
             protected void OnMouseExit()
             {
-                CallAction(mOnMouseExit);
+                mOnMouseExit.Call();
             }
             protected void OnMouseOver()
             {
-                CallAction(mOnMouseOver);
+                mOnMouseOver.Call();
             }
 
             override protected void OnDestroy()

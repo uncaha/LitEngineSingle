@@ -154,33 +154,62 @@ namespace LitEngine.CodeTool
 
         #endregion
         #region 委托
-        override public UpdateBase GetUpdateObjectAction(string _Function, string _classname, object _target)
+        
+        Action GetCSLEDelegate(string _Function, IBaseType _classtype, object _target)
         {
-            IBaseType ttype = GetLType(_classname);
-            if (ttype == null) return null;
-            Action tact = GetCSLEDelegate<Action>(_Function, ttype, _target);
-            if (tact == null) return null;
-            return new UpdateObject(string.Format("{0}->{1}", _classname, _Function), new Method_Action(tact), _target);
-        }
-        K GetCSLEDelegate<K>(string _Function, IBaseType _classtype, object _target)
-        {
-            if (_classtype == null || _target == null) return default(K);
+            if (_classtype == null || _target == null) return null;
             object ret = null;
             Method_CS methodctor = (Method_CS)GetLMethod(_classtype, _target, _Function, 0);
-            if (methodctor == null) return default(K);
+            if (methodctor == null) return null;
 
             try
             {
-                ret = Delegate.CreateDelegate(typeof(K), _target, methodctor.SMethod);
-                return (K)ret;
+                ret = Delegate.CreateDelegate(typeof(Action), _target, methodctor.SMethod);
+                return (Action)ret;
             }
             catch (Exception _error)
             {
                 DLog.LogErrorFormat("_classtype = {0},_Function = {1},error = {2}", _classtype.Name, _Function, _error);
-                return default(K);
+                return null;
             }
+            
+        }
+        
+        override public UpdateBase GetUpdateObjectAction(string _Function, string _classname, object _target)
+        {
+            var tmet = GetMethodAction(_Function,_classname,_target);
+            if (tmet == null) return null;
+            return new UpdateObject($"{_classname}->{_Function}", tmet, _target);
+        }
 
+        public override Method_Action GetMethodAction(string _Function, string _classname, object _target)
+        {
+            IBaseType ttype = GetLType(_classname);
+            if (ttype == null) return null;
+            Action tact = GetCSLEDelegate(_Function, ttype, _target);
+            if (tact == null) return null;
+            return new Method_Action(tact);
+        }
 
+        public override MethodAction<T> GetMethodAction<T>(string _Function, string _classname, object _target)
+        {
+            IBaseType ttype = GetLType(_classname);
+            if (ttype == null) return null;
+            
+            Method_CS methodctor = (Method_CS)GetLMethod(ttype, _target, _Function, 0);
+            if (methodctor == null) return null;
+
+            try
+            {
+                var retact = (Action<T>)Delegate.CreateDelegate(typeof(Action<T>), _target, methodctor.SMethod);
+                var ret = new MethodActionCSharp<T>(retact);
+                return ret;
+            }
+            catch (Exception _error)
+            {
+                DLog.LogErrorFormat("_classtype = {0},_Function = {1},error = {2}", _classname, _Function, _error);
+            }
+            return null;
         }
         #endregion
     }

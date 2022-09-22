@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+
 namespace LitEngine
 {
     namespace ScriptInterface
@@ -7,10 +8,10 @@ namespace LitEngine
         public class ScriptInterfaceCET : ScriptInterfaceCETBase
         {
             #region mymethod
-            protected Action<Collision> mOnCollisionEnter;
-            protected Action<Collision> mOnCollisionExit;
-            protected Action<Collider> mOnTriggerEnter;
-            protected Action<Collider> mOnTriggerExit;
+            protected LitEngine.Method.MethodAction<Collision> mOnCollisionEnter;
+            protected LitEngine.Method.MethodAction<Collision> mOnCollisionExit;
+            protected LitEngine.Method.MethodAction<Collider> mOnTriggerEnter;
+            protected LitEngine.Method.MethodAction<Collider> mOnTriggerExit;
             #endregion
 
             #region 构造
@@ -29,10 +30,10 @@ namespace LitEngine
             override protected void InitParamList()
             {
                 base.InitParamList();
-                mOnCollisionEnter = mCodeTool.GetCSLEDelegate<Action<Collision>, Collision>("OnCollisionEnter", mScriptType, ScriptObject);
-                mOnCollisionExit = mCodeTool.GetCSLEDelegate<Action<Collision>, Collision>("OnCollisionExit", mScriptType, ScriptObject);
-                mOnTriggerEnter = mCodeTool.GetCSLEDelegate<Action<Collider>, Collider>("OnTriggerEnter", mScriptType, ScriptObject);
-                mOnTriggerExit = mCodeTool.GetCSLEDelegate<Action<Collider>, Collider>("OnTriggerExit", mScriptType, ScriptObject);
+                mOnCollisionEnter = mCodeTool.GetMethodAction<Collision>("OnCollisionEnter", mScriptClass, ScriptObject);
+                mOnCollisionExit = mCodeTool.GetMethodAction<Collision>("OnCollisionExit", mScriptClass, ScriptObject);
+                mOnTriggerEnter = mCodeTool.GetMethodAction<Collider>("OnTriggerEnter", mScriptClass, ScriptObject);
+                mOnTriggerExit = mCodeTool.GetMethodAction<Collider>("OnTriggerExit", mScriptClass, ScriptObject);
 
             }
             #endregion
@@ -44,14 +45,14 @@ namespace LitEngine
                 if (!IsInTagList(_collision.gameObject)) return;
                 if (mCollEnterTimer > Time.realtimeSinceStartup) return;
                 mCollEnterTimer = Time.realtimeSinceStartup + mCollEnterInterval;
-                CallAction(mOnCollisionEnter, _collision);
+                mOnCollisionEnter.Call(_collision);
             }
 
             protected void OnCollisionExit(Collision _collision)
             {
                 if (mOnCollisionExit == null) return;
                 if (!IsInTagList(_collision.gameObject)) return;
-                CallAction(mOnCollisionExit, _collision);
+                mOnCollisionExit.Call(_collision);
             }
 
             protected void OnTriggerEnter(Collider _other)
@@ -62,14 +63,15 @@ namespace LitEngine
 
                 if (mTriggerEnterTimer > Time.realtimeSinceStartup) return;
                 mTriggerEnterTimer = Time.realtimeSinceStartup + mTriggerEnterInterval;
-                CallAction(mOnTriggerEnter, _other);
+                mOnTriggerEnter.Call(_other);
             }
             protected void OnTriggerExit(Collider _other)
             {
                 if (mOnTriggerExit == null) return;
                 if (mTriggerTarget != null && mTriggerTarget != _other.transform) return;
                 if (!_other.name.Equals(TriggerTargetName)) return;
-                CallAction(mOnTriggerExit, _other);
+
+                mOnTriggerExit.Call(_other);
             }
 
             override protected void OnDestroy()
