@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -263,19 +264,19 @@ namespace LitEngine
             IsSceneLoading = true;
             mLoadSceneCall = _FinishdCall;
 
-            LoaderManager.LoadAssetAsync(_scenename, _scenename, LoadedStartScene,pGroupKey);
+            LoaderManager.LoadAssetAsync(_scenename, _scenename, Instance.LoadedStartScene,pGroupKey);
 
             return true;
         }
 
 
-        static private void LoadedStartScene(string _key, object _object)
+        private void LoadedStartScene(string _key, object _object)
         {
             SceneManager.sceneLoaded += LoadSceneCall;
             AsyncOperation topert = SceneManager.LoadSceneAsync(mNowLoadingScene);
 
         }
-        static private void LoadSceneCall(Scene _scene, LoadSceneMode _mode)
+        private void LoadSceneCall(Scene _scene, LoadSceneMode _mode)
         {
             if (mLoadSceneCall != null)
                 mLoadSceneCall();
@@ -396,63 +397,73 @@ namespace LitEngine
         #endregion
 
         #region 文本读取
-        static public byte[] LoadBytes(string pFileName)
+
+        byte[] LoadBytes(string pFileName)
         {
             var tfullname = $"{GameCore.PersistentResDataPath}/{GameCore.ExportPath}/{GameCore.ConfigDataPath}/{pFileName}{BaseBundle.sSuffixName}";
-            
+
             if (!File.Exists(tfullname))
             {
                 return LoadBytesFromFile(pFileName);
             }
 
-            return LoadBytesFromBundle(pFileName,tfullname);
+            return LoadBytesFromBundle(pFileName, tfullname);
         }
 
-        static byte[] LoadBytesFromFile(string pFileName)
+        byte[] LoadBytesFromFile(string pFileName)
         {
-            pFileName = pFileName.Replace(BaseBundle.sSuffixName, "");
+            pFileName = BaseBundle.DeleteSuffixName(pFileName);
             var tfullname = $"{GameCore.ConfigDataPath}/{pFileName}";
             var ttext = Resources.Load<TextAsset>(tfullname);
             if (ttext == null)
             {
-                DLog.LogError("文件读取失败 name = " + tfullname);
+                DLog.LogError("read config fail. name = " + tfullname);
                 return null;
             }
 
             return ttext.bytes;
         }
 
-        static byte[] LoadBytesFromBundle(string pName, string pFilePath)
+        byte[] LoadBytesFromBundle(string pName, string pFilePath)
         {
-            byte[] ret = null;
-
-            AssetBundle tinfobundle = AssetBundle.LoadFromFile(pFilePath);
-            if (tinfobundle != null)
+            try
             {
-                TextAsset tass = tinfobundle.LoadAsset<TextAsset>(pName);
-                if (tass != null)
+                byte[] ret = null;
+
+                AssetBundle tinfobundle = AssetBundle.LoadFromFile(pFilePath);
+                if (tinfobundle != null)
                 {
-                    ret = tass.bytes;
+                    TextAsset tass = tinfobundle.LoadAsset<TextAsset>(pName);
+                    if (tass != null)
+                    {
+                        ret = tass.bytes;
+                    }
+                    else
+                    {
+                        DLog.LogErrorFormat("AssetBundle.LoadAsset<TextAsset>() read failed. name = {0}", pFilePath);
+                    }
+
+                    tinfobundle.Unload(false);
                 }
                 else
                 {
-                    DLog.LogErrorFormat("AssetBundle.LoadAsset<TextAsset>() 文件读取失败 name = {0}", pFilePath);
+                    DLog.LogError($"read config failed. name = {pFilePath}" );
                 }
 
-                tinfobundle.Unload(false);
+                return ret;
             }
-            else
+            catch (Exception e)
             {
-                DLog.LogError("文件读取失败 name = " + pFilePath);
+                DLog.LogError(e);
             }
 
-            return ret;
+            return null;
         }
 
 
         static public byte[] LoadConfigFile(string pFileName)
         {
-            byte[] ret = LoadBytes(pFileName);
+            byte[] ret = Instance.LoadBytes(pFileName);
             if (ret == null)
                 DLog.LogError("文件读取失败 name = " + pFileName);
             return ret;
