@@ -11,8 +11,7 @@ namespace LitEngine
     {
 
         #region static
-
-        private static object lockobj = new object();
+        
         private static ResourcesManager sInstance = null;
         public static ResourcesManager Instance
         {
@@ -20,14 +19,7 @@ namespace LitEngine
             {
                 if (sInstance == null)
                 {
-                    lock (lockobj)
-                    {
-
-                        if (sInstance == null)
-                        {
-                            sInstance = new ResourcesManager();
-                        }
-                    }
+                    sInstance = new ResourcesManager();
                 }
                 return sInstance;
             }
