@@ -46,11 +46,16 @@
     </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Mono.Data.Sqlite">
+      <HintPath>Mylib\Mono.Data.Sqlite.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>Mylib\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Numerics" />
     <Reference Include="UnityEngine.AndroidJNIModule">
@@ -160,6 +165,22 @@
     <Compile Include="Script\Net\TCP\TCPNet.cs" />
     <Compile Include="Script\Net\UDP\UDPManager.cs" />
     <Compile Include="Script\Net\UDP\UDPNet.cs" />
+    <Compile Include="Script\SQL\Attribute\AutomaticAttribute.cs" />
+    <Compile Include="Script\SQL\Attribute\DefaultValueAttribute.cs" />
+    <Compile Include="Script\SQL\Attribute\MapKeyAttribute.cs" />
+    <Compile Include="Script\SQL\Attribute\NotNullAttribute.cs" />
+    <Compile Include="Script\SQL\Attribute\PrimaryAttribute.cs" />
+    <Compile Include="Script\SQL\Attribute\UniqueAttribute.cs" />
+    <Compile Include="Script\SQL\Data\DataDictionary.cs" />
+    <Compile Include="Script\SQL\Data\SQLField.cs" />
+    <Compile Include="Script\SQL\Data\SQLRowData.cs" />
+    <Compile Include="Script\SQL\Data\SQLTableData.cs" />
+    <Compile Include="Script\SQL\Data\SQLTypeObject.cs" />
+    <Compile Include="Script\SQL\Data\TableData.cs" />
+    <Compile Include="Script\SQL\SQLDBManager.cs" />
+    <Compile Include="Script\SQL\SQLDBObject.cs" />
+    <Compile Include="Script\SQL\SQLLog.cs" />
+    <Compile Include="Script\SQL\SQLTable.cs" />
     <Compile Include="Script\TemPlate\Event\EventDispatch.cs" />
     <Compile Include="Script\TemPlate\Event\EventGroup.cs" />
     <Compile Include="Script\TemPlate\Event\EventObject.cs" />
