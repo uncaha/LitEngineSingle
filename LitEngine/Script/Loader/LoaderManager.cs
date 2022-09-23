@@ -19,15 +19,8 @@ namespace LitEngine
             {
                 if (sInstance == null)
                 {
-                    lock (lockobj)
-                    {
-
-                        if (sInstance == null)
-                        {
-                            sInstance = new LoaderManager();
-                            sInstance.Init();
-                        }
-                    }
+                    sInstance = new LoaderManager();
+                    sInstance.Init();
                 }
                 return sInstance;
             }
@@ -60,7 +53,7 @@ namespace LitEngine
         #region 初始化,销毁,设置
         private LoaderManager()
         {
-            GameUpdateManager.RegUpdate(Update, "LoaderManager");
+            
         }
         static public void ReLoadResInfo()
         {
@@ -79,6 +72,8 @@ namespace LitEngine
             mBundleTaskList = new LoadTaskVector();
 
             LoadResInfo();
+            
+            GameUpdateManager.RegUpdate(Update, "LoaderManager");
         }
 
         private void LoadResInfo()
@@ -398,7 +393,7 @@ namespace LitEngine
 
         #region 文本读取
 
-        byte[] LoadBytes(string pFileName)
+        static byte[] LoadBytes(string pFileName)
         {
             var tfullname = $"{GameCore.PersistentResDataPath}/{GameCore.ExportPath}/{GameCore.ConfigDataPath}/{pFileName}{BaseBundle.sSuffixName}";
 
@@ -410,7 +405,7 @@ namespace LitEngine
             return LoadBytesFromBundle(pFileName, tfullname);
         }
 
-        byte[] LoadBytesFromFile(string pFileName)
+        static byte[] LoadBytesFromFile(string pFileName)
         {
             pFileName = BaseBundle.DeleteSuffixName(pFileName);
             var tfullname = $"{GameCore.ConfigDataPath}/{pFileName}";
@@ -424,7 +419,7 @@ namespace LitEngine
             return ttext.bytes;
         }
 
-        byte[] LoadBytesFromBundle(string pName, string pFilePath)
+        static byte[] LoadBytesFromBundle(string pName, string pFilePath)
         {
             try
             {
@@ -463,7 +458,7 @@ namespace LitEngine
 
         static public byte[] LoadConfigFile(string pFileName)
         {
-            byte[] ret = Instance.LoadBytes(pFileName);
+            byte[] ret = LoadBytes(pFileName);
             if (ret == null)
                 DLog.LogError("文件读取失败 name = " + pFileName);
             return ret;

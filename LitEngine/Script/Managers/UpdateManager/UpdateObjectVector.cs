@@ -39,13 +39,7 @@ namespace LitEngine.UpdateSpace
             {
                 pUpdater.UnRegToOwner();
             }
-
-            if (pUpdater.node != null)
-            {
-                pUpdater.node = new LinkedListNode<UpdateBase>(pUpdater);
-            }
-
-            updaterList.AddLast(pUpdater.node);
+            pUpdater.node = updaterList.AddLast(pUpdater);
         }
 
         internal void Remove(UpdateBase pUpdater)
@@ -54,8 +48,9 @@ namespace LitEngine.UpdateSpace
             if (pUpdater.node != null)
             {
                 updaterList.Remove(pUpdater.node);
+                pUpdater.node = null;
             }
-
+            
         }
 
         internal void Clear()
