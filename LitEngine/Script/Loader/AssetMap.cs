@@ -10,8 +10,13 @@ namespace LitEngine.LoadAsset
         public class AssetObject
         {
             public string assetName;
-            public string sufixx;
+            public string sufixx = "";
             public bool isInSide;
+
+            public AssetObject()
+            {
+                isInSide = true;
+            }
             public AssetObject(string pFileName)
             {
                 int tindex = pFileName.LastIndexOf('.');
@@ -31,8 +36,7 @@ namespace LitEngine.LoadAsset
         }
         
         public AssetObject[] assets;
-
-        private static AssetObject sNullObject;
+        
         private Dictionary<string,AssetObject> assetMap;
         
        [System.NonSerialized] bool inited = false;
@@ -44,7 +48,7 @@ namespace LitEngine.LoadAsset
             {
                 assets = new AssetObject[0];
             }
-            sNullObject = new AssetObject("Null");
+
             assetMap  = new Dictionary<string,AssetObject>(assets.Length);
             foreach(var item in assets)
             {
@@ -69,9 +73,10 @@ namespace LitEngine.LoadAsset
             AssetObject ret;
             if (!assetMap.TryGetValue(pkey, out ret))
             {
-                ret = sNullObject;
+                ret = new AssetObject();
                 ret.assetName = pAsset;
                 ret.isInSide = false;
+                assetMap.Add(pkey,ret);
             }
             return ret;
         }
