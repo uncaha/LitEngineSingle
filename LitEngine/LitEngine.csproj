@@ -152,6 +152,7 @@
     <Compile Include="Script\Data\DataRow.cs" />
     <Compile Include="Script\Data\DataTable.cs" />
     <Compile Include="Script\EngineInterface\Event\ObjectEventCallScript.cs" />
+    <Compile Include="Script\Loader\GameObjectCacheQue.cs" />
     <Compile Include="Script\Net\Http\Cache\HttpCacheManager.cs" />
     <Compile Include="Script\Net\Http\Cache\HttpCacheObject.cs" />
     <Compile Include="Script\Net\Http\HttpManager.cs" />

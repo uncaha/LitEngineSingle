@@ -40,6 +40,42 @@ namespace LitEngine
             return $"{GameCore.ExportPath}/{pPath}";
         }
 
+        private Dictionary<string, GameObjectCacheQueue> objCache = new Dictionary<string, GameObjectCacheQueue>();
+        static public GameObject DequeueCache(string pAssetName,string pName = null)
+        {
+            var tcaches = Instance.objCache;
+            if (!tcaches.ContainsKey(pAssetName))
+            {
+                tcaches.Add(pAssetName,new GameObjectCacheQueue(pAssetName));
+            }
+
+            var tcacheQue = tcaches[pAssetName];
+            return tcacheQue.Dequeue();
+        }
+
+        static public void EnqueueCache(string pAssetName,GameObject pObj)
+        {
+            var tcaches = Instance.objCache;
+            if (!tcaches.ContainsKey(pAssetName))
+            {
+                tcaches.Add(pAssetName,new GameObjectCacheQueue(pAssetName));
+            }
+
+            var tcacheQue = tcaches[pAssetName];
+            tcacheQue.Enqueue(pObj);
+        }
+
+        static public GameObject CreatGameObject(string pAssetName,string pObjName = null)
+        {
+            var tobjasset = Load<GameObject>(pAssetName);
+            var ret = GameObject.Instantiate(tobjasset);
+            if (!string.IsNullOrEmpty(pObjName))
+            {
+                ret.name = pObjName;
+            }
+            return ret;
+        }
+
         static public bool ReleaseAsset(string path)
         {
             if(Instance.resCacheDic.ContainsKey(path))

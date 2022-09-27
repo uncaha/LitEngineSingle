@@ -49,7 +49,7 @@ namespace LitEngine.LoadAsset
                 assets = new AssetObject[0];
             }
 
-            assetMap  = new Dictionary<string,AssetObject>(assets.Length);
+            assetMap = new Dictionary<string, AssetObject>(assets.Length < 10 ? 10 : assets.Length);
             foreach(var item in assets)
             {
                 try
@@ -70,15 +70,17 @@ namespace LitEngine.LoadAsset
                 Init();
             }
             string pkey = pAsset.ToLowerInvariant();
-            AssetObject ret;
-            if (!assetMap.TryGetValue(pkey, out ret))
+
+            if (assetMap != null && !assetMap.ContainsKey(pkey))
             {
-                ret = new AssetObject();
+                var ret = new AssetObject();
                 ret.assetName = pAsset;
                 ret.isInSide = false;
                 assetMap.Add(pkey,ret);
+                return ret;
             }
-            return ret;
+
+            return assetMap?[pkey];
         }
     }
     
