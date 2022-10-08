@@ -133,7 +133,7 @@ namespace LitEngine
             #region load
             var assetobj = Instance.assetMap.GetAsset(path);
             IResourcesObject tResObject = null;
-            if (!assetobj.isInSide)
+            if (assetobj != null && !assetobj.isInSide)
             {
                 string trealPath = GetRealPath(path + assetobj.sufixx);
 
@@ -208,7 +208,7 @@ namespace LitEngine
             #region load
             var assetobj = Instance.assetMap.GetAsset(path);
             
-            if (!assetobj.isInSide)
+            if (assetobj != null && !assetobj.isInSide)
             {
                 string realPath = GetRealPath(path + assetobj.sufixx);
                 if (assetLoaderDelgate != null)
@@ -253,7 +253,7 @@ namespace LitEngine
             assetMap = Resources.Load<AssetMap>(resourcesMapPath);
             if (assetMap == null)
             {
-                assetMap = new AssetMap();
+                assetMap = ScriptableObject.CreateInstance<AssetMap>();
             }
             assetMap.Init();
         }

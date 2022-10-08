@@ -34,44 +34,52 @@ namespace LitEngine.LoadAsset
                 
             }
         }
-        
+
         public AssetObject[] assets;
-        
-        private Dictionary<string,AssetObject> assetMap;
-        
-       [System.NonSerialized] bool inited = false;
+
+        public bool isHaveResMap { get; private set; } = false;
+
+        private Dictionary<string, AssetObject> assetMap;
+
+        [System.NonSerialized] bool inited = false;
+
         public void Init()
         {
-            if(inited) return;
+            if (inited) return;
             inited = true;
-            if(assets == null)
-            {
-                assets = new AssetObject[0];
-            }
 
-            assetMap = new Dictionary<string, AssetObject>(assets.Length < 10 ? 10 : assets.Length);
-            foreach(var item in assets)
+            isHaveResMap = assets != null && assets.Length > 0;
+
+            if (!isHaveResMap) return;
+
+            int tinitlen = assets != null ? assets.Length < 10 ? 10 : assets.Length : 0;
+
+            assetMap = new Dictionary<string, AssetObject>(tinitlen);
+            foreach (var item in assets)
             {
                 try
                 {
-                    assetMap.Add(item.assetName,item);
+                    assetMap.Add(item.assetName, item);
                 }
                 catch (System.Exception e)
                 {
-                    Debug.LogErrorFormat("asset = {0} error = {1}" ,item.assetName, e.Message);
+                    Debug.LogErrorFormat("asset = {0} error = {1}", item.assetName, e.Message);
                 }
             }
         }
 
         public AssetObject GetAsset(string pAsset)
         {
-            if (assetMap == null)
+            if (!inited)
             {
                 Init();
             }
+
+            if (!isHaveResMap) return null;
+            
             string pkey = pAsset.ToLowerInvariant();
 
-            if (assetMap != null && !assetMap.ContainsKey(pkey))
+            if (!assetMap.ContainsKey(pkey))
             {
                 var ret = new AssetObject();
                 ret.assetName = pAsset;
