@@ -19,17 +19,19 @@ namespace LitEngine.Net.Http
 {
     public class HttpCSharpBase : HttpObject
     {
-        static HttpCSharpBase()
-        {
-            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-            var cache = HttpCacheManager.Instance;
-        }
+
     }
     public class HttpClientObject : HttpCSharpBase
     {
-        public static readonly HttpClient httpClient;
-        static HttpClientObject()
+        public static HttpClient httpClient { get; private set; }
+
+        static void InitHttpClient()
         {
+            if (httpClient != null) return;
+            
+            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+            var cache = HttpCacheManager.Instance;
+            
             var handler = new HttpClientHandler()
             {
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
@@ -47,9 +49,19 @@ namespace LitEngine.Net.Http
             //httpClient.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue();
         }
 
+        public HttpClientObject()
+        {
+            if (httpClient == null)
+            {
+                InitHttpClient();
+            }
+        }
+
         public static void ClearHttpRequest()
         {
             httpClient?.CancelPendingRequests();
+            httpClient?.Dispose();
+            httpClient = null;
         }
     }
     
