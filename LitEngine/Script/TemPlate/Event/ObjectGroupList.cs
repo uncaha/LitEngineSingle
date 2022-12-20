@@ -9,7 +9,7 @@ namespace LitEngine.Event
     internal class ObjectGroupList
     {
         private Dictionary<System.Type, EventGroup> groups = new Dictionary<System.Type, EventGroup>();
-        private object target;
+        public object target { get; private set; }
         public int Count
         {
             get
@@ -24,7 +24,7 @@ namespace LitEngine.Event
 
         public void Add(EventGroup pGroup)
         {
-            if(!groups.ContainsKey(pGroup.Key))
+            if (!groups.ContainsKey(pGroup.Key))
                 groups.Add(pGroup.Key, pGroup);
         }
 
@@ -35,7 +35,7 @@ namespace LitEngine.Event
                 groups[pKey].Remove(target);
                 groups.Remove(pKey);
             }
-               
+
             return groups.Count;
         }
         public void Clear()

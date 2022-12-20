@@ -4,11 +4,13 @@ namespace LitEngine.Event
 {
     internal class EventObject
     {
+        public int HashCode { get; private set; }
         public object Target { get; private set; }
-        public System.Action<object> EventDelgate { get; private set;}
+        public System.Action<object> EventDelgate { get; private set; }
         public EventObject(object pTar, System.Action<object> pDel)
         {
             Target = pTar;
+            HashCode = Target.GetHashCode();
             EventDelgate = pDel;
         }
 
@@ -16,7 +18,7 @@ namespace LitEngine.Event
         {
             get
             {
-                return (Target == null && EventDelgate.Method.IsStatic) || (Target != null && !EventDelgate.Method.IsStatic);
+                return Target != null;
             }
         }
 

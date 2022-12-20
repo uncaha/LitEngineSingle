@@ -24,53 +24,60 @@ namespace LitEngine.Event
         }
 
         private Dictionary<System.Type, EventGroup> mReceiver = new Dictionary<System.Type, EventGroup>();
-        private Dictionary<object, ObjectGroupList> objParentlists = new Dictionary<object, ObjectGroupList>();
+        private Dictionary<int, ObjectGroupList> objParentlists = new Dictionary<int, ObjectGroupList>();
         private EventDispatch() { }
 
         static public void Reg(object pTarget, System.Type pType, Action<object> pReceiver)
         {
             if (pReceiver == null) return;
-            EventGroup tgroup = null;
+            EventGroup tgroup;
             if (!Eventdp.mReceiver.ContainsKey(pType))
             {
-                Eventdp.mReceiver.Add(pType, new EventGroup(pType));
+                tgroup = new EventGroup(pType);
+                Eventdp.mReceiver.Add(pType, tgroup);
             }
-            tgroup = Eventdp.mReceiver[pType];
-            tgroup.Add(pTarget, pReceiver);
-            
-
-            if(!Eventdp.objParentlists.ContainsKey(pTarget))
+            else
             {
-                Eventdp.objParentlists.Add(pTarget, new ObjectGroupList(pTarget));
+                tgroup = Eventdp.mReceiver[pType];
             }
-            Eventdp.objParentlists[pTarget].Add(tgroup);
+
+            tgroup.Add(pTarget, pReceiver);
+
+            int thash = pTarget.GetHashCode();
+            if (!Eventdp.objParentlists.ContainsKey(thash))
+            {
+                Eventdp.objParentlists.Add(thash, new ObjectGroupList(pTarget));
+            }
+            Eventdp.objParentlists[thash].Add(tgroup);
         }
 
         static public void UnReg(object pTarget, System.Type pType)
         {
             if (pTarget == null) return;
-            if (!Eventdp.objParentlists.ContainsKey(pTarget)) return;
-            if (Eventdp.objParentlists[pTarget].Remove(pType) == 0)
+            int thash = pTarget.GetHashCode();
+            if (!Eventdp.objParentlists.ContainsKey(thash)) return;
+            if (Eventdp.objParentlists[thash].Remove(pType) == 0)
             {
-                Eventdp.objParentlists.Remove(pTarget);
+                Eventdp.objParentlists.Remove(thash);
             }
         }
 
         static public void UnRegAllEvent(object pTarget)
         {
             if (pTarget == null) return;
-            if (!Eventdp.objParentlists.ContainsKey(pTarget)) return;
-            Eventdp.objParentlists[pTarget].Clear();
-            Eventdp.objParentlists.Remove(pTarget);
+            int thash = pTarget.GetHashCode();
+            if (!Eventdp.objParentlists.ContainsKey(thash)) return;
+            Eventdp.objParentlists[thash].Clear();
+            Eventdp.objParentlists.Remove(thash);
         }
 
         static public void Refresh()
         {
-            Dictionary<object, ObjectGroupList> tbackup = Eventdp.objParentlists;
-            Eventdp.objParentlists = new Dictionary<object, ObjectGroupList>();
+            var tbackup = Eventdp.objParentlists;
+            Eventdp.objParentlists = new Dictionary<int, ObjectGroupList>();
             foreach (var item in tbackup)
             {
-                if (item.Key == null) continue;
+                if (item.Value.target == null) continue;
                 Eventdp.objParentlists.Add(item.Key, item.Value);
             }
         }
@@ -84,7 +91,7 @@ namespace LitEngine.Event
             }
             catch (Exception erro)
             {
-                DLog.LogError("EventDispatch: " + erro.Message);
+                DLog.LogError("Event", "EventDispatch: " + erro.Message);
             }
 
         }

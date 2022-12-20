@@ -5,39 +5,54 @@ namespace LitEngine.Event
     internal class EventGroup
     {
         public System.Type Key { get; private set; }
-        public Dictionary<object, EventObject> Delgates { get; private set; }
+        public LinkedList<EventObject> Delgates { get; private set; }
+
+        Dictionary<int, LinkedListNode<EventObject>> map = new Dictionary<int, LinkedListNode<EventObject>>();
         public EventGroup(System.Type _key)
         {
             Key = _key;
-            Delgates = new Dictionary<object, EventObject>();
+            Delgates = new LinkedList<EventObject>();
         }
 
         public void Add(object target, System.Action<object> _delgate)
         {
-            if(!Delgates.ContainsKey(target))
+            var thash = target.GetHashCode();
+            if (map.ContainsKey(thash))
             {
-                EventObject titem = new EventObject(target, _delgate);
-                Delgates.Add(target, titem);
+                var tobj = Delgates.AddLast(new EventObject(target, _delgate));
+                map.Add(thash, tobj);
             }
+
         }
 
         public void Remove(object target)
         {
-            if (Delgates.ContainsKey(target))
-                Delgates.Remove(target);
+            Remove(target.GetHashCode());
+        }
+
+        public void Remove(int hash)
+        {
+            if (map.ContainsKey(hash))
+            {
+                var tobj = map[hash];
+                map.Remove(hash);
+
+                Delgates.Remove(tobj);
+            }
         }
 
         public void Call(object pObj)
         {
-            List<object> tkeyslist = new List<object>(Delgates.Keys);
-            for (int i = tkeyslist.Count - 1; i >= 0; i--)
+            var tcur = Delgates.First;
+            while (tcur != null)
             {
-                object tkey = tkeyslist[i];
-                var tact = Delgates[tkey];
+                var tact = tcur.Value;
+
+                tcur = tcur.Next;
 
                 if (!tact.IsLife)
                 {
-                    Delgates.Remove(tkey);
+                    Remove(tact.HashCode);
                     continue;
                 }
                 tact.Call(pObj);
