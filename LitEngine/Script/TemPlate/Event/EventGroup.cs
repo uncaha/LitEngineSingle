@@ -17,7 +17,7 @@ namespace LitEngine.Event
         public void Add(object target, System.Action<object> _delgate)
         {
             var thash = target.GetHashCode();
-            if (map.ContainsKey(thash))
+            if (!map.ContainsKey(thash))
             {
                 var tobj = Delgates.AddLast(new EventObject(target, _delgate));
                 map.Add(thash, tobj);
