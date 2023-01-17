@@ -348,9 +348,11 @@
     <Compile Include="Script\Loader\LoadTool\ResourcesObject.cs" />
     <Compile Include="Script\Net\NetData\HttpRequestObject.cs" />
     <Compile Include="Script\Net\TestServer\NetTestMono.cs" />
+    <Compile Include="Script\Net\WebSocket\WebSocketManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Script\CodeTool\CodeModule" />
+    <Folder Include="Script\Net\WebSocket\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
