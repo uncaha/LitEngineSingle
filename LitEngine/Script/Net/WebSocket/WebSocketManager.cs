@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -63,6 +64,7 @@ namespace LitEngine.Net
 
         protected void Oninit()
         {
+
         }
         
         virtual protected void InitSocket(string pHostName, int pPort, System.Action<NetMessage> pMsgDelgate)
@@ -109,14 +111,20 @@ namespace LitEngine.Net
             {
                 var tconnectTask = webSocket.ConnectAsync(new Uri(HostName),cancellation);
                 await tconnectTask;
+
+                if (webSocket.State == WebSocketState.Open)
+                {
+                    Task.Run(async () =>
+                    {
+                        ReceiveAsync();
+                    }, new CancellationToken());
+                }
             }
             catch (Exception e)
             {
                 DLog.LogError($"[{NetTag}]: ConnectAsync-> {e}");
             }
 
-            ReceiveAsync();
-            
             connecting = false;
         }
 
@@ -152,5 +160,16 @@ namespace LitEngine.Net
         }
 
         #endregion
+        
+        public async Task<bool> Send(byte[] pBytes)
+        {
+            if (webSocket.State != WebSocketState.Open)
+                return false;
+            //发送消息
+            var ttask = webSocket.SendAsync(new ArraySegment<byte>(pBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+            await ttask;
+ 
+            return true;
+        }
     }
 }
