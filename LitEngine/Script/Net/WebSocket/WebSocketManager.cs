@@ -21,6 +21,8 @@ namespace LitEngine.Net
         
         private const int readMaxLen = 2048 * 4;
         private byte[] recbuffer = new byte[readMaxLen];
+        
+        private BufferBase bufferData = new BufferBase(1024 * 400);
         #region 构造析构
 
         protected WebSocketManager()
@@ -122,13 +124,11 @@ namespace LitEngine.Net
         {
             try
             {
-                recbuffer.Initialize();
-
                 var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(recbuffer), new CancellationToken());
 
                 while (!result.CloseStatus.HasValue)
                 {
-                
+                    PushRecData(recbuffer,result.Count);
                 
                     result = await webSocket.ReceiveAsync(new ArraySegment<byte>(recbuffer), new CancellationToken());
                 }
@@ -138,6 +138,17 @@ namespace LitEngine.Net
                 DLog.LogError($"[{NetTag}]: ReceiveAsync-> {e}");
             }
 
+        }
+        
+        private void PushRecData(byte[] pBuffer, int pSize)
+        {
+            bufferData.Push(pBuffer, pSize);
+            while (bufferData.IsFullData())
+            {
+                ReceiveData tssdata = bufferData.GetReceiveData();
+
+                //DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
+            }
         }
 
         #endregion
