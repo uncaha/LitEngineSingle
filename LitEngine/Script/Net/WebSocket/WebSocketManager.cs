@@ -16,20 +16,23 @@ namespace LitEngine.Net
         public string HostName { get; protected set; }
         public int Port { get; protected set; }
         public event System.Action<NetMessage> MessageDelgate = null;
-        
+
         private ClientWebSocket webSocket;
         private CancellationToken cancellation = new CancellationToken();
 
         private bool connecting = false;
-        
+
         private const int readMaxLen = 2048 * 4;
         private byte[] recbuffer = new byte[readMaxLen];
-        
+
         private BufferBase bufferData = new BufferBase(1024 * 400);
-        
+
         protected ConcurrentQueue<ReceiveData> resultDataList = new ConcurrentQueue<ReceiveData>();
         protected ConcurrentQueue<NetMessage> mainThreadMsgList = new ConcurrentQueue<NetMessage>();
-        protected ConcurrentDictionary<int, List<System.Action<ReceiveData>>> msgHandlerList = new ConcurrentDictionary<int, List<System.Action<ReceiveData>>>();//消息注册列表
+
+        protected ConcurrentDictionary<int, List<System.Action<ReceiveData>>> msgHandlerList =
+            new ConcurrentDictionary<int, List<System.Action<ReceiveData>>>(); //消息注册列表
+
         #region 构造析构
 
         protected WebSocketManager()
@@ -42,6 +45,7 @@ namespace LitEngine.Net
         #region staticfun
 
         static protected T sInstance = null;
+
         static protected T Instance
         {
             get
@@ -55,13 +59,14 @@ namespace LitEngine.Net
                     sInstance.Oninit();
                     tobj.name = sInstance.NetTag + "-Object";
                 }
+
                 return sInstance;
             }
         }
-        
+
         static public void Init(string pHostName, int pPort, System.Action<NetMessage> pMsgDelgate = null)
         {
-            Instance.InitSocket(pHostName, pPort,pMsgDelgate);
+            Instance.InitSocket(pHostName, pPort, pMsgDelgate);
         }
 
         #endregion
@@ -70,9 +75,8 @@ namespace LitEngine.Net
 
         protected void Oninit()
         {
-
         }
-        
+
         virtual protected void InitSocket(string pHostName, int pPort, System.Action<NetMessage> pMsgDelgate)
         {
             HostName = pHostName;
@@ -102,7 +106,6 @@ namespace LitEngine.Net
                 case WebSocketState.Closed:
                     DLog.LogError(NetTag + $"[{NetTag}] is Dispose.");
                     return;
-
             }
 
             if (connecting)
@@ -115,15 +118,12 @@ namespace LitEngine.Net
 
             try
             {
-                var tconnectTask = webSocket.ConnectAsync(new Uri(HostName),cancellation);
+                var tconnectTask = webSocket.ConnectAsync(new Uri(HostName), cancellation);
                 await tconnectTask;
 
                 if (webSocket.State == WebSocketState.Open)
                 {
-                    Task.Run(async () =>
-                    {
-                        ReceiveAsync();
-                    }, new CancellationToken());
+                    Task.Run(async () => { ReceiveAsync(); }, new CancellationToken());
                 }
             }
             catch (Exception e)
@@ -142,8 +142,8 @@ namespace LitEngine.Net
 
                 while (!result.CloseStatus.HasValue)
                 {
-                    PushRecData(recbuffer,result.Count);
-                
+                    PushRecData(recbuffer, result.Count);
+
                     result = await webSocket.ReceiveAsync(new ArraySegment<byte>(recbuffer), new CancellationToken());
                 }
             }
@@ -151,9 +151,8 @@ namespace LitEngine.Net
             {
                 DLog.LogError($"[{NetTag}]: ReceiveAsync-> {e}");
             }
-
         }
-        
+
         private void PushRecData(byte[] pBuffer, int pSize)
         {
             bufferData.Push(pBuffer, pSize);
@@ -165,17 +164,22 @@ namespace LitEngine.Net
         }
 
         #endregion
-        public bool isConnected { get { return webSocket!= null && webSocket.State == WebSocketState.Open; } }
-        static public bool SendBytes(byte[] pBuffer,int pSize)
+
+        public bool isConnected
+        {
+            get { return webSocket != null && webSocket.State == WebSocketState.Open; }
+        }
+
+        static public bool SendBytes(byte[] pBuffer, int pSize)
         {
             if (pBuffer == null || !Instance.isConnected) return false;
-            return Instance.Send(pBuffer ,pSize);
+            return Instance.Send(pBuffer, pSize);
         }
-        
+
         static public bool SendBytes(byte[] pBuffer)
         {
             if (pBuffer == null || !Instance.isConnected) return false;
-            SendBytes(pBuffer,pBuffer.Length);
+            SendBytes(pBuffer, pBuffer.Length);
             return true;
         }
 
@@ -186,16 +190,17 @@ namespace LitEngine.Net
                 return false;
             }
 
-            DoSend(pBytes,pSize);
+            DoSend(pBytes, pSize);
             return true;
         }
 
-        async Task<bool> DoSend(byte[] pBytes,int pSize)
+        async Task<bool> DoSend(byte[] pBytes, int pSize)
         {
             //发送消息
-            var ttask = webSocket.SendAsync(new ArraySegment<byte>(pBytes,0,pSize), WebSocketMessageType.Text, true, CancellationToken.None);
+            var ttask = webSocket.SendAsync(new ArraySegment<byte>(pBytes, 0, pSize), WebSocketMessageType.Text, true,
+                CancellationToken.None);
             await ttask;
-            
+
             return true;
         }
 
@@ -204,7 +209,7 @@ namespace LitEngine.Net
             if (MessageDelgate == null) return;
             mainThreadMsgList.Enqueue(recall);
         }
-        
+
         NetMessage GetMsgReCallData(MessageType cmd, string msg = "")
         {
             return new NetMessage(cmd, msg);
@@ -223,18 +228,17 @@ namespace LitEngine.Net
         {
             UpdateRecMsg();
         }
-        
+
         void UpdateReCalledMsg()
         {
             try
             {
                 if (!mainThreadMsgList.IsEmpty || MessageDelgate == null) return;
                 NetMessage tmsg = null;
-                if(mainThreadMsgList.TryDequeue(out tmsg))
+                if (mainThreadMsgList.TryDequeue(out tmsg))
                 {
                     MessageDelgate(tmsg);
                 }
-               
             }
             catch (Exception e)
             {
@@ -244,7 +248,7 @@ namespace LitEngine.Net
 
         void UpdateRecMsg()
         {
-            if(!resultDataList.IsEmpty)
+            if (!resultDataList.IsEmpty)
             {
                 while (resultDataList.TryDequeue(out ReceiveData trecdata))
                 {
@@ -256,16 +260,15 @@ namespace LitEngine.Net
                     {
                         DLog.LogError(_error.ToString());
                     }
-
                 }
             }
         }
-        
+
         void Call(int msgId, ReceiveData msgobj)
         {
             try
             {
-                if (msgHandlerList.TryGetValue(msgId,out List<System.Action<ReceiveData>> tlist))
+                if (msgHandlerList.TryGetValue(msgId, out List<System.Action<ReceiveData>> tlist))
                 {
                     int tlen = tlist.Count;
                     for (int i = tlen - 1; i >= 0; i--)
@@ -277,5 +280,48 @@ namespace LitEngine.Net
                 DLog.LogError(e.ToString());
             }
         }
+
+
+        #region reg
+
+        static public void Reg(int msgid, System.Action<ReceiveData> func)
+        {
+            Instance._Reg(msgid, func);
+        }
+
+        static public void UnReg(int msgid, System.Action<ReceiveData> func)
+        {
+            Instance._UnReg(msgid, func);
+        }
+        void _Reg(int msgid, System.Action<ReceiveData> func)
+        {
+            List<System.Action<ReceiveData>> tlist = null;
+            if (msgHandlerList.ContainsKey(msgid))
+            {
+                tlist = msgHandlerList[msgid];
+                if (!tlist.Contains(func))
+                {
+                    tlist.Add(func);
+                }
+            }
+            else
+            {
+                tlist = new List<System.Action<ReceiveData>>();
+                tlist.Add(func);
+                msgHandlerList.TryAdd(msgid, tlist);
+            }
+        }
+
+        void _UnReg(int msgid, System.Action<ReceiveData> func)
+        {
+            if (!msgHandlerList.ContainsKey(msgid)) return;
+            var tlist = msgHandlerList[msgid];
+            if (tlist.Contains(func))
+                tlist.Remove(func);
+            if (tlist.Count == 0)
+                msgHandlerList.TryRemove(msgid, out List<System.Action<ReceiveData>> tar);
+        }
+
+        #endregion
     }
 }

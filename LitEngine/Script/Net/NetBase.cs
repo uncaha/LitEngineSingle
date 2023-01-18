@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 namespace LitEngine.Net
 {
+    using MsgDataList = List<System.Action<ReceiveData>>;
     #region 回调消息
     public enum MessageType
     {
@@ -49,7 +50,7 @@ namespace LitEngine.Net
     }
     #endregion
     #region Net基类
-
+   
     public abstract class NetBase<T> : MonoBehaviour where T : NetBase<T>
     {
         #region socket属性
@@ -86,7 +87,7 @@ namespace LitEngine.Net
         protected ConcurrentQueue<SendData> mSendDataList = new ConcurrentQueue<SendData>();
         #endregion
         #region 分发
-        protected SafeMap<int, SafeList<System.Action<object>>> mMsgHandlerList = new SafeMap<int, SafeList<System.Action<object>>>();//消息注册列表
+        protected Dictionary<int, MsgDataList> mMsgHandlerList = new Dictionary<int, MsgDataList>();//消息注册列表
         protected ConcurrentQueue<NetMessage> mToMainThreadMsgList = new ConcurrentQueue<NetMessage>();//给主线程发送通知
         #endregion
 
@@ -213,12 +214,12 @@ namespace LitEngine.Net
             if (!Instance.isConnected) return false;
             return Instance.Send(pBuffer, pSize);
         }
-        static public void Reg(int msgid, System.Action<object> func)
+        static public void Reg(int msgid, System.Action<ReceiveData> func)
         {
             Instance._Reg(msgid, func);
         }
 
-        static public void UnReg(int msgid, System.Action<object> func)
+        static public void UnReg(int msgid, System.Action<ReceiveData> func)
         {
             Instance._UnReg(msgid, func);
         }
@@ -446,38 +447,38 @@ namespace LitEngine.Net
 
         #region 消息注册与分发
 
-        virtual public void _Reg(int msgid, System.Action<object> func)
+        virtual public void _Reg(int msgid, System.Action<ReceiveData> func)
         {
-            SafeList<System.Action<object>> tlist = null;
+            MsgDataList tlist = null;
             if (mMsgHandlerList.ContainsKey(msgid))
             {
                 tlist = mMsgHandlerList[msgid];
             }
             else
             {
-                tlist = new SafeList<System.Action<object>>();
+                tlist = new MsgDataList();
                 mMsgHandlerList.Add(msgid, tlist);
             }
             if (!tlist.Contains(func))
                 tlist.Add(func);
         }
-        virtual public void _UnReg(int msgid, System.Action<object> func)
+        virtual public void _UnReg(int msgid, System.Action<ReceiveData> func)
         {
             if (!mMsgHandlerList.ContainsKey(msgid)) return;
-            SafeList<System.Action<object>> tlist = mMsgHandlerList[msgid];
+            MsgDataList tlist = mMsgHandlerList[msgid];
             if (tlist.Contains(func))
                 tlist.Remove(func);
             if (tlist.Count == 0)
                 mMsgHandlerList.Remove(msgid);
         }
 
-        virtual public void Call(int _msgid, object _msg)
+        virtual public void Call(int _msgid, ReceiveData _msg)
         {
             try
             {
                 if (mMsgHandlerList.ContainsKey(_msgid))
                 {
-                    SafeList<System.Action<object>> tlist = mMsgHandlerList[_msgid];
+                    MsgDataList tlist = mMsgHandlerList[_msgid];
                     int tlen = tlist.Count;
                     for (int i = tlen - 1; i >= 0; i--)
                         tlist[i](_msg);
