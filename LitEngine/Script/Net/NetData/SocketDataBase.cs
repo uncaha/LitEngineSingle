@@ -30,10 +30,12 @@ namespace LitEngine.Net
             onlyContent,
         }
 
-        public SocketDataHeadType lenType = SocketDataHeadType.type_int;
+
+
+        public SocketDataHeadType lenType { get; protected set; } = SocketDataHeadType.type_int;
         public int lenSize { get; protected set; }
 
-        public SocketDataHeadType cmdType = SocketDataHeadType.type_int;
+        public SocketDataHeadType cmdType { get; protected set; } = SocketDataHeadType.type_int;
         public int cmdSize { get; protected set; }
 
         public int packageHeadLen { get; protected set; }
@@ -115,12 +117,12 @@ namespace LitEngine.Net
         //pSize写入数据的长度
         public int GetContectLenByIndex(int pIndex)
         {
-            switch (BufferBase.headInfo.byteLenType)
+            switch (byteLenType)
             {
                 case DataHead.ByteLenType.allbytes:
                     return pIndex;
                 case DataHead.ByteLenType.onlyContent:
-                    return pIndex - BufferBase.headInfo.packageHeadLen;
+                    return pIndex - packageHeadLen;
                 default:
                     return pIndex;
             }
@@ -128,10 +130,10 @@ namespace LitEngine.Net
         //pSize接收到的长度
         public int GetContectLenByRecLen(int pSize)
         {
-            switch (BufferBase.headInfo.byteLenType)
+            switch (byteLenType)
             {
                 case DataHead.ByteLenType.allbytes:
-                    return pSize - BufferBase.headInfo.packageHeadLen;
+                    return pSize - packageHeadLen;
                 case DataHead.ByteLenType.onlyContent:
                     return pSize;
                 default:
@@ -142,12 +144,12 @@ namespace LitEngine.Net
         //pLen接收到的长度
         public int GetFullDataLen(int pLen)
         {
-            switch (BufferBase.headInfo.byteLenType)
+            switch (byteLenType)
             {
                 case DataHead.ByteLenType.allbytes:
                     return pLen;
                 case DataHead.ByteLenType.onlyContent:
-                    return pLen + BufferBase.headInfo.packageHeadLen;
+                    return pLen + packageHeadLen;
                 default:
                     return pLen;
             }

@@ -6,14 +6,15 @@ namespace LitEngine.Net
     public class BufferBase
     {
         public const int maxLen = 1024 * 1024 * 100;
-        static public bool IsHDate = false;
-        static public DataHead headInfo = new SocketDataHead<int, int>(DataHead.CmdPosType.lenFirst, DataHead.ByteLenType.allbytes);
+        
+        public static bool IsHDate = false;
+        public DataHead headInfo = new SocketDataHead<int, int>(DataHead.CmdPosType.lenFirst, DataHead.ByteLenType.allbytes);
 
         private byte[] mBuffer = null;
         private int mIndex = 0;
         private int mPos = 0;
         private int mSize = 0;
-
+        
         public BufferBase(int _bufferlen)
         {
             mSize = _bufferlen;
@@ -93,7 +94,7 @@ namespace LitEngine.Net
 
         public ReceiveData GetReceiveData()
         {
-            ReceiveData ret = new ReceiveData();
+            ReceiveData ret = new ReceiveData(headInfo);
             SetReceiveData(ret);
             return ret;
         }

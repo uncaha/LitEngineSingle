@@ -23,6 +23,9 @@ namespace LitEngine.Net.TestServer
             AsyncCallback sendCallback;
 
             byte[] recBuffer = new byte[1024 * 100];
+            
+            DataHead headinfo = new SocketDataHead<int, int>(DataHead.CmdPosType.lenFirst, DataHead.ByteLenType.allbytes);
+
             public UserObject(Socket psoc)
             {
                 socket = psoc;
@@ -76,7 +79,7 @@ namespace LitEngine.Net.TestServer
                 int tsendLen = socket.EndReceive(result);
                 if (tsendLen > 0)
                 {
-                    SendData tetstdata = new SendData(11);
+                    SendData tetstdata = new SendData(headinfo,11);
                     tetstdata.AddInt(3);
                     BeginSend(tetstdata.Data, 0, tetstdata.SendLen);
 

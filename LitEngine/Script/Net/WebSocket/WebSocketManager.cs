@@ -160,7 +160,7 @@ namespace LitEngine.Net
         }
 
         #endregion
-        
+
         public async Task<bool> Send(byte[] pBytes)
         {
             if (webSocket.State != WebSocketState.Open)

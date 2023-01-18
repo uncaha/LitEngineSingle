@@ -19,7 +19,9 @@ namespace LitEngine.Net.TestServer
         protected EndPoint mRecPoint;
         Task recTask;
         bool taskStart = false;
-        SendData tetstdata = new SendData(11);
+        
+        DataHead headinfo = new SocketDataHead<int, int>(DataHead.CmdPosType.lenFirst, DataHead.ByteLenType.allbytes);
+        SendData tetstdata = null;
         void Start()
         {
             gameObject.name = "UDP-" + mLocalPort;
@@ -39,6 +41,7 @@ namespace LitEngine.Net.TestServer
 
             Application.runInBackground = true;
 
+            tetstdata = new SendData(headinfo,11);
             tetstdata.AddInt(3);
             Debug.Log("测试UDP服务器启动");
         }

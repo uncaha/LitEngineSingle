@@ -184,7 +184,7 @@ namespace LitEngine.Net
         static public void SetHeadInfo(DataHead pInfo)
         {
             if (pInfo == null) return;
-            BufferBase.headInfo = pInfo;
+            Instance.mBufferData.headInfo = pInfo;
         }
 
         static public void ShowMsgLog(bool pShow)

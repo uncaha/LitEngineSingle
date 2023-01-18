@@ -13,9 +13,11 @@ public class NetTestMono : MonoBehaviour
     }
     public TestType type = TestType.TCPTest;
 
-    SendData testData = new SendData(10);
+    DataHead headinfo = new SocketDataHead<int, int>(DataHead.CmdPosType.lenFirst, DataHead.ByteLenType.allbytes);
+    SendData testData = null;
     private void Awake()
     {
+        testData = new SendData(headinfo, 10);
         testData.AddInt(4);
     }
 
@@ -40,7 +42,7 @@ public class NetTestMono : MonoBehaviour
     void StartTcpTest()
     {
         TCPNet.Init("127.0.0.1", 20240);
-        TCPNet.SetHeadInfo(new SocketDataHead<int, int>(DataHead.CmdPosType.lenFirst, DataHead.ByteLenType.allbytes));
+        TCPNet.SetHeadInfo(headinfo);
         TCPNet.ShowMsgLog(true);
         TCPNet.Connect();
     }

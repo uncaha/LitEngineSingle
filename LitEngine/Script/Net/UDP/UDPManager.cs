@@ -176,7 +176,7 @@ namespace LitEngine.Net
         {
             try
             {
-                ReceiveData tssdata = new ReceiveData();
+                ReceiveData tssdata = new ReceiveData(mBufferData.headInfo);
                 tssdata.CopyBuffer(pBuffer, 0);
                 mResultDataList.Enqueue(tssdata);
                 DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");

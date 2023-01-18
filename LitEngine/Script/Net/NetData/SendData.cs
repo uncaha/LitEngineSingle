@@ -14,17 +14,20 @@ namespace LitEngine.Net
         public int SendLen { get { return mIndex; } }
         public int Cmd {get;private set;}
         #endregion
-        public SendData(int pCmd,int pSize = 128)
+
+        private DataHead headInfo;
+        public SendData(DataHead pInfo,int pCmd,int pSize = 128)
         {
+            headInfo = pInfo;
             mData = new byte[pSize];
             Cmd = pCmd;
             Len = 0;
             mIndex = 0;
             mIsEnd = false;
 
-            BufferBase.headInfo.WriteHead(Len,mData, 0);
-            BufferBase.headInfo.WriteCmd(Cmd,mData, 0);
-            mIndex = BufferBase.headInfo.packageHeadLen;
+            headInfo.WriteHead(Len,mData, 0);
+            headInfo.WriteCmd(Cmd,mData, 0);
+            mIndex = headInfo.packageHeadLen;
         }
         public SendData(int pCmd,byte[] pData,int pSize)
         {
@@ -35,7 +38,7 @@ namespace LitEngine.Net
         public void Rest()
         {
             Len = 0;
-            mIndex = BufferBase.headInfo.packageHeadLen;
+            mIndex = headInfo.packageHeadLen;
             mIsEnd = false;
         }
         private byte[] GetData()
@@ -43,8 +46,8 @@ namespace LitEngine.Net
             lock (this)
             { 
                 if (mIsEnd) return mData;
-                Len = BufferBase.headInfo.GetContectLenByIndex(mIndex);
-                BufferBase.headInfo.WriteHead(Len, mData, 0);
+                Len = headInfo.GetContectLenByIndex(mIndex);
+                headInfo.WriteHead(Len, mData, 0);
                 mIsEnd = true;
                 return mData;
             }

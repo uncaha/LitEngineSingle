@@ -276,7 +276,7 @@ namespace LitEngine.Net
         {
             try
             {
-                ReceiveData tssdata = new ReceiveData();
+                ReceiveData tssdata = new ReceiveData(mBufferData.headInfo);
                 tssdata.CopyBuffer(pBuffer, 0);
 
                 Call(tssdata.Cmd, tssdata);

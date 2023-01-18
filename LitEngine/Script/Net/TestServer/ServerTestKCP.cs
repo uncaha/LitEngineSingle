@@ -19,13 +19,20 @@ namespace LitEngine.Net.TestServer
         protected EndPoint mRecPoint;
         Task recTask;
         bool taskStart = false;
-        SendData tetstdata = new SendData(11);
+        DataHead headinfo = new SocketDataHead<int, int>(DataHead.CmdPosType.lenFirst, DataHead.ByteLenType.allbytes);
+        SendData tetstdata = null;
 
         private KCP kcpObject;
 
         IPEndPoint serverPoint = null;
         IPEndPoint tarpoint = null;
         private SwitchQueue<byte[]> recvQueue = new SwitchQueue<byte[]>(128);
+
+        private void Awake()
+        {
+            
+        }
+
         void Start()
         {
             gameObject.name = "KCP-" + mLocalPort;
@@ -46,6 +53,7 @@ namespace LitEngine.Net.TestServer
 
             Application.runInBackground = true;
 
+            tetstdata = new SendData(headinfo, 10);
             tetstdata.AddInt(3);
             Debug.Log("测试KCP服务器启动");
         }

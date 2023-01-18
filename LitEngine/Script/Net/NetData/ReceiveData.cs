@@ -14,25 +14,28 @@ namespace LitEngine.Net
 
         #endregion
         int mIndex;
-        public ReceiveData(byte[] _buffer, int _offset)
+        private DataHead headInfo;
+        public ReceiveData(DataHead pInfo,byte[] _buffer, int _offset)
         {
+            headInfo = pInfo;
             CopyBuffer(_buffer, _offset);
         }
-        public ReceiveData()
+        public ReceiveData(DataHead pInfo)
         {
+            headInfo = pInfo;
         }
 
         public void CopyBuffer(byte[] _buffer, int _offset)
         {
             int tindex = _offset;
-            RecLen = BufferBase.headInfo.ReadHeadLen(_buffer, tindex);
+            RecLen = headInfo.ReadHeadLen(_buffer, tindex);
 
             if (RecLen > BufferBase.maxLen || RecLen < 0) throw new System.ArgumentOutOfRangeException("数据长度超出了限制 len = " + RecLen);
             
-            Cmd = BufferBase.headInfo.ReadCmd(_buffer, tindex);
-            Len = BufferBase.headInfo.GetContectLenByRecLen(RecLen);
+            Cmd = headInfo.ReadCmd(_buffer, tindex);
+            Len = headInfo.GetContectLenByRecLen(RecLen);
             
-            tindex += BufferBase.headInfo.packageHeadLen;
+            tindex += headInfo.packageHeadLen;
 
             Data = new byte[Len];
 
