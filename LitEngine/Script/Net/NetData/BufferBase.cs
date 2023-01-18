@@ -99,6 +99,17 @@ namespace LitEngine.Net
             return ret;
         }
 
+        public byte[] GetEndSuccessBytes()
+        {
+            int tindex = mPos;
+            var recLen = headInfo.ReadHeadLen(mBuffer, tindex);
+            if (recLen > maxLen || recLen < 0) throw new System.ArgumentOutOfRangeException("数据长度超出了限制 len = " + recLen);
+
+            var tdata = new byte[recLen];
+            Buffer.BlockCopy(mBuffer, tindex, tdata, 0, recLen);
+            return tdata;
+        }
+
         public void SetReceiveData(ReceiveData _data)
         {
             int tlen = GetFullDataLen();

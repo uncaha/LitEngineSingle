@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -24,6 +26,10 @@ namespace LitEngine.Net
         private byte[] recbuffer = new byte[readMaxLen];
         
         private BufferBase bufferData = new BufferBase(1024 * 400);
+        
+        protected ConcurrentQueue<ReceiveData> resultDataList = new ConcurrentQueue<ReceiveData>();
+        protected ConcurrentQueue<NetMessage> mainThreadMsgList = new ConcurrentQueue<NetMessage>();
+        protected ConcurrentDictionary<int, List<System.Action<ReceiveData>>> msgHandlerList = new ConcurrentDictionary<int, List<System.Action<ReceiveData>>>();//消息注册列表
         #region 构造析构
 
         protected WebSocketManager()
@@ -154,8 +160,7 @@ namespace LitEngine.Net
             while (bufferData.IsFullData())
             {
                 ReceiveData tssdata = bufferData.GetReceiveData();
-
-                //DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, "接收-ReceiveData");
+                resultDataList.Enqueue(tssdata);
             }
         }
 
@@ -163,19 +168,114 @@ namespace LitEngine.Net
         public bool isConnected { get { return webSocket!= null && webSocket.State == WebSocketState.Open; } }
         static public bool SendBytes(byte[] pBuffer,int pSize)
         {
-            if (!Instance.isConnected) return false;
-            Instance.Send(pBuffer);
+            if (pBuffer == null || !Instance.isConnected) return false;
+            return Instance.Send(pBuffer ,pSize);
+        }
+        
+        static public bool SendBytes(byte[] pBuffer)
+        {
+            if (pBuffer == null || !Instance.isConnected) return false;
+            SendBytes(pBuffer,pBuffer.Length);
             return true;
         }
-        public async Task<bool> Send(byte[] pBytes)
+
+        bool Send(byte[] pBytes, int pSize)
         {
             if (webSocket.State != WebSocketState.Open)
+            {
                 return false;
-            //发送消息
-            var ttask = webSocket.SendAsync(new ArraySegment<byte>(pBytes), WebSocketMessageType.Text, true, CancellationToken.None);
-            await ttask;
- 
+            }
+
+            DoSend(pBytes,pSize);
             return true;
+        }
+
+        async Task<bool> DoSend(byte[] pBytes,int pSize)
+        {
+            //发送消息
+            var ttask = webSocket.SendAsync(new ArraySegment<byte>(pBytes,0,pSize), WebSocketMessageType.Text, true, CancellationToken.None);
+            await ttask;
+            
+            return true;
+        }
+
+        void AddMainThreadMsgReCall(NetMessage recall)
+        {
+            if (MessageDelgate == null) return;
+            mainThreadMsgList.Enqueue(recall);
+        }
+        
+        NetMessage GetMsgReCallData(MessageType cmd, string msg = "")
+        {
+            return new NetMessage(cmd, msg);
+        }
+
+        private void Update()
+        {
+            UpdateReCalledMsg();
+            if (isConnected)
+            {
+                MainThreadUpdate();
+            }
+        }
+
+        private void MainThreadUpdate()
+        {
+            UpdateRecMsg();
+        }
+        
+        void UpdateReCalledMsg()
+        {
+            try
+            {
+                if (!mainThreadMsgList.IsEmpty || MessageDelgate == null) return;
+                NetMessage tmsg = null;
+                if(mainThreadMsgList.TryDequeue(out tmsg))
+                {
+                    MessageDelgate(tmsg);
+                }
+               
+            }
+            catch (Exception e)
+            {
+                DLog.LogError(e.ToString());
+            }
+        }
+
+        void UpdateRecMsg()
+        {
+            if(!resultDataList.IsEmpty)
+            {
+                while (resultDataList.TryDequeue(out ReceiveData trecdata))
+                {
+                    try
+                    {
+                        Call(trecdata.Cmd, trecdata);
+                    }
+                    catch (Exception _error)
+                    {
+                        DLog.LogError(_error.ToString());
+                    }
+
+                }
+            }
+        }
+        
+        void Call(int msgId, ReceiveData msgobj)
+        {
+            try
+            {
+                if (msgHandlerList.TryGetValue(msgId,out List<System.Action<ReceiveData>> tlist))
+                {
+                    int tlen = tlist.Count;
+                    for (int i = tlen - 1; i >= 0; i--)
+                        tlist[i](msgobj);
+                }
+            }
+            catch (Exception e)
+            {
+                DLog.LogError(e.ToString());
+            }
         }
     }
 }

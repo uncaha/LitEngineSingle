@@ -440,7 +440,6 @@ namespace LitEngine.Net
         {
             if (MessageDelgate == null) return;
             mToMainThreadMsgList.Enqueue(_recall);
-
         }
 
         #endregion
