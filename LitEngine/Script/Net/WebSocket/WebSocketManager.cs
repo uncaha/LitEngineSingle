@@ -160,7 +160,13 @@ namespace LitEngine.Net
         }
 
         #endregion
-
+        public bool isConnected { get { return webSocket!= null && webSocket.State == WebSocketState.Open; } }
+        static public bool SendBytes(byte[] pBuffer,int pSize)
+        {
+            if (!Instance.isConnected) return false;
+            Instance.Send(pBuffer);
+            return true;
+        }
         public async Task<bool> Send(byte[] pBytes)
         {
             if (webSocket.State != WebSocketState.Open)

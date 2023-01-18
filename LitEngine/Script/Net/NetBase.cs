@@ -80,7 +80,7 @@ namespace LitEngine.Net
         #region 数据
         protected const int mReadMaxLen = 2048 * 20;
         protected byte[] mRecbuffer = new byte[mReadMaxLen];
-
+        
         protected BufferBase mBufferData = new BufferBase(1024 * 400);
         protected ConcurrentQueue<ReceiveData> mResultDataList = new ConcurrentQueue<ReceiveData>();
         protected ConcurrentQueue<SendData> mSendDataList = new ConcurrentQueue<SendData>();
@@ -181,15 +181,25 @@ namespace LitEngine.Net
             Instance.receiveOutput = pEvent;
         }
 
-        static public void SetHeadInfo(DataHead pInfo)
+        public static DataHead Head
         {
-            if (pInfo == null) return;
-            Instance.mBufferData.headInfo = pInfo;
+            get { return Instance.mBufferData.headInfo; }
+
+            set
+            {
+                if (value == null) return;
+                Instance.mBufferData.headInfo = value;
+            }
         }
 
         static public void ShowMsgLog(bool pShow)
         {
             Instance.IsShowDebugLog = pShow;
+        }
+
+        static public SendData CreatSendData(int cmd)
+        {
+            return new SendData(Instance.mBufferData.headInfo, cmd);
         }
 
         static public bool SendObject(SendData pData)
