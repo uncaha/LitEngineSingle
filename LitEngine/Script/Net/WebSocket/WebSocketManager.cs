@@ -7,8 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
+
 namespace LitEngine.Net
 {
+    using MsgDataList = List<ReceiveMessageEvent>;
     public abstract class WebSocketManager<T> : MonoBehaviour where T : WebSocketManager<T>
     {
         public string NetTag { get; protected set; } = "";
@@ -30,8 +32,7 @@ namespace LitEngine.Net
         protected ConcurrentQueue<ReceiveData> resultDataList = new ConcurrentQueue<ReceiveData>();
         protected ConcurrentQueue<NetMessage> mainThreadMsgList = new ConcurrentQueue<NetMessage>();
 
-        protected ConcurrentDictionary<int, List<System.Action<ReceiveData>>> msgHandlerList =
-            new ConcurrentDictionary<int, List<System.Action<ReceiveData>>>(); //消息注册列表
+        protected ConcurrentDictionary<int, MsgDataList> msgHandlerList = new ConcurrentDictionary<int, MsgDataList>(); //消息注册列表
 
         #region 构造析构
 
@@ -268,7 +269,7 @@ namespace LitEngine.Net
         {
             try
             {
-                if (msgHandlerList.TryGetValue(msgId, out List<System.Action<ReceiveData>> tlist))
+                if (msgHandlerList.TryGetValue(msgId, out MsgDataList tlist))
                 {
                     int tlen = tlist.Count;
                     for (int i = tlen - 1; i >= 0; i--)
@@ -284,18 +285,18 @@ namespace LitEngine.Net
 
         #region reg
 
-        static public void Reg(int msgid, System.Action<ReceiveData> func)
+        static public void Reg(int msgid, ReceiveMessageEvent func)
         {
             Instance._Reg(msgid, func);
         }
 
-        static public void UnReg(int msgid, System.Action<ReceiveData> func)
+        static public void UnReg(int msgid, ReceiveMessageEvent func)
         {
             Instance._UnReg(msgid, func);
         }
-        void _Reg(int msgid, System.Action<ReceiveData> func)
+        void _Reg(int msgid, ReceiveMessageEvent func)
         {
-            List<System.Action<ReceiveData>> tlist = null;
+            MsgDataList tlist = null;
             if (msgHandlerList.ContainsKey(msgid))
             {
                 tlist = msgHandlerList[msgid];
@@ -306,20 +307,20 @@ namespace LitEngine.Net
             }
             else
             {
-                tlist = new List<System.Action<ReceiveData>>();
+                tlist = new MsgDataList();
                 tlist.Add(func);
                 msgHandlerList.TryAdd(msgid, tlist);
             }
         }
 
-        void _UnReg(int msgid, System.Action<ReceiveData> func)
+        void _UnReg(int msgid, ReceiveMessageEvent func)
         {
             if (!msgHandlerList.ContainsKey(msgid)) return;
             var tlist = msgHandlerList[msgid];
             if (tlist.Contains(func))
                 tlist.Remove(func);
             if (tlist.Count == 0)
-                msgHandlerList.TryRemove(msgid, out List<System.Action<ReceiveData>> tar);
+                msgHandlerList.TryRemove(msgid, out MsgDataList tar);
         }
 
         #endregion

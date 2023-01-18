@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 namespace LitEngine.Net
 {
-    using MsgDataList = List<System.Action<ReceiveData>>;
+    using MsgDataList = List<ReceiveMessageEvent>;
     #region 回调消息
     public enum MessageType
     {
@@ -51,6 +51,7 @@ namespace LitEngine.Net
     #endregion
     #region Net基类
    
+    public delegate void ReceiveMessageEvent(ReceiveData pData);
     public abstract class NetBase<T> : MonoBehaviour where T : NetBase<T>
     {
         #region socket属性
@@ -214,12 +215,12 @@ namespace LitEngine.Net
             if (!Instance.isConnected) return false;
             return Instance.Send(pBuffer, pSize);
         }
-        static public void Reg(int msgid, System.Action<ReceiveData> func)
+        static public void Reg(int msgid, ReceiveMessageEvent func)
         {
             Instance._Reg(msgid, func);
         }
 
-        static public void UnReg(int msgid, System.Action<ReceiveData> func)
+        static public void UnReg(int msgid, ReceiveMessageEvent func)
         {
             Instance._UnReg(msgid, func);
         }
@@ -447,7 +448,7 @@ namespace LitEngine.Net
 
         #region 消息注册与分发
 
-        virtual public void _Reg(int msgid, System.Action<ReceiveData> func)
+        virtual public void _Reg(int msgid, ReceiveMessageEvent func)
         {
             MsgDataList tlist = null;
             if (mMsgHandlerList.ContainsKey(msgid))
@@ -462,7 +463,7 @@ namespace LitEngine.Net
             if (!tlist.Contains(func))
                 tlist.Add(func);
         }
-        virtual public void _UnReg(int msgid, System.Action<ReceiveData> func)
+        virtual public void _UnReg(int msgid, ReceiveMessageEvent func)
         {
             if (!mMsgHandlerList.ContainsKey(msgid)) return;
             MsgDataList tlist = mMsgHandlerList[msgid];
