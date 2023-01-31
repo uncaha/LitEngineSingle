@@ -349,6 +349,7 @@
     <Compile Include="Script\Net\NetData\HttpRequestObject.cs" />
     <Compile Include="Script\Net\TestServer\NetTestMono.cs" />
     <Compile Include="Script\Net\WebSocket\WebSocketManager.cs" />
+    <Compile Include="Script\Net\SocketNetBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Script\CodeTool\CodeModule" />

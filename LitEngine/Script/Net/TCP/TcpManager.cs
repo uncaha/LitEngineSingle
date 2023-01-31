@@ -8,7 +8,7 @@ using LitEngine.Net.KCPCommand;
 
 namespace LitEngine.Net
 {
-    public abstract class TcpManager<T> : NetBase<T> where T : TcpManager<T>
+    public abstract class TcpManager<T> : SocketNetBase<T> where T : TcpManager<T>
     {
         override public bool isConnected
         {

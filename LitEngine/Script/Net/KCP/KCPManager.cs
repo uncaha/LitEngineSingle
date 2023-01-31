@@ -9,7 +9,7 @@ using System.Collections.Concurrent;
 using LitEngine.Net.KCPCommand;
 namespace LitEngine.Net
 {
-    public abstract class KCPManager<T> : NetBase<T> where T : KCPManager<T>
+    public abstract class KCPManager<T> : SocketNetBase<T> where T : KCPManager<T>
     {
         private static T typeInstance => Instance;
         public class CacheByteObject

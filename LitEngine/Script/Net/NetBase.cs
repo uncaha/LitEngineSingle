@@ -63,7 +63,7 @@ namespace LitEngine.Net
             IPVALL,
         }
 
-        protected Socket mSocket = null;
+        //protected Socket mSocket = null;
         protected string mHostName;//服务器地址
         protected int mPort;
         protected int mRecTimeOut = 0;
@@ -111,7 +111,7 @@ namespace LitEngine.Net
         #endregion
 
         #region 控制
-        virtual public bool isConnected { get { return mState == TcpState.Connected && mSocket != null; } }
+        virtual public bool isConnected { get { return mState == TcpState.Connected; } }
         protected TcpState mState = TcpState.None;
         protected bool mStartThread = false; //线程开关
         protected bool mDisposed = false;
@@ -321,12 +321,7 @@ namespace LitEngine.Net
 
         virtual protected void RestSocketInfo()
         {
-            if (mSocket == null) return;
-            mSocket.NoDelay = socketNoDelay;
-            mSocket.ReceiveTimeout = mRecTimeOut;
-            mSocket.SendTimeout = mSendTimeout;
-            mSocket.ReceiveBufferSize = mReceiveBufferSize;
-            mSocket.SendBufferSize = mSendBufferSize;
+
         }
 
         #endregion
@@ -370,25 +365,9 @@ namespace LitEngine.Net
             _thread.Join();
         }
 
-        void KillSocket()
+        virtual protected void KillSocket()
         {
-            try
-            {
-                if (mSocket != null)
-                {
-                    if (mSocket.ProtocolType == ProtocolType.Tcp && mSocket.Connected)
-                    {
-                        mSocket.Shutdown(SocketShutdown.Both);
-                    }
-                    mSocket.Close();
-                }
-            }
-            catch
-            {
-                // ignored
-            }
-            
-            mSocket = null;
+
         }
         virtual protected void CloseSocket()
         {

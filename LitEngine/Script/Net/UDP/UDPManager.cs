@@ -7,7 +7,7 @@ using System.Threading;
 namespace LitEngine.Net
 {
 
-    public abstract class UDPManager<T> : NetBase<T> where T : UDPManager<T>
+    public abstract class UDPManager<T> : SocketNetBase<T> where T : UDPManager<T>
     {
         #region socket属性
         private IPEndPoint mTargetPoint;//目标地址
