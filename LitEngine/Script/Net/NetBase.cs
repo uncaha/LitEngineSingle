@@ -80,7 +80,7 @@ namespace LitEngine.Net
         #endregion
 
         #region 数据
-        protected const int mReadMaxLen = 2048 * 20;
+        protected const int mReadMaxLen = 1024 * 4;
         protected byte[] mRecbuffer = new byte[mReadMaxLen];
         
         protected BufferBase mBufferData = new BufferBase(1024 * 400);
@@ -606,10 +606,19 @@ namespace LitEngine.Net
         private void Update()
         {
             UpdateReCalledMsg();
-            if (isConnected)
+
+            try
             {
-                MainThreadUpdate();
+                if (isConnected)
+                {
+                    MainThreadUpdate();
+                }
             }
+            catch (Exception ex)
+            {
+                DLog.LogError($"{mNetTag} -> {ex}");
+            }
+
         }
 
         virtual protected void MainThreadUpdate()

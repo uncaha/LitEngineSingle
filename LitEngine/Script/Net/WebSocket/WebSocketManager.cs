@@ -11,34 +11,19 @@ using UnityEngine;
 namespace LitEngine.Net
 {
     using MsgDataList = List<ReceiveMessageEvent>;
-    public abstract class WebSocketManager<T> : MonoBehaviour where T : WebSocketManager<T>
+    public abstract class WebSocketManager<T> : NetBase<T> where T : WebSocketManager<T>
     {
-        public string NetTag { get; protected set; } = "";
-        public TcpState State { get; protected set; } = TcpState.None;
-        public string HostName { get; protected set; }
-        public int Port { get; protected set; }
-        public event System.Action<NetMessage> MessageDelgate = null;
 
         private ClientWebSocket webSocket;
         private CancellationToken cancellation = new CancellationToken();
 
         private bool connecting = false;
 
-        private const int readMaxLen = 2048 * 4;
-        private byte[] recbuffer = new byte[readMaxLen];
-
-        private BufferBase bufferData = new BufferBase(1024 * 400);
-
-        protected ConcurrentQueue<ReceiveData> resultDataList = new ConcurrentQueue<ReceiveData>();
-        protected ConcurrentQueue<NetMessage> mainThreadMsgList = new ConcurrentQueue<NetMessage>();
-
-        protected ConcurrentDictionary<int, MsgDataList> msgHandlerList = new ConcurrentDictionary<int, MsgDataList>(); //消息注册列表
-
         #region 构造析构
 
         protected WebSocketManager()
         {
-            NetTag = GetType().Name;
+            mNetTag = GetType().Name;
         }
 
         #endregion
@@ -58,16 +43,11 @@ namespace LitEngine.Net
                     tobj.hideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector;
                     sInstance = tobj.AddComponent<T>();
                     sInstance.Oninit();
-                    tobj.name = sInstance.NetTag + "-Object";
+                    tobj.name = sInstance.mNetTag + "-Object";
                 }
 
                 return sInstance;
             }
-        }
-
-        static public void Init(string pHostName, int pPort, System.Action<NetMessage> pMsgDelgate = null)
-        {
-            Instance.InitSocket(pHostName, pPort, pMsgDelgate);
         }
 
         #endregion
@@ -78,13 +58,6 @@ namespace LitEngine.Net
         {
         }
 
-        virtual protected void InitSocket(string pHostName, int pPort, System.Action<NetMessage> pMsgDelgate)
-        {
-            HostName = pHostName;
-            Port = pPort;
-            gameObject.name = $"{NetTag}-Server:{pHostName}";
-            MessageDelgate = pMsgDelgate;
-        }
 
         public async void ConnectAsync()
         {
@@ -96,22 +69,22 @@ namespace LitEngine.Net
             switch (webSocket.State)
             {
                 case WebSocketState.Connecting:
-                    DLog.LogError(NetTag + $"[{NetTag}] is Connected.");
+                    DLog.LogError($"[{mNetTag}] is Connected.");
                     return;
                 case WebSocketState.Open:
-                    DLog.LogError(NetTag + $"[{NetTag}] is Connecting.");
+                    DLog.LogError($"[{mNetTag}] is Connecting.");
                     return;
                 case WebSocketState.Aborted:
-                    DLog.LogError(NetTag + $"[{NetTag}] is Dispose.");
+                    DLog.LogError($"[{mNetTag}] is Dispose.");
                     return;
                 case WebSocketState.Closed:
-                    DLog.LogError(NetTag + $"[{NetTag}] is Dispose.");
+                    DLog.LogError($"[{mNetTag}] is Dispose.");
                     return;
             }
 
             if (connecting)
             {
-                DLog.LogError(NetTag + $"[{NetTag}] is Connecting.");
+                DLog.LogError($"[{mNetTag}] is Connecting.");
                 return;
             }
 
@@ -119,7 +92,7 @@ namespace LitEngine.Net
 
             try
             {
-                var tconnectTask = webSocket.ConnectAsync(new Uri(HostName), cancellation);
+                var tconnectTask = webSocket.ConnectAsync(new Uri(mHostName), cancellation);
                 await tconnectTask;
 
                 if (webSocket.State == WebSocketState.Open)
@@ -129,7 +102,7 @@ namespace LitEngine.Net
             }
             catch (Exception e)
             {
-                DLog.LogError($"[{NetTag}]: ConnectAsync-> {e}");
+                DLog.LogError($"[{mNetTag}]: ConnectAsync-> {e}");
             }
 
             connecting = false;
@@ -139,28 +112,28 @@ namespace LitEngine.Net
         {
             try
             {
-                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(recbuffer), new CancellationToken());
+                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(mRecbuffer), new CancellationToken());
 
                 while (!result.CloseStatus.HasValue)
                 {
-                    PushRecData(recbuffer, result.Count);
+                    PushRecData(mRecbuffer, result.Count);
 
-                    result = await webSocket.ReceiveAsync(new ArraySegment<byte>(recbuffer), new CancellationToken());
+                    result = await webSocket.ReceiveAsync(new ArraySegment<byte>(mRecbuffer), new CancellationToken());
                 }
             }
             catch (Exception e)
             {
-                DLog.LogError($"[{NetTag}]: ReceiveAsync-> {e}");
+                DLog.LogError($"[{mNetTag}]: ReceiveAsync-> {e}");
             }
         }
 
         private void PushRecData(byte[] pBuffer, int pSize)
         {
-            bufferData.Push(pBuffer, pSize);
-            while (bufferData.IsFullData())
+            mBufferData.Push(pBuffer, pSize);
+            while (mBufferData.IsFullData())
             {
-                ReceiveData tssdata = bufferData.GetReceiveData();
-                resultDataList.Enqueue(tssdata);
+                ReceiveData tssdata = mBufferData.GetReceiveData();
+                mResultDataList.Enqueue(tssdata);
             }
         }
 
@@ -205,124 +178,11 @@ namespace LitEngine.Net
             return true;
         }
 
-        void AddMainThreadMsgReCall(NetMessage recall)
-        {
-            if (MessageDelgate == null) return;
-            mainThreadMsgList.Enqueue(recall);
-        }
 
-        NetMessage GetMsgReCallData(MessageType cmd, string msg = "")
-        {
-            return new NetMessage(cmd, msg);
-        }
-
-        private void Update()
-        {
-            UpdateReCalledMsg();
-            if (isConnected)
-            {
-                MainThreadUpdate();
-            }
-        }
-
-        private void MainThreadUpdate()
+        override protected void MainThreadUpdate()
         {
             UpdateRecMsg();
         }
 
-        void UpdateReCalledMsg()
-        {
-            try
-            {
-                if (!mainThreadMsgList.IsEmpty || MessageDelgate == null) return;
-                NetMessage tmsg = null;
-                if (mainThreadMsgList.TryDequeue(out tmsg))
-                {
-                    MessageDelgate(tmsg);
-                }
-            }
-            catch (Exception e)
-            {
-                DLog.LogError(e.ToString());
-            }
-        }
-
-        void UpdateRecMsg()
-        {
-            if (!resultDataList.IsEmpty)
-            {
-                while (resultDataList.TryDequeue(out ReceiveData trecdata))
-                {
-                    try
-                    {
-                        Call(trecdata.Cmd, trecdata);
-                    }
-                    catch (Exception _error)
-                    {
-                        DLog.LogError(_error.ToString());
-                    }
-                }
-            }
-        }
-
-        void Call(int msgId, ReceiveData msgobj)
-        {
-            try
-            {
-                if (msgHandlerList.TryGetValue(msgId, out MsgDataList tlist))
-                {
-                    int tlen = tlist.Count;
-                    for (int i = tlen - 1; i >= 0; i--)
-                        tlist[i](msgobj);
-                }
-            }
-            catch (Exception e)
-            {
-                DLog.LogError(e.ToString());
-            }
-        }
-
-
-        #region reg
-
-        static public void Reg(int msgid, ReceiveMessageEvent func)
-        {
-            Instance._Reg(msgid, func);
-        }
-
-        static public void UnReg(int msgid, ReceiveMessageEvent func)
-        {
-            Instance._UnReg(msgid, func);
-        }
-        void _Reg(int msgid, ReceiveMessageEvent func)
-        {
-            MsgDataList tlist = null;
-            if (msgHandlerList.ContainsKey(msgid))
-            {
-                tlist = msgHandlerList[msgid];
-                if (!tlist.Contains(func))
-                {
-                    tlist.Add(func);
-                }
-            }
-            else
-            {
-                tlist = new MsgDataList();
-                tlist.Add(func);
-                msgHandlerList.TryAdd(msgid, tlist);
-            }
-        }
-
-        void _UnReg(int msgid, ReceiveMessageEvent func)
-        {
-            if (!msgHandlerList.ContainsKey(msgid)) return;
-            var tlist = msgHandlerList[msgid];
-            if (tlist.Contains(func))
-                tlist.Remove(func);
-            if (tlist.Count == 0)
-                msgHandlerList.TryRemove(msgid, out MsgDataList tar);
-        }
-
-        #endregion
     }
 }
