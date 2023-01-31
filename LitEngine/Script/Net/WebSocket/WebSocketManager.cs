@@ -150,14 +150,17 @@ namespace LitEngine.Net
         {
             try
             {
-                var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(mRecbuffer), new CancellationToken());
+                var ttask = webSocket.ReceiveAsync(new ArraySegment<byte>(mRecbuffer), new CancellationToken());
+                var result = await ttask;
 
                 while (!result.CloseStatus.HasValue)
                 {
                     PushRecData(mRecbuffer, result.Count);
-
-                    result = await webSocket.ReceiveAsync(new ArraySegment<byte>(mRecbuffer), new CancellationToken());
+                    ttask = webSocket.ReceiveAsync(new ArraySegment<byte>(mRecbuffer), new CancellationToken());
+                    result = await ttask;
                 }
+
+                throw new NullReferenceException($"{mNetTag} : CloseStatusValue = {result?.CloseStatus.HasValue}, task = {ttask?.Exception}");
             }
             catch (Exception e)
             {
@@ -174,6 +177,8 @@ namespace LitEngine.Net
             {
                 ReceiveData tssdata = mBufferData.GetReceiveData();
                 mResultDataList.Enqueue(tssdata);
+
+                DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, $"{mNetTag}:接收-ReceiveData");
             }
         }
 
@@ -203,6 +208,8 @@ namespace LitEngine.Net
             {
                 return false;
             }
+
+            DebugMsg(0, pBytes, 0, pSize, $"{mNetTag}:Send");
 
             DoSend(pBytes, pSize);
             return true;
