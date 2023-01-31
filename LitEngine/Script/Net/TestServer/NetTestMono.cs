@@ -13,7 +13,7 @@ public class NetTestMono : MonoBehaviour
     }
     public TestType type = TestType.TCPTest;
 
-    DataHead headinfo = new SocketDataHead<int, int>(DataHead.CmdPosType.lenFirst, DataHead.ByteLenType.allbytes);
+    DataHead headinfo = new SocketDataHead(4, 4, DataHead.CmdPosType.lenFirst, DataHead.ByteLenType.allbytes);
     SendData testData = null;
     private void Awake()
     {

@@ -9,9 +9,9 @@ namespace LitEngine.Net
     public enum SocketDataHeadType
     {
         none = 0,
+        type_byte,
         type_int,
         type_short,
-        type_ushort,
     }
 
     public abstract class DataHead
@@ -52,20 +52,20 @@ namespace LitEngine.Net
         }
         private int ReadByType(SocketDataHeadType pType, byte[] pBuffer, int pOffset)
         {
-            int ret = -1;
+            int ret = 0;
             switch (pType)
             {
+                case SocketDataHeadType.type_byte:
+                    ret = BufferBase.SReadByte(pBuffer, pOffset);
+                    break;
                 case SocketDataHeadType.type_short:
                     ret = BufferBase.SReadShort(pBuffer, pOffset);
-                    break;
-                case SocketDataHeadType.type_ushort:
-                    ret = BufferBase.SReadUShort(pBuffer, pOffset);
                     break;
                 case SocketDataHeadType.type_int:
                     ret = BufferBase.SReadInt(pBuffer, pOffset);
                     break;
                 default:
-                    DLog.LogErrorFormat("ReadByType -> Type error : {0}", pType);
+
                     break;
             }
 
@@ -89,17 +89,17 @@ namespace LitEngine.Net
             int ret = 0;
             switch (pType)
             {
+                case SocketDataHeadType.type_byte:
+                    ret = BufferBase.WriteToBuffer((byte)pSrc, pBuffer, pOffset);
+                    break;
                 case SocketDataHeadType.type_short:
                     ret = BufferBase.WriteToBuffer((short)pSrc,pBuffer,pOffset);
-                    break;
-                case SocketDataHeadType.type_ushort:
-                    ret = BufferBase.WriteToBuffer((ushort)pSrc,pBuffer,pOffset);
                     break;
                 case SocketDataHeadType.type_int:
                     ret = BufferBase.WriteToBuffer((int)pSrc,pBuffer,pOffset);
                     break;
                 default:
-                    DLog.LogErrorFormat("SocketData GetByte -> Type error : {0}", pType);
+
                     break;
             }
             return ret;
@@ -155,43 +155,37 @@ namespace LitEngine.Net
             }
         }
     }
-    public class SocketDataHead<T,K> : DataHead
+    public class SocketDataHead : DataHead
     {
-        //T:Len Type    K:cmd Type
-        public SocketDataHead(CmdPosType pCmdPos, ByteLenType pLenType) : base(pCmdPos, pLenType)
+        public SocketDataHead(int pLen,int pCmdLen, CmdPosType pCmdPos, ByteLenType pLenType) : base(pCmdPos, pLenType)
         {
             int tlensize, tcmdSize;
 
-            lenType = GetTypeAndSize(typeof(T),out tlensize);
-            cmdType = GetTypeAndSize(typeof(K),out tcmdSize);
+            lenType = GetTypeAndSize(pLen);
+            cmdType = GetTypeAndSize(pCmdLen);
 
-            lenSize = tlensize;
-            cmdSize = tcmdSize;
+            lenSize = pLen;
+            cmdSize = pCmdLen;
 
             packageHeadLen = lenSize + cmdSize;
         }
 
-        public SocketDataHeadType GetTypeAndSize(System.Type pType,out int pSize)
+        public SocketDataHeadType GetTypeAndSize(int pLen)
         {
             SocketDataHeadType ret = SocketDataHeadType.none;
  
-            switch (pType.Name)
+            switch (pLen)
             {
-                case "Int16":
+                case 1:
+                    ret = SocketDataHeadType.type_byte;
+                    break;
+                case 2:
                     ret = SocketDataHeadType.type_short;
-                    pSize = 2;
                     break;
-                case "UInt16":
-                    ret = SocketDataHeadType.type_ushort;
-                    pSize = 2;
-                    break;
-                case "Int32":
+                case 4:
                     ret = SocketDataHeadType.type_int;
-                    pSize = 4;
                     break;
                 default:
-                    pSize = -1;
-                    DLog.LogErrorFormat("GetTypeAndSize -> Type error : {0}", pType.Name);
                     break;
             }
 
