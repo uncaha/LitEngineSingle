@@ -363,7 +363,7 @@ namespace LitEngine.Net
         virtual protected void CloseSocket()
         {
             mStartThread = false;
-            
+            mState = TcpState.Closed;
             KillSocket();
             ClearBuffer();
         }
