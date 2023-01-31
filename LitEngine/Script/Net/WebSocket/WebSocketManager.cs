@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace LitEngine.Net
 {
-    using MsgDataList = List<ReceiveMessageEvent>;
+
     public abstract class WebSocketManager<T> : NetBase<T> where T : WebSocketManager<T>
     {
 

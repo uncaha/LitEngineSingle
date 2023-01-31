@@ -8,7 +8,10 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 namespace LitEngine.Net
 {
-    using MsgDataList = List<ReceiveMessageEvent>;
+
+    public class ReciveMsgDataList : List<ReceiveMessageEvent>
+    {
+    }
     #region 回调消息
     public enum MessageType
     {
@@ -88,7 +91,7 @@ namespace LitEngine.Net
         protected ConcurrentQueue<SendData> mSendDataList = new ConcurrentQueue<SendData>();
         #endregion
         #region 分发
-        protected Dictionary<int, MsgDataList> mMsgHandlerList = new Dictionary<int, MsgDataList>();//消息注册列表
+        protected Dictionary<int, ReciveMsgDataList> mMsgHandlerList = new Dictionary<int, ReciveMsgDataList>();//消息注册列表
         protected ConcurrentQueue<NetMessage> mToMainThreadMsgList = new ConcurrentQueue<NetMessage>();//给主线程发送通知
         #endregion
 
@@ -418,14 +421,14 @@ namespace LitEngine.Net
 
         virtual public void _Reg(int msgid, ReceiveMessageEvent func)
         {
-            MsgDataList tlist = null;
+            ReciveMsgDataList tlist = null;
             if (mMsgHandlerList.ContainsKey(msgid))
             {
                 tlist = mMsgHandlerList[msgid];
             }
             else
             {
-                tlist = new MsgDataList();
+                tlist = new ReciveMsgDataList();
                 mMsgHandlerList.Add(msgid, tlist);
             }
             if (!tlist.Contains(func))
@@ -434,7 +437,7 @@ namespace LitEngine.Net
         virtual public void _UnReg(int msgid, ReceiveMessageEvent func)
         {
             if (!mMsgHandlerList.ContainsKey(msgid)) return;
-            MsgDataList tlist = mMsgHandlerList[msgid];
+            ReciveMsgDataList tlist = mMsgHandlerList[msgid];
             if (tlist.Contains(func))
                 tlist.Remove(func);
             if (tlist.Count == 0)
@@ -447,7 +450,7 @@ namespace LitEngine.Net
             {
                 if (mMsgHandlerList.ContainsKey(_msgid))
                 {
-                    MsgDataList tlist = mMsgHandlerList[_msgid];
+                    ReciveMsgDataList tlist = mMsgHandlerList[_msgid];
                     int tlen = tlist.Count;
                     for (int i = tlen - 1; i >= 0; i--)
                         tlist[i](_msg);
