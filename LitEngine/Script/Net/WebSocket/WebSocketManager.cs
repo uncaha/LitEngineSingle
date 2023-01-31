@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -56,6 +57,28 @@ namespace LitEngine.Net
 
         protected void Oninit()
         {
+        }
+
+        override sealed protected void RestSocketInfo()
+        {
+
+        }
+
+        override sealed protected void KillSocket()
+        {
+            try
+            {
+                if (webSocket != null)
+                {
+                    webSocket.Abort();
+                }
+            }
+            catch
+            {
+                // ignored
+            }
+
+            webSocket = null;
         }
 
 

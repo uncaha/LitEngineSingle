@@ -360,8 +360,9 @@ namespace LitEngine.Net
         virtual protected void CloseSocket()
         {
             mStartThread = false;
-            ClearBuffer();
+            
             KillSocket();
+            ClearBuffer();
         }
         virtual protected void CloseSocketStart()
         {
