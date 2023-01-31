@@ -153,14 +153,25 @@ namespace LitEngine.Net
                 var ttask = webSocket.ReceiveAsync(new ArraySegment<byte>(mRecbuffer), new CancellationToken());
                 var result = await ttask;
 
+                if (ttask.Exception != null)
+                {
+                    throw new NullReferenceException($"{mNetTag} : error = {ttask?.Exception}");
+                }
+
                 while (!result.CloseStatus.HasValue)
                 {
                     PushRecData(mRecbuffer, result.Count);
                     ttask = webSocket.ReceiveAsync(new ArraySegment<byte>(mRecbuffer), new CancellationToken());
                     result = await ttask;
+
+                    if(ttask.Exception != null)
+                    {
+                        throw new NullReferenceException($"{mNetTag} : error = {ttask?.Exception}");
+                    }
+
                 }
 
-                throw new NullReferenceException($"{mNetTag} : CloseStatusValue = {result?.CloseStatus.HasValue}, task = {ttask?.Exception}");
+                
             }
             catch (Exception e)
             {

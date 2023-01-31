@@ -244,7 +244,13 @@ namespace LitEngine.Net
             sInstance = null;
             Dispose(true);
             if (MessageDelgate != null)
+            {
                 MessageDelgate(GetMsgReCallData(MessageType.Destoryed, mNetTag + "- 删除Net对象完成."));
+            }
+                
+            MessageDelgate = null;
+
+            mMsgHandlerList.Clear();
         }
 
         virtual public void Dispose()
@@ -397,6 +403,11 @@ namespace LitEngine.Net
         {
             if (IsCOrD())
                 return;
+            if (mState == TcpState.Closed
+                || mState == TcpState.Disposed)
+            {
+                return;
+            }
             CloseSocketStart();
         }
 
