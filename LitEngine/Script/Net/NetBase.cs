@@ -75,7 +75,7 @@ namespace LitEngine.Net
         protected string mNetTag = "";
         public bool StopUpdateRecMsg { get; set; }
 
-        private ConcurrentQueue<SocketAsyncEventArgs> cacheAsyncEvent = new ConcurrentQueue<SocketAsyncEventArgs>();
+        protected ConcurrentQueue<SocketAsyncEventArgs> cacheAsyncEvent = new ConcurrentQueue<SocketAsyncEventArgs>();
         protected SocketAsyncEventArgs receiveAsyncEvent = null;
         #endregion
 
@@ -229,18 +229,6 @@ namespace LitEngine.Net
         protected NetBase()
         {
             StopUpdateRecMsg = false;
-
-            for (int i = 0; i < 60; i++)
-            {
-                SocketAsyncEventArgs sd = new SocketAsyncEventArgs();
-                sd.Completed += SendAsyncCallback;
-                sd.SocketFlags = SocketFlags.None;
-                cacheAsyncEvent.Enqueue(sd);
-            }
-
-            receiveAsyncEvent = new SocketAsyncEventArgs();
-            receiveAsyncEvent.Completed += ReceiveAsyncCallback;
-            receiveAsyncEvent.SocketFlags = SocketFlags.None;
         }
 
         virtual protected void Oninit()

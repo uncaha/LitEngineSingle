@@ -14,6 +14,22 @@ namespace LitEngine.Net
 
         override public bool isConnected { get { return mState == TcpState.Connected && mSocket != null; } }
 
+        protected SocketNetBase() : base()
+        {
+
+            for (int i = 0; i < 60; i++)
+            {
+                SocketAsyncEventArgs sd = new SocketAsyncEventArgs();
+                sd.Completed += SendAsyncCallback;
+                sd.SocketFlags = SocketFlags.None;
+                cacheAsyncEvent.Enqueue(sd);
+            }
+
+            receiveAsyncEvent = new SocketAsyncEventArgs();
+            receiveAsyncEvent.Completed += ReceiveAsyncCallback;
+            receiveAsyncEvent.SocketFlags = SocketFlags.None;
+        }
+
         override sealed protected void RestSocketInfo()
         {
             if (mSocket == null) return;

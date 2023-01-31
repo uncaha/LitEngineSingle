@@ -55,7 +55,7 @@ namespace LitEngine.Net
 
         #endregion
         #region 初始化
-        protected KCPManager()
+        protected KCPManager() : base()
         {
             mNetTag = GetType().Name;
             kcpObject = new KCP(1, HandleKcpSend);

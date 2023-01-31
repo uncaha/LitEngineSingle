@@ -17,7 +17,7 @@ namespace LitEngine.Net
 
         #region 构造析构
 
-        protected TcpManager()
+        protected TcpManager() : base()
         {
             mNetTag = GetType().Name;
         }

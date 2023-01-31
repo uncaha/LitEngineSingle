@@ -18,7 +18,7 @@ namespace LitEngine.Net
 
         #region 构造析构
 
-        protected UDPManager()
+        protected UDPManager() : base()
         {
             mNetTag = GetType().Name;
         }
