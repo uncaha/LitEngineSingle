@@ -84,7 +84,7 @@ public class NetTestMono : MonoBehaviour
         var server = gameObject.AddComponent<ServerTestWebSocket>();
         server.InitServer();
         
-        WebSocketNet.Init("127.0.0.1:20260", 20260);
+        WebSocketNet.Init("ws://127.0.0.1:20260", -1);
         WebSocketNet.Format = headinfo;
         WebSocketNet.ShowMsgLog(true);
         WebSocketNet.Connect();
