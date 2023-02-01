@@ -82,12 +82,14 @@ namespace LitEngine.Net.TestServer
                 int tsendLen = socket.EndReceive(result);
                 if (tsendLen > 0)
                 {
-                    SendData tetstdata = new SendData(headinfo,11);
-                    tetstdata.AddInt(3);
-                    BeginSend(tetstdata.Data, 0, tetstdata.SendLen);
-
                     String tdata = Encoding.UTF8.GetString(recBuffer);
-
+                    if (!IsAccept(tdata))
+                    {
+                        SendData tetstdata = new SendData(headinfo,11);
+                        tetstdata.AddInt(3);
+                        BeginSend(tetstdata.Data, 0, tetstdata.SendLen);
+                    }
+                    
                     IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
                     var localIP = endPoint.Address.ToString();
                     string tmsg = $"[WebSocket]{localIP}->{tdata}";
@@ -95,6 +97,31 @@ namespace LitEngine.Net.TestServer
                 }
 
                 BeginReceive();
+            }
+
+            bool IsAccept(string pdata)
+            {
+                if (new System.Text.RegularExpressions.Regex("^GET").IsMatch(pdata))
+                {
+                    const string eol = "\r\n"; // HTTP/1.1 defines the sequence CR LF as the end-of-line marker
+
+                    Byte[] response = Encoding.UTF8.GetBytes("HTTP/1.1 101 Switching Protocols" + eol
+                        + "Connection: Upgrade" + eol
+                        + "Upgrade: websocket" + eol
+                        + "Sec-WebSocket-Accept: " + Convert.ToBase64String(
+                            System.Security.Cryptography.SHA1.Create().ComputeHash(
+                                Encoding.UTF8.GetBytes(
+                                    new System.Text.RegularExpressions.Regex("Sec-WebSocket-Key: (.*)").Match(pdata).Groups[1].Value.Trim() + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+                                )
+                            )
+                        ) + eol
+                        + eol);
+                    BeginSend(response, 0, response.Length);
+
+                    return true;
+                }
+
+                return false;
             }
         }
         // Start is called before the first frame update

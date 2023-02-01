@@ -422,9 +422,9 @@ namespace LitEngine.Net
 
         virtual protected void AddMainThreadMsgReCall(NetMessage _recall)
         {
+            DLog.Log($"[{mNetTag}]: cmd:{_recall.mCmd}, msg:{_recall.mMsg}, data:{_recall.data}");
             if (MessageDelgate == null) return;
             mToMainThreadMsgList.Enqueue(_recall);
-            DLog.Log($"[{mNetTag}]: cmd:{_recall.mCmd}, msg:{_recall.mMsg}, data:{_recall.data}");
         }
 
         #endregion
