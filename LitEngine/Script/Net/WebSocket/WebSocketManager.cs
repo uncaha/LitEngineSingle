@@ -58,11 +58,13 @@ namespace LitEngine.Net
 
         override public void ConnectToServer()
         {
-            ConnectAsync();
+            DLog.Log($"[{mNetTag}] start Connect.");
+            Task.Run(async () => { ConnectAsync(); }, new CancellationToken());
         }
 
         async void ConnectAsync()
         {
+
             if (IsCOrD())
             {
                 DLog.LogError(mNetTag + string.Format("[{0}]Closing or Connecting.", mNetTag));
@@ -80,26 +82,9 @@ namespace LitEngine.Net
                 webSocket = new ClientWebSocket();
             }
 
-            switch (webSocket.State)
-            {
-                case WebSocketState.Connecting:
-                    DLog.LogError($"[{mNetTag}] is Connected.");
-                    return;
-                case WebSocketState.Open:
-                    DLog.LogError($"[{mNetTag}] is Connecting.");
-                    return;
-                case WebSocketState.Aborted:
-                    DLog.LogError($"[{mNetTag}] is Dispose.");
-                    return;
-                case WebSocketState.Closed:
-                    DLog.LogError($"[{mNetTag}] is Dispose.");
-                    return;
-            }
-
-
-
             mState = TcpState.Connecting;
-
+            
+            DLog.Log($"[{mNetTag}] webSocket ConnectAsync.");
             try
             {
                 var tconnectTask = webSocket.ConnectAsync(new Uri(mHostName), cancellation);
@@ -116,6 +101,8 @@ namespace LitEngine.Net
                     mState = TcpState.Closed;
                     AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ConectError, mNetTag + "Connect fail. " + webSocket.State));
                 }
+                
+                DLog.Log($"[{mNetTag}] webSocket ConnectAsync end.");
             }
             catch (Exception e)
             {
