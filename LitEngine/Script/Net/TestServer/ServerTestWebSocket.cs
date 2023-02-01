@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading;
 using System;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading.Tasks;
 using LitEngine.Net;
 using LitEngine;
@@ -41,6 +42,7 @@ namespace LitEngine.Net.TestServer
                 try
                 {
                     SocketError errorCode = SocketError.Success;
+                    recBuffer.Initialize();
                     var ar = socket.BeginReceive(recBuffer, 0, recBuffer.Length, SocketFlags.None, out errorCode, recCallback, null);
                 }
                 catch (System.Exception erro)
@@ -84,18 +86,11 @@ namespace LitEngine.Net.TestServer
                     tetstdata.AddInt(3);
                     BeginSend(tetstdata.Data, 0, tetstdata.SendLen);
 
-                    System.Text.StringBuilder bufferstr = new System.Text.StringBuilder();
-                    bufferstr.Append("{");
-                    for (int i = 0; i < tsendLen; i++)
-                    {
-                        if (i != 0)
-                            bufferstr.Append(",");
-                        bufferstr.Append(recBuffer[i]);
-                    }
-                    bufferstr.Append("}");
+                    String tdata = Encoding.UTF8.GetString(recBuffer);
+
                     IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
                     var localIP = endPoint.Address.ToString();
-                    string tmsg = $"[WebSocket]{localIP}->{bufferstr}";
+                    string tmsg = $"[WebSocket]{localIP}->{tdata}";
                     Debug.Log(tmsg);
                 }
 

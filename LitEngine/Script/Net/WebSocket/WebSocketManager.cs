@@ -17,7 +17,11 @@ namespace LitEngine.Net
 
         private ClientWebSocket webSocket;
         private CancellationToken cancellation = new CancellationToken();
-
+        
+        public bool isConnected
+        {
+            get { return base.isConnected && webSocket != null && webSocket.State == WebSocketState.Open; }
+        }
 
         #region 构造析构
 
@@ -171,11 +175,6 @@ namespace LitEngine.Net
 
         #endregion
 
-        public bool isConnected
-        {
-            get { return webSocket != null && webSocket.State == WebSocketState.Open; }
-        }
-        
         override public bool Send(SendData pData)
         {
             if (!isConnected) return false;
