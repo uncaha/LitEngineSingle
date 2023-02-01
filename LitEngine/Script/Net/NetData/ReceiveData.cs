@@ -43,11 +43,6 @@ namespace LitEngine.Net
             Buffer.BlockCopy(_buffer, tindex, Data, 0, Len);
         }
 
-        public byte[] ToProtoArray()
-        {
-            return Data;
-        }
-
         override public string ToString()
         {
             System.Text.StringBuilder bufferstr = new System.Text.StringBuilder();
