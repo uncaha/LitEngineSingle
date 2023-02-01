@@ -28,35 +28,7 @@ namespace LitEngine.Net
 
         #endregion
 
-        #region staticfun
-
-        static protected T sInstance = null;
-
-        static protected T Instance
-        {
-            get
-            {
-                if (sInstance == null)
-                {
-                    GameObject tobj = new GameObject();
-                    DontDestroyOnLoad(tobj);
-                    tobj.hideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector;
-                    sInstance = tobj.AddComponent<T>();
-                    sInstance.Oninit();
-                    tobj.name = sInstance.mNetTag + "-Object";
-                }
-
-                return sInstance;
-            }
-        }
-
-        #endregion
-
         #region 连接
-
-        protected void Oninit()
-        {
-        }
 
         override sealed protected void RestSocketInfo()
         {
@@ -80,8 +52,12 @@ namespace LitEngine.Net
             webSocket = null;
         }
 
+        override public void ConnectToServer()
+        {
+            ConnectAsync();
+        }
 
-        public async void ConnectAsync()
+        async void ConnectAsync()
         {
             if (IsCOrD())
             {
@@ -199,21 +175,20 @@ namespace LitEngine.Net
         {
             get { return webSocket != null && webSocket.State == WebSocketState.Open; }
         }
-
-        static public bool SendBytes(byte[] pBuffer, int pSize)
+        
+        override public bool Send(SendData pData)
+        {
+            if (!isConnected) return false;
+            return Send(pData.Data, pData.SendLen);
+        }
+        
+        override public bool Send(byte[] pBuffer, int pSize)
         {
             if (pBuffer == null || !Instance.isConnected) return false;
-            return Instance.Send(pBuffer, pSize);
+            return StartSend(pBuffer, pSize);
         }
 
-        static public bool SendBytes(byte[] pBuffer)
-        {
-            if (pBuffer == null || !Instance.isConnected) return false;
-            SendBytes(pBuffer, pBuffer.Length);
-            return true;
-        }
-
-        bool Send(byte[] pBytes, int pSize)
+        bool StartSend(byte[] pBytes, int pSize)
         {
             if (webSocket.State != WebSocketState.Open)
             {

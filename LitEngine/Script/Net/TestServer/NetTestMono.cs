@@ -70,6 +70,9 @@ public class NetTestMono : MonoBehaviour
 
     void StartKCPTest()
     {
+        var server = gameObject.AddComponent<ServerTestKCP>();
+        server.InitServer();
+        
         KCPNet.Init("127.0.0.1", 20250);
         KCPNet.Format = headinfo;
         KCPNet.ShowMsgLog(true);
@@ -78,6 +81,9 @@ public class NetTestMono : MonoBehaviour
     
     void StartWebSocketTest()
     {
+        var server = gameObject.AddComponent<ServerTestWebSocket>();
+        server.InitServer();
+        
         WebSocketNet.Init("127.0.0.1:20260", 20260);
         WebSocketNet.Format = headinfo;
         WebSocketNet.ShowMsgLog(true);
