@@ -10,6 +10,7 @@ public class NetTestMono : MonoBehaviour
         TCPTest,
         UDPTest,
         KCPTest,
+        WebSocketTest,
     }
     public TestType type = TestType.TCPTest;
 
@@ -33,6 +34,9 @@ public class NetTestMono : MonoBehaviour
                 break;
             case TestType.KCPTest:
                 StartKCPTest();
+                break;
+            case TestType.WebSocketTest:
+                StartWebSocketTest();
                 break;
             default:
                 break;
@@ -62,6 +66,14 @@ public class NetTestMono : MonoBehaviour
         KCPNet.ShowMsgLog(true);
         KCPNet.Connect();
     }
+    
+    void StartWebSocketTest()
+    {
+        WebSocketNet.Init("127.0.0.1:20260", 20260);
+        WebSocketNet.Format = headinfo;
+        WebSocketNet.ShowMsgLog(true);
+        WebSocketNet.Connect();
+    }
 
 
     void Update()
@@ -76,6 +88,9 @@ public class NetTestMono : MonoBehaviour
                 break;
             case TestType.KCPTest:
                 UpdateKCPNetTest();
+                break;
+            case TestType.WebSocketTest:
+                UpdateWebSocketNetTest();
                 break;
             default:
                 break;
@@ -98,5 +113,11 @@ public class NetTestMono : MonoBehaviour
     {
         if (!KCPNet.IsConnect()) return;
         KCPNet.SendObject(testData);
+    }
+    
+    void UpdateWebSocketNetTest()
+    {
+        if (!WebSocketNet.IsConnect()) return;
+        WebSocketNet.SendObject(testData);
     }
 }
