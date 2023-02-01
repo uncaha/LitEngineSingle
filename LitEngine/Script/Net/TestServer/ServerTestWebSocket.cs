@@ -45,7 +45,7 @@ namespace LitEngine.Net.TestServer
                 }
                 catch (System.Exception erro)
                 {
-                    DLog.LogFormat("TCP Rec Error.{0}", erro);
+                    DLog.LogFormat("websocket Rec Error.{0}", erro);
                 }
             }
 
@@ -57,12 +57,12 @@ namespace LitEngine.Net.TestServer
                     var ar = socket.BeginSend(buffer, offset, size, SocketFlags.None, out errorCode, sendCallback, buffer);
                     if (errorCode != SocketError.Success)
                     {
-                        DLog.LogErrorFormat("TCP Send Error.{0}", errorCode);
+                        DLog.LogErrorFormat("websocket Send Error.{0}", errorCode);
                     }
                 }
                 catch (System.Exception erro)
                 {
-                    DLog.LogFormat("TCP Send Error.{0}", erro);
+                    DLog.LogFormat("websocket Send Error.{0}", erro);
                 }
             }
 
@@ -95,7 +95,7 @@ namespace LitEngine.Net.TestServer
                     bufferstr.Append("}");
                     IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
                     var localIP = endPoint.Address.ToString();
-                    string tmsg = string.Format("{0}{1}", localIP, bufferstr);
+                    string tmsg = $"[WebSocket]{localIP}->{bufferstr}";
                     Debug.Log(tmsg);
                 }
 
@@ -115,7 +115,7 @@ namespace LitEngine.Net.TestServer
             if (initServer) return;
             initServer = true;
             
-            gameObject.name = "TCP-" + 20260;
+            gameObject.name = "websocket-" + 20260;
             //var mTargetPoint = new IPEndPoint(tip, 200236);
             IPAddress tip = IPAddress.Parse("127.0.0.1");
             testServer = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
