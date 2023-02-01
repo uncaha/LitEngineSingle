@@ -22,8 +22,13 @@ namespace LitEngine.Net.TestServer
         
         DataFormat headinfo = new SocketDataFormat(4, 4, DataFormat.CmdPosType.lenFirst, DataFormat.ByteLenType.allbytes);
         SendData tetstdata = null;
-        void Start()
+        
+        private bool initServer = false;
+        public void InitServer()
         {
+            if (initServer) return;
+            initServer = true;
+            
             gameObject.name = "UDP-" + mLocalPort;
             // string hostName = Dns.GetHostName();
             // IPHostEntry iPHostEntry = Dns.GetHostEntry(hostName);
@@ -44,6 +49,11 @@ namespace LitEngine.Net.TestServer
             tetstdata = new SendData(headinfo,11);
             tetstdata.AddInt(3);
             Debug.Log("测试UDP服务器启动");
+        }
+
+        private void Awake()
+        {
+            InitServer();
         }
 
         private void OnDestroy()

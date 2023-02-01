@@ -28,13 +28,18 @@ namespace LitEngine.Net.TestServer
         IPEndPoint tarpoint = null;
         private SwitchQueue<byte[]> recvQueue = new SwitchQueue<byte[]>(128);
 
+        
         private void Awake()
         {
-            
+            InitServer();
         }
 
-        void Start()
+        private bool initServer = false;
+        public void InitServer()
         {
+            if (initServer) return;
+            initServer = true;
+            
             gameObject.name = "KCP-" + mLocalPort;
             kcpObject = new KCP(1, HandleKcpSend);
             kcpObject.NoDelay(1, 10, 2, 1);
@@ -57,6 +62,7 @@ namespace LitEngine.Net.TestServer
             tetstdata.AddInt(3);
             Debug.Log("测试KCP服务器启动");
         }
+        
 
         private void OnDestroy()
         {

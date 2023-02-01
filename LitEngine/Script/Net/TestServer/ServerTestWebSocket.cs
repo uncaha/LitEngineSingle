@@ -12,7 +12,6 @@ using LitEngine.Net;
 using LitEngine;
 namespace LitEngine.Net.TestServer
 {
-
     public class ServerTestWebSocket : MonoBehaviour
     {
         public class UserObject
@@ -110,8 +109,12 @@ namespace LitEngine.Net.TestServer
 
         SafeMap<int, UserObject> userMap = new SafeMap<int, UserObject>();
 
-        void Start()
+        private bool initServer = false;
+        public void InitServer()
         {
+            if (initServer) return;
+            initServer = true;
+            
             gameObject.name = "TCP-" + 20260;
             //var mTargetPoint = new IPEndPoint(tip, 200236);
             IPAddress tip = IPAddress.Parse("127.0.0.1");
@@ -127,6 +130,11 @@ namespace LitEngine.Net.TestServer
             Application.runInBackground = true;
 
             Debug.Log("测试TCP服务器启动");
+        }
+
+        private void Awake()
+        {
+            InitServer();
         }
 
         private void OnDestroy()

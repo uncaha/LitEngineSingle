@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using LitEngine.Net;
+using LitEngine.Net.TestServer;
+
 public class NetTestMono : MonoBehaviour
 {
     public enum TestType
@@ -45,14 +47,21 @@ public class NetTestMono : MonoBehaviour
 
     void StartTcpTest()
     {
+        var server = gameObject.AddComponent<ServerTestTCP>();
+        server.InitServer();
+        
         TCPNet.Init("127.0.0.1", 20240);
         TCPNet.Format = headinfo;
         TCPNet.ShowMsgLog(true);
         TCPNet.Connect();
+        
     }
 
     void StartUDPTest()
     {
+        var server = gameObject.AddComponent<ServerTest>();
+        server.InitServer();
+        
         UDPNet.Init("127.0.0.1", 20236);
         UDPNet.Format = headinfo;
         UDPNet.ShowMsgLog(true);
