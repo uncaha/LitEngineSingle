@@ -29,12 +29,7 @@ namespace LitEngine.Net
             headInfo.WriteCmd(Cmd,mData, 0);
             mIndex = headInfo.packageHeadLen;
         }
-        public SendData(int pCmd,byte[] pData,int pSize)
-        {
-            Cmd = pCmd;
-            mData = pData;
-            mIndex = pSize;
-        }
+
         public void Rest()
         {
             Len = 0;
