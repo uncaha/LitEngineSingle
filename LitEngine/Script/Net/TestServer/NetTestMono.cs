@@ -42,7 +42,7 @@ public class NetTestMono : MonoBehaviour
     void StartTcpTest()
     {
         TCPNet.Init("127.0.0.1", 20240);
-        TCPNet.Head = headinfo;
+        TCPNet.Format = headinfo;
         TCPNet.ShowMsgLog(true);
         TCPNet.Connect();
     }
@@ -50,7 +50,7 @@ public class NetTestMono : MonoBehaviour
     void StartUDPTest()
     {
         UDPNet.Init("127.0.0.1", 20236);
-        UDPNet.Head = headinfo;
+        UDPNet.Format = headinfo;
         UDPNet.ShowMsgLog(true);
         UDPNet.Connect();
     }
@@ -58,7 +58,7 @@ public class NetTestMono : MonoBehaviour
     void StartKCPTest()
     {
         KCPNet.Init("127.0.0.1", 20250);
-        KCPNet.Head = headinfo;
+        KCPNet.Format = headinfo;
         KCPNet.ShowMsgLog(true);
         KCPNet.Connect();
     }
