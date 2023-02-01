@@ -87,13 +87,16 @@ namespace LitEngine.Net.TestServer
                     {
                         SendData tetstdata = new SendData(headinfo,11);
                         tetstdata.AddInt(3);
-                        BeginSend(tetstdata.Data, 0, tetstdata.SendLen);
+                       // BeginSend(tetstdata.Data, 0, tetstdata.SendLen);
+                        
+                        
+                        IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+                        var localIP = endPoint.Address.ToString();
+                        string tmsg = $"[WebSocket]{localIP}->{tdata}";
+                        Debug.Log(tmsg);
                     }
                     
-                    IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
-                    var localIP = endPoint.Address.ToString();
-                    string tmsg = $"[WebSocket]{localIP}->{tdata}";
-                    Debug.Log(tmsg);
+
                 }
 
                 BeginReceive();
@@ -101,21 +104,21 @@ namespace LitEngine.Net.TestServer
 
             bool IsAccept(string pdata)
             {
+                string tmsg = $"[WebSocket]->{pdata}";
                 if (new System.Text.RegularExpressions.Regex("^GET").IsMatch(pdata))
                 {
-                    const string eol = "\r\n"; // HTTP/1.1 defines the sequence CR LF as the end-of-line marker
+                    string swk = System.Text.RegularExpressions.Regex.Match(pdata, "Sec-WebSocket-Key: (.*)").Groups[1].Value.Trim();
+                    string swka = swk + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+                    byte[] swkaSha1 = System.Security.Cryptography.SHA1.Create().ComputeHash(Encoding.UTF8.GetBytes(swka));
+                    string swkaSha1Base64 = Convert.ToBase64String(swkaSha1);
 
-                    Byte[] response = Encoding.UTF8.GetBytes("HTTP/1.1 101 Switching Protocols" + eol
-                        + "Connection: Upgrade" + eol
-                        + "Upgrade: websocket" + eol
-                        + "Sec-WebSocket-Accept: " + Convert.ToBase64String(
-                            System.Security.Cryptography.SHA1.Create().ComputeHash(
-                                Encoding.UTF8.GetBytes(
-                                    new System.Text.RegularExpressions.Regex("Sec-WebSocket-Key: (.*)").Match(pdata).Groups[1].Value.Trim() + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-                                )
-                            )
-                        ) + eol
-                        + eol);
+                    // HTTP/1.1 defines the sequence CR LF as the end-of-line marker
+                    byte[] response = Encoding.UTF8.GetBytes(
+                        "HTTP/1.1 101 Switching Protocols\r\n" +
+                        "Connection: Upgrade\r\n" +
+                        "Upgrade: websocket\r\n" +
+                        "Sec-WebSocket-Accept: " + swkaSha1Base64 + "\r\n\r\n");
+                    
                     BeginSend(response, 0, response.Length);
 
                     return true;
