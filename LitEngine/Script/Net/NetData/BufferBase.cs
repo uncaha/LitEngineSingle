@@ -8,7 +8,7 @@ namespace LitEngine.Net
         public const int maxLen = 1024 * 1024 * 100;
         
         public static bool IsHDate = false;
-        public DataHead headInfo = new SocketDataHead(4,4,DataHead.CmdPosType.lenFirst, DataHead.ByteLenType.allbytes);
+        public DataFormat headInfo = new SocketDataFormat(4,4,DataFormat.CmdPosType.lenFirst, DataFormat.ByteLenType.allbytes);
 
         private byte[] mBuffer = null;
         private int mIndex = 0;

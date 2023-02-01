@@ -186,7 +186,7 @@ namespace LitEngine.Net
             Instance.receiveOutput = pEvent;
         }
 
-        public static DataHead Head
+        public static DataFormat Head
         {
             get { return Instance.mBufferData.headInfo; }
 

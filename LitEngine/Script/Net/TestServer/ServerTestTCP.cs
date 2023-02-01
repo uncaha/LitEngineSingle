@@ -24,7 +24,7 @@ namespace LitEngine.Net.TestServer
 
             byte[] recBuffer = new byte[1024 * 100];
             
-            DataHead headinfo = new SocketDataHead(4, 4, DataHead.CmdPosType.lenFirst, DataHead.ByteLenType.allbytes);
+            DataFormat headinfo = new SocketDataFormat(4, 4, DataFormat.CmdPosType.lenFirst, DataFormat.ByteLenType.allbytes);
 
             public UserObject(Socket psoc)
             {

@@ -15,8 +15,8 @@ namespace LitEngine.Net
         public int Cmd {get;private set;}
         #endregion
 
-        private DataHead headInfo;
-        public SendData(DataHead pInfo,int pCmd,int pSize = 128)
+        private DataFormat headInfo;
+        public SendData(DataFormat pInfo,int pCmd,int pSize = 128)
         {
             headInfo = pInfo;
             mData = new byte[pSize];

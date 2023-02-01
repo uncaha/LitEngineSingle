@@ -14,7 +14,7 @@ namespace LitEngine.Net
         type_short,
     }
 
-    public abstract class DataHead
+    public abstract class DataFormat
     {
         public enum CmdPosType
         {
@@ -30,7 +30,7 @@ namespace LitEngine.Net
             onlyContent,
         }
 
-
+        public bool IsHighDate { get; protected set; } = false;
 
         public SocketDataHeadType lenType { get; protected set; } = SocketDataHeadType.type_int;
         public int lenSize { get; protected set; }
@@ -45,7 +45,7 @@ namespace LitEngine.Net
 
         public bool IsCmdFirst { get { return cmdPos == CmdPosType.cmdFirst; } }
 
-        public DataHead(CmdPosType pCmdPos, ByteLenType pLenType)
+        public DataFormat(CmdPosType pCmdPos, ByteLenType pLenType)
         {
             cmdPos = pCmdPos;
             byteLenType = pLenType;
@@ -119,9 +119,9 @@ namespace LitEngine.Net
         {
             switch (byteLenType)
             {
-                case DataHead.ByteLenType.allbytes:
+                case ByteLenType.allbytes:
                     return pIndex;
-                case DataHead.ByteLenType.onlyContent:
+                case ByteLenType.onlyContent:
                     return pIndex - packageHeadLen;
                 default:
                     return pIndex;
@@ -132,9 +132,9 @@ namespace LitEngine.Net
         {
             switch (byteLenType)
             {
-                case DataHead.ByteLenType.allbytes:
+                case ByteLenType.allbytes:
                     return pSize - packageHeadLen;
-                case DataHead.ByteLenType.onlyContent:
+                case ByteLenType.onlyContent:
                     return pSize;
                 default:
                     return pSize;
@@ -146,18 +146,18 @@ namespace LitEngine.Net
         {
             switch (byteLenType)
             {
-                case DataHead.ByteLenType.allbytes:
+                case ByteLenType.allbytes:
                     return pLen;
-                case DataHead.ByteLenType.onlyContent:
+                case ByteLenType.onlyContent:
                     return pLen + packageHeadLen;
                 default:
                     return pLen;
             }
         }
     }
-    public class SocketDataHead : DataHead
+    public class SocketDataFormat : DataFormat
     {
-        public SocketDataHead(int pLen,int pCmdLen, CmdPosType pCmdPos, ByteLenType pLenType) : base(pCmdPos, pLenType)
+        public SocketDataFormat(int pLen,int pCmdLen, CmdPosType pCmdPos, ByteLenType pLenType,bool pIsHighData = false) : base(pCmdPos, pLenType)
         {
             int tlensize, tcmdSize;
 
@@ -166,6 +166,8 @@ namespace LitEngine.Net
 
             lenSize = pLen;
             cmdSize = pCmdLen;
+
+            IsHighDate = pIsHighData;
 
             packageHeadLen = lenSize + cmdSize;
         }

@@ -19,7 +19,7 @@ namespace LitEngine.Net.TestServer
         protected EndPoint mRecPoint;
         Task recTask;
         bool taskStart = false;
-        DataHead headinfo = new SocketDataHead(4, 4, DataHead.CmdPosType.lenFirst, DataHead.ByteLenType.allbytes);
+        DataFormat headinfo = new SocketDataFormat(4, 4, DataFormat.CmdPosType.lenFirst, DataFormat.ByteLenType.allbytes);
         SendData tetstdata = null;
 
         private KCP kcpObject;

@@ -14,13 +14,13 @@ namespace LitEngine.Net
 
         #endregion
         int mIndex;
-        private DataHead headInfo;
-        public ReceiveData(DataHead pInfo,byte[] _buffer, int _offset)
+        private DataFormat headInfo;
+        public ReceiveData(DataFormat pInfo,byte[] _buffer, int _offset)
         {
             headInfo = pInfo;
             CopyBuffer(_buffer, _offset);
         }
-        public ReceiveData(DataHead pInfo)
+        public ReceiveData(DataFormat pInfo)
         {
             headInfo = pInfo;
         }
