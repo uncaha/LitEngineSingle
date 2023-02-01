@@ -67,7 +67,7 @@ namespace LitEngine.Net
         }
         public byte[] ReadBytes(int count)
         {
-            byte[] ret = BufferBase.SReadBytes(Data, mIndex, count);
+            byte[] ret = headInfo.SReadBytes(Data, mIndex, count);
             mIndex += count;
             return ret;
         }
@@ -75,7 +75,7 @@ namespace LitEngine.Net
         unsafe public short ReadShort()
         {
             short u = 0;
-            BufferBase.GetNetValue((byte*)&u, Data, mIndex, sizeof(short));
+            headInfo.GetNetValue((byte*)&u, Data, mIndex, sizeof(short));
             mIndex += sizeof(short);
             return u;
         }
@@ -83,7 +83,7 @@ namespace LitEngine.Net
         unsafe public int ReadInt()
         {
             int u = 0;
-            BufferBase.GetNetValue((byte*)&u, Data, mIndex, sizeof(int));
+            headInfo.GetNetValue((byte*)&u, Data, mIndex, sizeof(int));
             mIndex += sizeof(int);
             return u;
         }
@@ -91,7 +91,7 @@ namespace LitEngine.Net
         unsafe public long ReadLong()
         {
             long u = 0;
-            BufferBase.GetNetValue((byte*)&u, Data, mIndex, sizeof(long));
+            headInfo.GetNetValue((byte*)&u, Data, mIndex, sizeof(long));
             mIndex += sizeof(long);
             return u;
         }
@@ -99,7 +99,7 @@ namespace LitEngine.Net
         unsafe public float ReadFloat()
         {
             float u = 0;
-            BufferBase.GetNetValue((byte*)&u, Data, mIndex, sizeof(float));
+            headInfo.GetNetValue((byte*)&u, Data, mIndex, sizeof(float));
             mIndex += sizeof(float);
             return u;
         }

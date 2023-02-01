@@ -69,55 +69,55 @@ namespace LitEngine.Net
         {
             if (pSrc == null) return;
             ChoseDataLen(pSrc.Length);
-            mIndex += BufferBase.WriteToBuffer(pSrc,mData,mIndex);
+            mIndex += headInfo.WriteToBuffer(pSrc,mData,mIndex);
         }
 
         public void AddShort(short pSrc)
         {
             ChoseDataLen(sizeof(short));
-            mIndex += BufferBase.WriteToBuffer(pSrc,mData,mIndex);
+            mIndex += headInfo.WriteToBuffer(pSrc,mData,mIndex);
         }
 
         public void AddUShort(ushort pSrc)
         {
             ChoseDataLen(sizeof(ushort));
-            mIndex += BufferBase.WriteToBuffer(pSrc,mData,mIndex);
+            mIndex += headInfo.WriteToBuffer(pSrc,mData,mIndex);
         }
 
         public void AddInt(int pSrc)
         {
             ChoseDataLen(sizeof(int));
-            mIndex += BufferBase.WriteToBuffer(pSrc,mData,mIndex);
+            mIndex += headInfo.WriteToBuffer(pSrc,mData,mIndex);
         }
 
         public void AddUInt(uint pSrc)
         {
             ChoseDataLen(sizeof(uint));
-            mIndex += BufferBase.WriteToBuffer(pSrc,mData,mIndex);
+            mIndex += headInfo.WriteToBuffer(pSrc,mData,mIndex);
         }
 
         public void AddULong(ulong pSrc)
         {
             ChoseDataLen(sizeof(ulong));
-            mIndex += BufferBase.WriteToBuffer(pSrc,mData,mIndex);
+            mIndex += headInfo.WriteToBuffer(pSrc,mData,mIndex);
         }
 
         public void AddLong(long pSrc)
         {
             ChoseDataLen(sizeof(long));
-            mIndex += BufferBase.WriteToBuffer(pSrc,mData,mIndex);
+            mIndex += headInfo.WriteToBuffer(pSrc,mData,mIndex);
         }
 
         public void AddFloat(float pSrc)
         {
             ChoseDataLen(sizeof(float));
-            mIndex += BufferBase.WriteToBuffer(pSrc,mData,mIndex);
+            mIndex += headInfo.WriteToBuffer(pSrc,mData,mIndex);
         }
 
         public void AddBool(bool pSrc)
         {
             ChoseDataLen(sizeof(bool));
-            mIndex += BufferBase.WriteToBuffer(pSrc,mData,mIndex);
+            mIndex += headInfo.WriteToBuffer(pSrc,mData,mIndex);
         }
 
         public void AddString(string pSrc)
@@ -126,8 +126,8 @@ namespace LitEngine.Net
             int ttypelen = sizeof(ushort);
             int retlen = strbyte.Length + ttypelen;
             ChoseDataLen(retlen);
-            mIndex += BufferBase.WriteToBuffer((ushort)strbyte.Length,mData,mIndex);
-            mIndex += BufferBase.WriteToBuffer(strbyte,mData,mIndex);
+            mIndex += headInfo.WriteToBuffer((ushort)strbyte.Length,mData,mIndex);
+            mIndex += headInfo.WriteToBuffer(strbyte,mData,mIndex);
         }
 
 
