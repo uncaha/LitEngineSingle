@@ -88,12 +88,9 @@ namespace LitEngine.Net.TestServer
                         SendData tetstdata = new SendData(headinfo,11);
                         tetstdata.AddInt(3);
                        // BeginSend(tetstdata.Data, 0, tetstdata.SendLen);
-                        
-                        
-                        IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
-                        var localIP = endPoint.Address.ToString();
-                        string tmsg = $"[WebSocket]{localIP}->{tdata}";
-                        Debug.Log(tmsg);
+
+                       DecodeData(recBuffer);
+
                     }
                     
 
@@ -125,6 +122,63 @@ namespace LitEngine.Net.TestServer
                 }
 
                 return false;
+            }
+
+            void DecodeData(byte[] bytes)
+            {
+                bool fin = (bytes[0] & 0b10000000) != 0,
+                    mask = (bytes[1] & 0b10000000) != 0; // must be true, "All messages from the client to the server have this bit set"
+                ulong opcode = (ulong)bytes[0] & 0b00001111, // expecting 1 - text message
+                    offset = 2;
+                ulong msglen = (ulong)bytes[1] & 0b01111111;
+
+                if (msglen == 126) {
+                    // bytes are reversed because websocket will print them in Big-Endian, whereas
+                    // BitConverter will want them arranged in little-endian on windows
+                    msglen = BitConverter.ToUInt16(new byte[] { bytes[3], bytes[2] }, 0);
+                    offset = 4;
+                } else if (msglen == 127) {
+                    // To test the below code, we need to manually buffer larger messages — since the NIC's autobuffering
+                    // may be too latency-friendly for this code to run (that is, we may have only some of the bytes in this
+                    // websocket frame available through client.Available).
+                    msglen = BitConverter.ToUInt64(new byte[] { bytes[9], bytes[8], bytes[7], bytes[6], bytes[5], bytes[4], bytes[3], bytes[2] },0);
+                    offset = 10;
+                }
+
+                if (msglen == 0) {
+                    Console.WriteLine("msglen == 0");
+                } else if (mask) {
+                    byte[] decoded = new byte[msglen];
+                    byte[] masks = new byte[4] { bytes[offset], bytes[offset + 1], bytes[offset + 2], bytes[offset + 3] };
+                    offset += 4;
+
+                    for (ulong i = 0; i < msglen; ++i)
+                        decoded[i] = (byte)(bytes[offset + i] ^ masks[i % 4]);
+                    
+                    
+                    System.Text.StringBuilder bufferstr = new System.Text.StringBuilder();
+                    bufferstr.Append("{");
+                    for (int i = 0; i < decoded.Length; i++)
+                    {
+                        if (i != 0)
+                            bufferstr.Append(",");
+                        bufferstr.Append(decoded[i]);
+                    }
+                    bufferstr.Append("}");
+
+                    IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+                    var localIP = endPoint.Address.ToString();
+                    string tmsg = $"[WebSocket]{localIP}->len={msglen} , bytes = {bufferstr}";
+                    Debug.Log(tmsg);
+
+                }
+                else
+                {
+                    DLog.Log("mask bit not set");
+                }
+
+               
+
             }
         }
         // Start is called before the first frame update
