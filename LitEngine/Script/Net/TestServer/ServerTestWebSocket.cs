@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Threading;
 using System;
+using System.IO;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -85,12 +86,7 @@ namespace LitEngine.Net.TestServer
                     String tdata = Encoding.UTF8.GetString(recBuffer);
                     if (!IsAccept(tdata))
                     {
-                        SendData tetstdata = new SendData(headinfo,11);
-                        tetstdata.AddInt(3);
-                       // BeginSend(tetstdata.Data, 0, tetstdata.SendLen);
-
-                       DecodeData(recBuffer);
-
+                        DecodeData(recBuffer);
                     }
                     
 
@@ -126,11 +122,11 @@ namespace LitEngine.Net.TestServer
 
             void DecodeData(byte[] bytes)
             {
-                bool fin = (bytes[0] & 0b10000000) != 0,
-                    mask = (bytes[1] & 0b10000000) != 0; // must be true, "All messages from the client to the server have this bit set"
-                ulong opcode = (ulong)bytes[0] & 0b00001111, // expecting 1 - text message
-                    offset = 2;
-                ulong msglen = (ulong)bytes[1] & 0b01111111;
+                bool fin = (bytes[0] & 0b10000000) != 0;
+                bool mask = (bytes[1] & 0b10000000) != 0; // must be true, "All messages from the client to the server have this bit set"
+                ulong opcode = (ulong) bytes[0] & 0b00001111; // expecting 1 - text message
+                ulong offset = 2;
+                ulong msglen = (ulong) bytes[1] & 0b01111111;
 
                 if (msglen == 126) {
                     // bytes are reversed because websocket will print them in Big-Endian, whereas
@@ -153,9 +149,10 @@ namespace LitEngine.Net.TestServer
                     offset += 4;
 
                     for (ulong i = 0; i < msglen; ++i)
+                    {
                         decoded[i] = (byte)(bytes[offset + i] ^ masks[i % 4]);
-                    
-                    
+                    }
+
                     System.Text.StringBuilder bufferstr = new System.Text.StringBuilder();
                     bufferstr.Append("{");
                     for (int i = 0; i < decoded.Length; i++)
@@ -170,15 +167,64 @@ namespace LitEngine.Net.TestServer
                     var localIP = endPoint.Address.ToString();
                     string tmsg = $"[WebSocket]{localIP}->len={msglen} , bytes = {bufferstr}";
                     Debug.Log(tmsg);
+                    
+                                        
+                    SendData tetstdata = new SendData(headinfo,11);
+                    tetstdata.AddInt(3);
+
+                    EnCodeByteSend(opcode,tetstdata.Data,tetstdata.SendLen);
 
                 }
                 else
                 {
                     DLog.Log("mask bit not set");
                 }
+            }
 
-               
+            void EnCodeByteSend(ulong pOpCode, byte[] pBuffer, int pSize)
+            {
+                MemoryStream memoryStream = new MemoryStream();
+                var writer = new BinaryWriter(memoryStream);
+                
+                try
+                {
+                    byte finBitSetAsByte = (byte) 0x80;
+                    byte byte1 = (byte) (finBitSetAsByte | (byte) pOpCode);
+                    
+                    writer.Write(byte1);
+                    byte mask = (byte) 0x00; //client 0x80
 
+                    if (pSize < 126)
+                    {
+                        byte byte2 = (byte) (mask | (byte) pSize);
+                        writer.Write(byte2);
+                    }
+                    else if (pSize <= ushort.MaxValue)
+                    {
+                        byte byte2 = (byte) (mask | 126);
+                        writer.Write(byte2);
+                        writer.Write( (ushort)pSize);
+                    }
+                    else
+                    {
+                        byte byte2 = (byte) (mask | 127);
+                        writer.Write(byte2);
+                        writer.Write((ulong)pSize);
+                    }
+                    
+                    writer.Write(pBuffer,0,pSize);
+
+                    var tsendBuffer = memoryStream.ToArray();
+                    
+                    BeginSend(tsendBuffer, 0, tsendBuffer.Length);
+                }
+                catch (Exception e)
+                {
+                    DLog.LogError(e);
+                }
+                
+                writer.Close();
+                writer.Dispose();
             }
         }
         // Start is called before the first frame update
