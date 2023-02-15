@@ -215,14 +215,6 @@
     <Compile Include="Script\EngineInterface\Event\ScriptInterfaceTriggerEvent.cs" />
     <Compile Include="Script\EngineInterface\UnityInterface\UIAnimation.cs" />
     <Compile Include="Script\EngineInterface\UnityInterface\UIInterface.cs" />
-    <Compile Include="Script\GoogleProto\ByteArray.cs" />
-    <Compile Include="Script\GoogleProto\ByteString.cs" />
-    <Compile Include="Script\GoogleProto\CodedInputStream.cs" />
-    <Compile Include="Script\GoogleProto\CodedOutputStream.ComputeSize.cs" />
-    <Compile Include="Script\GoogleProto\CodedOutputStream.cs" />
-    <Compile Include="Script\GoogleProto\InvalidProtocolBufferException.cs" />
-    <Compile Include="Script\GoogleProto\ProtoPreconditions.cs" />
-    <Compile Include="Script\GoogleProto\WireFormat.cs" />
     <Compile Include="Script\Managers\CorotineManager.cs" />
     <Compile Include="Script\Managers\PlayAudioManager.cs" />
     <Compile Include="Script\Managers\PublicUpdateManager.cs" />
