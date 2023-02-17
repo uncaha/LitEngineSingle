@@ -432,7 +432,6 @@ namespace LitEngine.Net
         public SocketDataFormat(int pLen, int pCmdLen, CmdPosType pCmdPos, ByteLenType pLenType,
             bool pIsHighData = false) : base(pCmdPos, pLenType)
         {
-            int tlensize, tcmdSize;
 
             lenType = GetTypeAndSize(pLen);
             cmdType = GetTypeAndSize(pCmdLen);

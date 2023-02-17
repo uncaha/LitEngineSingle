@@ -18,7 +18,7 @@ namespace LitEngine.Net
         private ClientWebSocket webSocket;
         private CancellationToken cancellation = new CancellationToken();
         
-        public bool isConnected
+        override public bool isConnected
         {
             get { return base.isConnected && webSocket != null && webSocket.State == WebSocketState.Open; }
         }
@@ -77,7 +77,8 @@ namespace LitEngine.Net
             connectMsg.OnDone = pOnDone;
             
             DLog.Log($"[{mNetTag}] start Connect.");
-            Task.Run(async () => { ConnectAsync(); }, new CancellationToken());
+            
+            Task.Run(ConnectAsync, new CancellationToken());
         }
 
         async void ConnectAsync()
@@ -101,11 +102,12 @@ namespace LitEngine.Net
                     mStartThread = true;
                     
                     mState = TcpState.Connected;
-                    Task.Run(async () => { ReceiveAsync(); }, new CancellationToken());
 
                     connectMsg.result = true;
                     AddMainThreadMsgReCall(connectMsg);
                     DLog.Log( $"{mNetTag} Connected.");
+                    
+                    var trectask = Task.Run(ReceiveAsync, new CancellationToken());
                 }
                 else
                 {
@@ -162,7 +164,7 @@ namespace LitEngine.Net
             }
         }
 
-        private void PushRecData(byte[] pBuffer, int pSize)
+        override protected void PushRecData(byte[] pBuffer, int pSize)
         {
             mBufferData.Push(pBuffer, pSize);
             while (mBufferData.IsFullData())
@@ -201,7 +203,7 @@ namespace LitEngine.Net
             return true;
         }
 
-        async Task<bool> DoSend(byte[] pBytes, int pSize)
+        async void DoSend(byte[] pBytes, int pSize)
         {
             //发送消息
             var ttask = webSocket.SendAsync(new ArraySegment<byte>(pBytes, 0, pSize), WebSocketMessageType.Text, true,
@@ -211,10 +213,7 @@ namespace LitEngine.Net
             if (ttask.Exception != null)
             {
                 OnNetError(MessageType.SendError, mNetTag + "-" + ttask.Exception.Message);
-                return false;
             }
-
-            return true;
         }
 
 
