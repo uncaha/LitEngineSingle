@@ -112,7 +112,7 @@ namespace LitEngine.Net
             if (!isOK)
             {
                 CloseSRThread();
-                mState = TcpState.Closed;
+
                 connectMsg.result = false;
                 AddMainThreadMsgReCall(connectMsg);
                 
@@ -162,11 +162,7 @@ namespace LitEngine.Net
             else
             {
                 DLog.Log(mNetTag + ":SendMessageThread->" + e.SocketError);
-                if (mStartThread)
-                {
-                    CloseSRThread();
-                    AddMainThreadMsgReCall(new NetMessage(MessageType.SendError, mNetTag + "-" + e.ToString()));
-                }
+                OnNetError(MessageType.SendError, mNetTag + "-" + e.ToString());
             }
 
             base.SendAsyncCallback(sender, e);
@@ -201,11 +197,8 @@ namespace LitEngine.Net
             {
                 SocketError ttag = e.SocketError;
                 DLog.Log(mNetTag + ":ReceiveMessage->" + ttag);
-                if (mStartThread)
-                {
-                    CloseSRThread();
-                    AddMainThreadMsgReCall(new NetMessage(MessageType.ReceiveError, mNetTag + "-" + ttag));
-                }
+
+                OnNetError(MessageType.ReceiveError, mNetTag + "-" + ttag);
             }
         }
 

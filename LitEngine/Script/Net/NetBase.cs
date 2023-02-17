@@ -421,6 +421,13 @@ namespace LitEngine.Net
 
         #region 通知类
 
+        protected void OnNetError(MessageType pType,string pMsg)
+        {
+            if (!mStartThread) return;
+            CloseSRThread();
+            AddMainThreadMsgReCall(new NetMessage(pType, pMsg));
+        }
+
         virtual protected void AddMainThreadMsgReCall(NetMessage _recall)
         {
             mToMainThreadMsgList.Enqueue(_recall);
@@ -486,7 +493,6 @@ namespace LitEngine.Net
                 NetMessage tmsg = null;
                 if(mToMainThreadMsgList.TryDequeue(out tmsg))
                 {
-                    tmsg.CallEvent();
                     switch (tmsg.mCmd)
                     {
                         case MessageType.ReceiveError:
@@ -494,6 +500,9 @@ namespace LitEngine.Net
                         {
                             OnError?.Invoke(tmsg);
                         }
+                            break;
+                        default:
+                            tmsg.CallEvent();
                             break;
                     }
                 }

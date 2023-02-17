@@ -130,9 +130,13 @@ namespace LitEngine.Net
             catch (Exception ex)
             {
                 DLog.LogError(ex);
+                
                 CloseSRThread();
-                mState = TcpState.Closed;
-                AddMainThreadMsgReCall(new NetMessage(MessageType.ConectError, mNetTag + "建立连接失败. " + ex.Message));
+
+                var connectMsg = new ConnectMessage();
+                connectMsg.OnDone = pOnDone;
+                connectMsg.result = false;
+                AddMainThreadMsgReCall(connectMsg);
             }
 
         }

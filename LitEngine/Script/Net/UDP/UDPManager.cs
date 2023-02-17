@@ -88,8 +88,7 @@ namespace LitEngine.Net
             {
                 DLog.LogError(ex);
                 CloseSRThread();
-                mState = TcpState.Closed;
-                
+
                 connectMsg.result = false;
                 AddMainThreadMsgReCall(connectMsg);
                 DLog.Log(mNetTag + "建立连接失败." + ex.Message);

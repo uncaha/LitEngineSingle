@@ -93,22 +93,24 @@ namespace LitEngine.Net
             {
                 var tconnectTask = webSocket.ConnectAsync(new Uri(mHostName), cancellation);
                 await tconnectTask;
+                
+                
 
                 if (webSocket.State == WebSocketState.Open)
                 {
+                    mStartThread = true;
+                    
                     mState = TcpState.Connected;
                     Task.Run(async () => { ReceiveAsync(); }, new CancellationToken());
-                    
-                    mState = TcpState.Connected;
-                    
+
                     connectMsg.result = true;
                     AddMainThreadMsgReCall(connectMsg);
                     DLog.Log( $"{mNetTag} Connected.");
                 }
                 else
                 {
-                    mState = TcpState.Closed;
-                    
+                    CloseSRThread();
+
                     connectMsg.result = false;
                     AddMainThreadMsgReCall(connectMsg);
                     DLog.Log( $"{mNetTag} Connect fail.  state = {webSocket.State}");
@@ -157,8 +159,7 @@ namespace LitEngine.Net
             catch (Exception e)
             {
                 DLog.LogError($"[{mNetTag}]: ReceiveAsync-> {e}");
-                CloseSRThread();
-                AddMainThreadMsgReCall(new NetMessage(MessageType.ReceiveError, $"{mNetTag} : {e.Message}"));
+                OnNetError(MessageType.SendError, $"{mNetTag} : {e.Message}");
             }
         }
 
@@ -210,9 +211,7 @@ namespace LitEngine.Net
 
             if (ttask.Exception != null)
             {
-                CloseSRThread();
-                AddMainThreadMsgReCall(new NetMessage(MessageType.SendError, mNetTag + "-" + ttask.Exception.Message));
-
+                OnNetError(MessageType.SendError, mNetTag + "-" + ttask.Exception.Message);
                 return false;
             }
 
