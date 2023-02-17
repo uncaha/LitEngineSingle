@@ -158,7 +158,6 @@ namespace LitEngine.Net
             }
             catch (Exception e)
             {
-                DLog.LogError($"[{mNetTag}]: ReceiveAsync-> {e}");
                 OnNetError(MessageType.SendError, $"{mNetTag} : {e.Message}");
             }
         }

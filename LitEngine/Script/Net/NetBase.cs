@@ -424,6 +424,7 @@ namespace LitEngine.Net
         protected void OnNetError(MessageType pType,string pMsg)
         {
             if (!mStartThread) return;
+            DLog.Log($"{pType}-> {pMsg}");
             CloseSRThread();
             AddMainThreadMsgReCall(new NetMessage(pType, pMsg));
         }

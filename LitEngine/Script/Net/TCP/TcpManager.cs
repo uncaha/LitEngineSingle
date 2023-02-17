@@ -161,8 +161,7 @@ namespace LitEngine.Net
             }
             else
             {
-                DLog.Log(mNetTag + ":SendMessageThread->" + e.SocketError);
-                OnNetError(MessageType.SendError, mNetTag + "-" + e.ToString());
+                OnNetError(MessageType.SendError, mNetTag + "-" + e);
             }
 
             base.SendAsyncCallback(sender, e);
@@ -195,10 +194,7 @@ namespace LitEngine.Net
             }
             else
             {
-                SocketError ttag = e.SocketError;
-                DLog.Log(mNetTag + ":ReceiveMessage->" + ttag);
-
-                OnNetError(MessageType.ReceiveError, mNetTag + "-" + ttag);
+                OnNetError(MessageType.ReceiveError, mNetTag + "-" + e.SocketError);
             }
         }
 
