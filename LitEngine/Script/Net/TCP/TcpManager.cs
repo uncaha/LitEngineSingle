@@ -27,21 +27,29 @@ namespace LitEngine.Net
 
         #region 建立Socket
 
-        override public void ConnectToServer()
+        private ConnectMessage connectMsg = null;
+        override public void ConnectToServer(System.Action<bool> pOnDone)
         {
             if (IsCOrD())
             {
                 DLog.LogError(mNetTag + string.Format("[{0}]Closing or Connecting.", mNetTag));
+                
+                pOnDone?.Invoke(false);
                 return;
             }
 
             if (isConnected)
             {
                 DLog.LogError(mNetTag + string.Format("[{0}] Connected now.", mNetTag));
+                pOnDone?.Invoke(false);
                 return;
             }
 
             mState = TcpState.Connecting;
+
+            connectMsg = new ConnectMessage();
+            connectMsg.OnDone = pOnDone;
+            
             System.Threading.Tasks.Task.Run(ThreatConnect);
         }
 
@@ -105,12 +113,18 @@ namespace LitEngine.Net
             {
                 CloseSRThread();
                 mState = TcpState.Closed;
-                AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ConectError, mNetTag + "Connect fail. " + tmsg));
+                connectMsg.result = false;
+                AddMainThreadMsgReCall(connectMsg);
+                
+                DLog.Log( $"{mNetTag} 建立连接失败.");
             }
             else
             {
                 mState = TcpState.Connected;
-                AddMainThreadMsgReCall(GetMsgReCallData(MessageType.Connected, mNetTag + " Connected."));
+                connectMsg.result = true;
+                AddMainThreadMsgReCall(connectMsg);
+                
+                DLog.Log( $"{mNetTag} 建立连接成功.");
             }
         }
 
@@ -190,7 +204,7 @@ namespace LitEngine.Net
                 if (mStartThread)
                 {
                     CloseSRThread();
-                    AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ReceiveError, mNetTag + "-" + ttag));
+                    AddMainThreadMsgReCall(new NetMessage(MessageType.ReceiveError, mNetTag + "-" + ttag));
                 }
             }
         }

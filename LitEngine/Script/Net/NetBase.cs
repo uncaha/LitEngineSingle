@@ -31,13 +31,36 @@ namespace LitEngine.Net
         public MessageType mCmd;
         public string mMsg;
         public object data;
+
+        public NetMessage()
+        {
+        }
+
         public NetMessage(MessageType _cmd, string _msg, object pdata = null)
         {
             mCmd = _cmd;
             mMsg = _msg;
             data = pdata;
         }
+
+        virtual public void CallEvent()
+        {
+
+        }
     }
+
+    public class ConnectMessage : NetMessage
+    {
+        public System.Action<bool> OnDone;
+        public bool result = false;
+        override public void CallEvent()
+        {
+            var tevent = OnDone;
+            OnDone = null;
+            tevent?.Invoke(result);
+        }
+    }
+
 
     #endregion
 
@@ -105,12 +128,8 @@ namespace LitEngine.Net
         #endregion
 
         #region 回调
-        protected System.Action<NetMessage> MessageDelgate = null;
 
-        static public System.Action<NetMessage> NetMessageDelage
-        {
-            set { Instance.MessageDelgate = value; }
-        }
+        public event System.Action<NetMessage> OnError;
         #endregion
 
         #region 控制
@@ -160,15 +179,15 @@ namespace LitEngine.Net
         {
             Instance.mMsgHandlerList.Clear();
         }
-        static public void Init(string _hostname, int _port, System.Action<NetMessage> pMsgDelgate = null)
+        static public void Init(string _hostname, int _port)
         {
             Instance.InitSocket(_hostname, _port);
-            Instance.MessageDelgate = pMsgDelgate;
         }
 
-        static public void Connect()
+        
+        static public void Connect(System.Action<bool> pOnDone = null)
         {
-            Instance.ConnectToServer();
+            Instance.ConnectToServer(pOnDone);
         }
 
         static public bool IsConnect()
@@ -243,12 +262,6 @@ namespace LitEngine.Net
         {
             sInstance = null;
             Dispose(true);
-            if (MessageDelgate != null)
-            {
-                MessageDelgate(GetMsgReCallData(MessageType.Destoryed, mNetTag + "- 删除Net对象完成."));
-            }
-                
-            MessageDelgate = null;
 
             mMsgHandlerList.Clear();
         }
@@ -265,7 +278,6 @@ namespace LitEngine.Net
             mDisposed = true;
             if (IsCOrD())
                 return;
-            MessageDelgate = null;
             mMsgHandlerList.Clear();
             _DisConnect();
             mState = TcpState.Disposed;
@@ -302,7 +314,7 @@ namespace LitEngine.Net
             return ret;
         }
         #region 建立Socket
-        virtual public void ConnectToServer()
+        virtual public void ConnectToServer(System.Action<bool> pOnDone)
         {
 
         }
@@ -387,12 +399,6 @@ namespace LitEngine.Net
                 DLog.LogError(mNetTag + ":Disconnect - " + err);
             }
             mState = TcpState.Closed;
-
-            if (!mDisposed)
-            {
-                AddMainThreadMsgReCall(GetMsgReCallData(MessageType.DisConnected, mNetTag + "- 断开连接完成."));
-            }
-
         }
 
         virtual public void ClearBuffer()
@@ -415,15 +421,8 @@ namespace LitEngine.Net
 
         #region 通知类
 
-        virtual protected NetMessage GetMsgReCallData(MessageType _cmd, string _msg = "")
-        {
-            return new NetMessage(_cmd, _msg);
-        }
-
         virtual protected void AddMainThreadMsgReCall(NetMessage _recall)
         {
-            DLog.Log($"[{mNetTag}]: cmd:{_recall.mCmd}, msg:{_recall.mMsg}, data:{_recall.data}");
-            if (MessageDelgate == null) return;
             mToMainThreadMsgList.Enqueue(_recall);
         }
 
@@ -482,11 +481,21 @@ namespace LitEngine.Net
         {
             try
             {
-                if (!mToMainThreadMsgList.IsEmpty || MessageDelgate == null) return;
+                if (!mToMainThreadMsgList.IsEmpty) return;
+                //OnConnectDone
                 NetMessage tmsg = null;
                 if(mToMainThreadMsgList.TryDequeue(out tmsg))
                 {
-                    MessageDelgate(tmsg);
+                    tmsg.CallEvent();
+                    switch (tmsg.mCmd)
+                    {
+                        case MessageType.ReceiveError:
+                        case MessageType.SendError:
+                        {
+                            OnError?.Invoke(tmsg);
+                        }
+                            break;
+                    }
                 }
                
             }

@@ -56,15 +56,9 @@ namespace LitEngine.Net
             webSocket = null;
         }
 
-        override public void ConnectToServer()
+        private ConnectMessage connectMsg = null;
+        override public void ConnectToServer(System.Action<bool> pOnDone)
         {
-            DLog.Log($"[{mNetTag}] start Connect.");
-            Task.Run(async () => { ConnectAsync(); }, new CancellationToken());
-        }
-
-        async void ConnectAsync()
-        {
-
             if (IsCOrD())
             {
                 DLog.LogError(mNetTag + string.Format("[{0}]Closing or Connecting.", mNetTag));
@@ -76,14 +70,24 @@ namespace LitEngine.Net
                 DLog.LogError($"[{mNetTag}] is Connected.");
                 return;
             }
+            
+            mState = TcpState.Connecting;
+            
+            connectMsg = new ConnectMessage();
+            connectMsg.OnDone = pOnDone;
+            
+            DLog.Log($"[{mNetTag}] start Connect.");
+            Task.Run(async () => { ConnectAsync(); }, new CancellationToken());
+        }
 
+        async void ConnectAsync()
+        {
+            
             if (webSocket == null)
             {
                 webSocket = new ClientWebSocket();
             }
 
-            mState = TcpState.Connecting;
-            
             DLog.Log($"[{mNetTag}] webSocket ConnectAsync.");
             try
             {
@@ -94,12 +98,20 @@ namespace LitEngine.Net
                 {
                     mState = TcpState.Connected;
                     Task.Run(async () => { ReceiveAsync(); }, new CancellationToken());
-                    AddMainThreadMsgReCall(GetMsgReCallData(MessageType.Connected, mNetTag + " Connected."));
+                    
+                    mState = TcpState.Connected;
+                    
+                    connectMsg.result = true;
+                    AddMainThreadMsgReCall(connectMsg);
+                    DLog.Log( $"{mNetTag} Connected.");
                 }
                 else
                 {
                     mState = TcpState.Closed;
-                    AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ConectError, mNetTag + "Connect fail. " + webSocket.State));
+                    
+                    connectMsg.result = false;
+                    AddMainThreadMsgReCall(connectMsg);
+                    DLog.Log( $"{mNetTag} Connect fail.  state = {webSocket.State}");
                 }
                 
                 DLog.Log($"[{mNetTag}] webSocket ConnectAsync end.");
@@ -107,8 +119,10 @@ namespace LitEngine.Net
             catch (Exception e)
             {
                 mState = TcpState.Closed;
-                DLog.LogError($"[{mNetTag}]: ConnectAsync-> {e}");
-                AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ConectError, mNetTag + "Connect fail. " + e.Message));
+                
+                connectMsg.result = false;
+                AddMainThreadMsgReCall(connectMsg);
+                DLog.Log( $"[{mNetTag}]: ConnectAsync-> {e}");
             }
 
         }
@@ -144,7 +158,7 @@ namespace LitEngine.Net
             {
                 DLog.LogError($"[{mNetTag}]: ReceiveAsync-> {e}");
                 CloseSRThread();
-                AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ReceiveError, $"{mNetTag} : {e.Message}"));
+                AddMainThreadMsgReCall(new NetMessage(MessageType.ReceiveError, $"{mNetTag} : {e.Message}"));
             }
         }
 

@@ -25,21 +25,28 @@ namespace LitEngine.Net
         #endregion
 
         #region 建立Socket
-        override public void ConnectToServer()
+        private ConnectMessage connectMsg = null;
+        override public void ConnectToServer(System.Action<bool> pOnDone = null)
         {
             if (IsCOrD())
             {
                 DLog.LogError(mNetTag + string.Format("[{0}]Closing or Connecting.", mNetTag));
+                pOnDone?.Invoke(false);
                 return;
             }
 
             if (isConnected)
             {
                 DLog.LogError(mNetTag + string.Format("[{0}] Connected now.", mNetTag));
+                pOnDone?.Invoke(false);
                 return;
             }
 
             mState = TcpState.Connecting;
+            
+            connectMsg = new ConnectMessage();
+            connectMsg.OnDone = pOnDone;
+            
             System.Threading.Tasks.Task.Run(UDPConnect);
         }
 
@@ -72,14 +79,20 @@ namespace LitEngine.Net
                 mStartThread = true;
                 CreatSendAndRecThread();
                 mState = TcpState.Connected;
-                AddMainThreadMsgReCall(GetMsgReCallData(MessageType.Connected, mNetTag + "建立连接完成."));
+                
+                connectMsg.result = true;
+                AddMainThreadMsgReCall(connectMsg);
+                DLog.Log(mNetTag + "建立连接完成.");
             }
             catch (Exception ex)
             {
                 DLog.LogError(ex);
                 CloseSRThread();
                 mState = TcpState.Closed;
-                AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ConectError, mNetTag + "建立连接失败. " + ex.Message));
+                
+                connectMsg.result = false;
+                AddMainThreadMsgReCall(connectMsg);
+                DLog.Log(mNetTag + "建立连接失败." + ex.Message);
             }
         }
 

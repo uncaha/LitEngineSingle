@@ -90,7 +90,7 @@ namespace LitEngine.Net
         }
 
         #region 建立Socket
-        override public void ConnectToServer()
+        override public void ConnectToServer(System.Action<bool> pOnDone = null)
         {
             try
             {
@@ -119,14 +119,20 @@ namespace LitEngine.Net
                 mStartThread = true;
                 CreatSendAndRecThread();
                 mState = TcpState.Connected;
-                AddMainThreadMsgReCall(GetMsgReCallData(MessageType.Connected, mNetTag + "建立连接完成."));
+                
+                DLog.Log(mNetTag + "建立连接完成.");
+                
+                var connectMsg = new ConnectMessage();
+                connectMsg.OnDone = pOnDone;
+                connectMsg.result = true;
+                AddMainThreadMsgReCall(connectMsg);
             }
             catch (Exception ex)
             {
                 DLog.LogError(ex);
                 CloseSRThread();
                 mState = TcpState.Closed;
-                AddMainThreadMsgReCall(GetMsgReCallData(MessageType.ConectError, mNetTag + "建立连接失败. " + ex.Message));
+                AddMainThreadMsgReCall(new NetMessage(MessageType.ConectError, mNetTag + "建立连接失败. " + ex.Message));
             }
 
         }
