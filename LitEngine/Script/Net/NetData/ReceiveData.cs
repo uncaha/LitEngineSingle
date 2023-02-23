@@ -25,6 +25,12 @@ namespace LitEngine.Net
             headInfo = pInfo;
         }
 
+        public ReceiveData(int pCmd, byte[] pData)
+        {
+            Cmd = pCmd;
+            Data = pData;
+        }
+
         public void CopyBuffer(byte[] _buffer, int _offset)
         {
             int tindex = _offset;
