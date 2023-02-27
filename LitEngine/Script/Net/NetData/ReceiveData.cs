@@ -29,6 +29,7 @@ namespace LitEngine.Net
         {
             Cmd = pCmd;
             Data = pData;
+            Len = pData?.Length ?? 0;
         }
 
         public void CopyBuffer(byte[] _buffer, int _offset)
