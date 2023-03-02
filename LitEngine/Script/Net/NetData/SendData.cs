@@ -1,8 +1,16 @@
 ﻿using System;
+using System.Net.WebSockets;
 using UnityEngine;
 
 namespace LitEngine.Net
 {
+    public class WebSocketSendData : SendData
+    {
+        public WebSocketSendData(WebSocketMessageType pType, byte[] pData) : base((int) pType, pData)
+        {
+        }
+    }
+
     public class SendData
     {
         byte[] mData;
@@ -13,6 +21,7 @@ namespace LitEngine.Net
         public int Len{get;private set;}
         public int SendLen { get { return mIndex; } }
         public int Cmd {get;private set;}
+        public int MessageType { get; private set; } = 1;
         #endregion
 
         private DataFormat headInfo;
@@ -28,6 +37,14 @@ namespace LitEngine.Net
             headInfo.WriteHead(Len,mData, 0);
             headInfo.WriteCmd(Cmd,mData, 0);
             mIndex = headInfo.packageHeadLen;
+        }
+
+        public SendData(int pMessageType,byte[] pData)
+        {
+            MessageType = pMessageType;
+            mData = pData;
+            mIndex = mData.Length;
+            mIsEnd = true;
         }
 
         public void Rest()

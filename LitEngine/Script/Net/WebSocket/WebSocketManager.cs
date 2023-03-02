@@ -196,16 +196,16 @@ namespace LitEngine.Net
         override public bool Send(SendData pData)
         {
             if (!isConnected) return false;
-            return Send(pData.Data, pData.SendLen);
+            return StartSend(pData.Data, pData.SendLen,(WebSocketMessageType)pData.MessageType);
         }
         
         override public bool Send(byte[] pBuffer, int pSize)
         {
             if (pBuffer == null || !Instance.isConnected) return false;
-            return StartSend(pBuffer, pSize);
+            return StartSend(pBuffer, pSize,WebSocketMessageType.Binary);
         }
 
-        bool StartSend(byte[] pBytes, int pSize)
+        bool StartSend(byte[] pBytes, int pSize, WebSocketMessageType pType)
         {
             if (webSocket.State != WebSocketState.Open)
             {
@@ -214,14 +214,14 @@ namespace LitEngine.Net
 
             DebugMsg(0, pBytes, 0, pSize, $"{mNetTag}:Send");
 
-            DoSend(pBytes, pSize);
+            DoSend(pBytes, pSize, pType);
             return true;
         }
 
-        virtual protected async void DoSend(byte[] pBytes, int pSize)
+        virtual protected async void DoSend(byte[] pBytes, int pSize, WebSocketMessageType pType)
         {
             //发送消息
-            var ttask = webSocket.SendAsync(new ArraySegment<byte>(pBytes, 0, pSize), WebSocketMessageType.Text, true,
+            var ttask = webSocket.SendAsync(new ArraySegment<byte>(pBytes, 0, pSize), pType, true,
                 CancellationToken.None);
             await ttask;
 
