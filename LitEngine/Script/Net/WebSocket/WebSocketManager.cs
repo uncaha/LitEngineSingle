@@ -138,7 +138,8 @@ namespace LitEngine.Net
             {
                 while (true)
                 {
-                    var tmem = new MemoryStream();
+                    mRecbuffer.Initialize();
+                    int tindex = 0;
                     try
                     {
                         while (true)
@@ -154,25 +155,21 @@ namespace LitEngine.Net
 
                             if (tbuffer.Array != null)
                             {
-                                tmem.Write(tbuffer.Array, tbuffer.Offset, result.Count);
+                                Buffer.BlockCopy(tbuffer.Array, tbuffer.Offset, mRecbuffer, tindex, result.Count);
+                                tindex += result.Count;
                             }
                             
                             if (result.EndOfMessage)
                             {
-                                var tbytes = tmem.ToArray();
-                                PushRecData(tbytes, tbytes.Length);
+                                PushRecData(mRecbuffer, tindex);
                                 break;
                             }
                             
                         }
-                        
-                        tmem?.Close();
-                        tmem?.Dispose();
+
                     }
                     catch (Exception e)
                     {
-                        tmem?.Close();
-                        tmem?.Dispose();
                         throw new NullReferenceException($"{mNetTag} : error = {e.Message}");
                     }
 
@@ -186,7 +183,9 @@ namespace LitEngine.Net
 
         override protected void PushRecData(byte[] pBuffer, int pSize)
         {
-            ReceiveData tssdata = new ReceiveData(0,pBuffer);
+            byte[] tbytes = new byte[pSize];
+            Buffer.BlockCopy(pBuffer, 0, tbytes, 0, pSize);
+            var tssdata = new ReceiveData(0,tbytes);
             mResultDataList.Enqueue(tssdata);
             DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, $"{mNetTag}:接收-ReceiveData");
         }
