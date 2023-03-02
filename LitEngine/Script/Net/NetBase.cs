@@ -53,11 +53,33 @@ namespace LitEngine.Net
     {
         public System.Action<bool> OnDone;
         public bool result = false;
+
+        public ConnectMessage()
+        {
+            mCmd = MessageType.Connected;
+        }
+
         override public void CallEvent()
         {
-            var tevent = OnDone;
-            OnDone = null;
-            tevent?.Invoke(result);
+            try
+            {
+                if (result)
+                {
+                    mCmd = MessageType.Connected;
+                }
+                else
+                {
+                    mCmd = MessageType.ConectError;
+                }
+
+                var tevent = OnDone;
+                OnDone = null;
+                tevent?.Invoke(result);
+            }
+            catch (Exception e)
+            {
+                DLog.LogError(e);
+            }
         }
     }
 
@@ -494,6 +516,7 @@ namespace LitEngine.Net
                 NetMessage tmsg = null;
                 if(mToMainThreadMsgList.TryDequeue(out tmsg))
                 {
+                    tmsg.CallEvent();
                     switch (tmsg.mCmd)
                     {
                         case MessageType.ReceiveError:
@@ -503,7 +526,6 @@ namespace LitEngine.Net
                         }
                             break;
                         default:
-                            tmsg.CallEvent();
                             break;
                     }
                 }

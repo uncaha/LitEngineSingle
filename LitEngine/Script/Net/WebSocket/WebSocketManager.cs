@@ -57,7 +57,6 @@ namespace LitEngine.Net
             webSocket = null;
         }
 
-        private ConnectMessage connectMsg = null;
         override public void ConnectToServer(System.Action<bool> pOnDone)
         {
             if (IsCOrD())
@@ -74,48 +73,48 @@ namespace LitEngine.Net
             
             mState = TcpState.Connecting;
             
-            connectMsg = new ConnectMessage();
-            connectMsg.OnDone = pOnDone;
-            
             DLog.Log($"[{mNetTag}] start Connect.");
-            
-            Task.Run(ConnectAsync, new CancellationToken());
-        }
-
-        async void ConnectAsync()
-        {
             
             if (webSocket == null)
             {
                 webSocket = new ClientWebSocket();
             }
 
+            Task.Run(() => { ConnectAsync(pOnDone); }, new CancellationToken());
+        }
+
+        async void ConnectAsync(System.Action<bool> pOnDone)
+        {
             DLog.Log($"[{mNetTag}] webSocket ConnectAsync.");
             try
             {
                 var tconnectTask = webSocket.ConnectAsync(new Uri(mHostName), cancellation);
                 await tconnectTask;
                 
-                
-
                 if (webSocket.State == WebSocketState.Open)
                 {
                     mStartThread = true;
                     
                     mState = TcpState.Connected;
-
-                    connectMsg.result = true;
-                    AddMainThreadMsgReCall(connectMsg);
+                    
+                    var tmsg = new ConnectMessage();
+                    tmsg.OnDone = pOnDone;
+                    tmsg.result = true;
+                    AddMainThreadMsgReCall(tmsg);
                     DLog.Log( $"{mNetTag} Connected.");
                     
                     var trectask = Task.Run(ReceiveAsync, new CancellationToken());
+                    
                 }
                 else
                 {
                     CloseSRThread();
 
-                    connectMsg.result = false;
-                    AddMainThreadMsgReCall(connectMsg);
+                    var tmsg = new ConnectMessage();
+                    tmsg.OnDone = pOnDone;
+                    tmsg.result = false;
+                    AddMainThreadMsgReCall(tmsg);
+                    
                     DLog.Log( $"{mNetTag} Connect fail.  state = {webSocket.State}");
                 }
                 
@@ -125,8 +124,11 @@ namespace LitEngine.Net
             {
                 mState = TcpState.Closed;
                 
-                connectMsg.result = false;
-                AddMainThreadMsgReCall(connectMsg);
+                var tmsg = new ConnectMessage();
+                tmsg.OnDone = pOnDone;
+                tmsg.result = false;
+                AddMainThreadMsgReCall(tmsg);
+                
                 DLog.Log( $"[{mNetTag}]: ConnectAsync-> {e}");
             }
 
