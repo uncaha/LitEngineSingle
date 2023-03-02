@@ -129,7 +129,7 @@ namespace LitEngine.Net
 
         #region 回调
 
-        public event System.Action<NetMessage> OnError;
+        public static event System.Action<NetMessage> OnError;
         #endregion
 
         #region 控制
