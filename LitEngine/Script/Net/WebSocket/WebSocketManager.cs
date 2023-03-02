@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
@@ -131,32 +132,51 @@ namespace LitEngine.Net
 
         }
 
-        async void ReceiveAsync()
+        virtual protected async void ReceiveAsync()
         {
             try
             {
-                var ttask = webSocket.ReceiveAsync(new ArraySegment<byte>(mRecbuffer), new CancellationToken());
-                var result = await ttask;
-
-                if (ttask.Exception != null || result.CloseStatus.HasValue)
+                while (true)
                 {
-                    throw new NullReferenceException($"{mNetTag} : error = {ttask?.Exception}");
-                }
-
-                while (!result.CloseStatus.HasValue)
-                {
-                    PushRecData(mRecbuffer, result.Count);
-                    ttask = webSocket.ReceiveAsync(new ArraySegment<byte>(mRecbuffer), new CancellationToken());
-                    result = await ttask;
-
-                    if(ttask.Exception != null || result.CloseStatus.HasValue)
+                    var tmem = new MemoryStream();
+                    try
                     {
-                        throw new NullReferenceException($"{mNetTag} : error = {ttask?.Exception}");
+                        while (true)
+                        {
+                            var tbuffer = WebSocket.CreateClientBuffer(2048,0);
+                            var ttask = webSocket.ReceiveAsync(tbuffer, CancellationToken.None);
+                            var result = await ttask;
+                            
+                            if (ttask.Exception != null || result.CloseStatus.HasValue)
+                            {
+                                throw new NullReferenceException($"{mNetTag} : error = {ttask?.Exception}");
+                            }
+
+                            if (tbuffer.Array != null)
+                            {
+                                tmem.Write(tbuffer.Array, tbuffer.Offset, result.Count);
+                            }
+                            
+                            if (result.EndOfMessage)
+                            {
+                                var tbytes = tmem.ToArray();
+                                PushRecData(tbytes, tbytes.Length);
+                                break;
+                            }
+                            
+                        }
+                        
+                        tmem?.Close();
+                        tmem?.Dispose();
+                    }
+                    catch (Exception e)
+                    {
+                        tmem?.Close();
+                        tmem?.Dispose();
+                        throw new NullReferenceException($"{mNetTag} : error = {e.Message}");
                     }
 
                 }
-
-                
             }
             catch (Exception e)
             {
@@ -166,14 +186,9 @@ namespace LitEngine.Net
 
         override protected void PushRecData(byte[] pBuffer, int pSize)
         {
-            mBufferData.Push(pBuffer, pSize);
-            while (mBufferData.IsFullData())
-            {
-                ReceiveData tssdata = mBufferData.GetReceiveData();
-                mResultDataList.Enqueue(tssdata);
-
-                DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, $"{mNetTag}:接收-ReceiveData");
-            }
+            ReceiveData tssdata = new ReceiveData(0,pBuffer);
+            mResultDataList.Enqueue(tssdata);
+            DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, $"{mNetTag}:接收-ReceiveData");
         }
 
         #endregion
@@ -203,7 +218,7 @@ namespace LitEngine.Net
             return true;
         }
 
-        async void DoSend(byte[] pBytes, int pSize)
+        virtual protected async void DoSend(byte[] pBytes, int pSize)
         {
             //发送消息
             var ttask = webSocket.SendAsync(new ArraySegment<byte>(pBytes, 0, pSize), WebSocketMessageType.Text, true,

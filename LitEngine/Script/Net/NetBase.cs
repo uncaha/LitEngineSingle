@@ -106,7 +106,7 @@ namespace LitEngine.Net
         #endregion
 
         #region 数据
-        protected const int mReadMaxLen = 1024 * 4;
+        protected const int mReadMaxLen = 1024 * 8;
         protected byte[] mRecbuffer = new byte[mReadMaxLen];
         
         protected BufferBase mBufferData = new BufferBase(1024 * 400);
