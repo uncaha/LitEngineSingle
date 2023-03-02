@@ -179,7 +179,7 @@ namespace LitEngine.Net
             }
             catch (Exception e)
             {
-                OnNetError(MessageType.SendError, $"{mNetTag} : {e.Message}");
+                OnNetError(MessageType.ReceiveError, $"{mNetTag} : {e.Message}");
             }
         }
 
