@@ -143,7 +143,7 @@ namespace LitEngine.Net
                     {
                         while (true)
                         {
-                            var tbuffer = WebSocket.CreateClientBuffer(2048,0);
+                            var tbuffer = WebSocket.CreateClientBuffer(2048,2048);
                             var ttask = webSocket.ReceiveAsync(tbuffer, CancellationToken.None);
                             var result = await ttask;
                             
