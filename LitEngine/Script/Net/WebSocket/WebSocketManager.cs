@@ -183,9 +183,8 @@ namespace LitEngine.Net
 
         override protected void PushRecData(byte[] pBuffer, int pSize)
         {
-            byte[] tbytes = new byte[pSize];
-            Buffer.BlockCopy(pBuffer, 0, tbytes, 0, pSize);
-            var tssdata = new ReceiveData(0,tbytes);
+            ReceiveData tssdata = new ReceiveData(mBufferData.headInfo);
+            tssdata.CopyBuffer(pBuffer, 0);
             mResultDataList.Enqueue(tssdata);
             DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, $"{mNetTag}:接收-ReceiveData");
         }
