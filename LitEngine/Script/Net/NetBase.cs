@@ -511,7 +511,7 @@ namespace LitEngine.Net
         {
             try
             {
-                if (!mToMainThreadMsgList.IsEmpty) return;
+                if (mToMainThreadMsgList.IsEmpty) return;
                 //OnConnectDone
                 NetMessage tmsg = null;
                 if(mToMainThreadMsgList.TryDequeue(out tmsg))
