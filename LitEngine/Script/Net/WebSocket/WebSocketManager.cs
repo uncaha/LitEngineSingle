@@ -62,12 +62,14 @@ namespace LitEngine.Net
             if (IsCOrD())
             {
                 DLog.LogError(mNetTag + string.Format("[{0}]Closing or Connecting.", mNetTag));
+                pOnDone?.Invoke(false);
                 return;
             }
 
             if (isConnected)
             {
                 DLog.LogError($"[{mNetTag}] is Connected.");
+                pOnDone?.Invoke(true);
                 return;
             }
             
