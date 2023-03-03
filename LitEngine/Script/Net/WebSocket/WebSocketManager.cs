@@ -151,7 +151,7 @@ namespace LitEngine.Net
                             
                             if (ttask.Exception != null || result.CloseStatus.HasValue)
                             {
-                                throw new NullReferenceException($"{mNetTag} : error = {ttask?.Exception}");
+                                throw new NullReferenceException($"{ttask?.Exception}");
                             }
 
                             if (tbuffer.Array != null)
@@ -170,7 +170,7 @@ namespace LitEngine.Net
                     }
                     catch (Exception e)
                     {
-                        throw new NullReferenceException($"{mNetTag} : error = {e.Message}");
+                        throw e;
                     }
 
                 }
