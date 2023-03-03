@@ -31,7 +31,7 @@ namespace LitEngine.Net
             onlyContent,
         }
 
-        public bool IsHighDate { get; protected set; } = false;
+        public bool IsBigEndian { get; protected set; } = false;
 
         public SocketDataHeadType lenType { get; protected set; } = SocketDataHeadType.type_int;
         public int lenSize { get; protected set; }
@@ -174,7 +174,7 @@ namespace LitEngine.Net
                 return;
             }
 
-            if (IsHighDate)
+            if (IsBigEndian)
             {
                 int i = _startindex + _length - 1;
                 for (; i >= _startindex; i--)
@@ -196,7 +196,7 @@ namespace LitEngine.Net
         public byte[] SReadBytes(byte[] _buffer, int _startindex, int _count)
         {
             byte[] ret = new byte[_count];
-            Array.Copy(_buffer, _startindex, ret, 0, _count);
+            Buffer.BlockCopy(_buffer, _startindex, ret, 0, _count);
             return ret;
         }
 
@@ -266,7 +266,7 @@ namespace LitEngine.Net
 
         unsafe public void WriteValue(byte* pdata, int plength, byte[] pDst, int pOffset)
         {
-            if (IsHighDate)
+            if (IsBigEndian)
             {
                 int i = pOffset + plength - 1;
                 for (; i >= pOffset; i--)
@@ -360,7 +360,7 @@ namespace LitEngine.Net
         {
             byte[] retbuffer = new byte[_length];
 
-            if (IsHighDate)
+            if (IsBigEndian)
             {
                 int i = _length - 1;
                 for (; i >= 0; i--)
@@ -430,16 +430,15 @@ namespace LitEngine.Net
     public class SocketDataFormat : DataFormat
     {
         public SocketDataFormat(int pLen, int pCmdLen, CmdPosType pCmdPos, ByteLenType pLenType,
-            bool pIsHighData = false) : base(pCmdPos, pLenType)
+            bool pIsBigEndian = false) : base(pCmdPos, pLenType)
         {
-
             lenType = GetTypeAndSize(pLen);
             cmdType = GetTypeAndSize(pCmdLen);
 
             lenSize = pLen;
             cmdSize = pCmdLen;
 
-            IsHighDate = pIsHighData;
+            IsBigEndian = pIsBigEndian;
 
             packageHeadLen = lenSize + cmdSize;
         }
