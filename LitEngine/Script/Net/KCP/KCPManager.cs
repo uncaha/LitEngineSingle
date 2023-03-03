@@ -272,14 +272,7 @@ namespace LitEngine.Net
         private void PopRecData(byte[] pRecbuf, int pSize)
         {
             DebugMsg(-1, pRecbuf, 0, pSize, "接收-bytes");
-            if (receiveOutput == null)
-            {
-                PushRecData(pRecbuf, pSize);
-            }
-            else
-            {
-                OutputToDelgate(pRecbuf, pSize);
-            }
+            PushRecData(pRecbuf, pSize);
         }
 
         override protected void PushRecData(byte[] pBuffer, int pSize)

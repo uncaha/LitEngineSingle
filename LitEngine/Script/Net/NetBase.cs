@@ -140,18 +140,39 @@ namespace LitEngine.Net
         protected ConcurrentQueue<NetMessage> mToMainThreadMsgList = new ConcurrentQueue<NetMessage>();//给主线程发送通知
         #endregion
 
-        #region 输出到外部
-        public delegate void OutputEvent(byte[] pBuffer,int pSize);
-        protected OutputEvent receiveOutput = null;
-        #endregion
-
         #region 日志
         protected bool IsShowDebugLog = false;
         #endregion
 
         #region 回调
 
-        public static event System.Action<NetMessage> OnError;
+        public event ReceiveMessageEvent OnReciveMessage_;
+        public static event ReceiveMessageEvent OnReciveMessage
+        {
+            add
+            {
+                Instance.OnReciveMessage_ += value;
+            }
+
+            remove
+            {
+                Instance.OnReciveMessage_ -= value;
+            }
+        }
+        public event System.Action<NetMessage> OnError_;
+        
+        public static event System.Action<NetMessage> OnError
+        {
+            add
+            {
+                Instance.OnError_ += value;
+            }
+
+            remove
+            {
+                Instance.OnError_ -= value;
+            }
+        }
         #endregion
 
         #region 控制
@@ -220,11 +241,6 @@ namespace LitEngine.Net
         static public void SetSocketTime(int _rec, int _send, int _recsize, int _sendsize, bool pNoDelay)
         {
             Instance.SetTimerOutAndBuffSize(_rec, _send, _recsize, _sendsize, pNoDelay);
-        }
-
-        static public void SetOutputDelgate(OutputEvent pEvent)
-        {
-            Instance.receiveOutput = pEvent;
         }
 
         public static DataFormat Format
@@ -522,7 +538,7 @@ namespace LitEngine.Net
                         case MessageType.ReceiveError:
                         case MessageType.SendError:
                         {
-                            OnError?.Invoke(tmsg);
+                            OnError_?.Invoke(tmsg);
                         }
                             break;
                         default:
@@ -540,7 +556,6 @@ namespace LitEngine.Net
         virtual public void UpdateRecMsg()
         {
             if (StopUpdateRecMsg) return;
-            if (receiveOutput != null) return;
 
             if(!mResultDataList.IsEmpty)
             {
@@ -550,6 +565,7 @@ namespace LitEngine.Net
                     try
                     {
                         Call(trecdata.Cmd, trecdata);
+                        OnReciveMessage_?.Invoke(trecdata);
                     }
                     catch (Exception _error)
                     {
@@ -569,29 +585,11 @@ namespace LitEngine.Net
         virtual protected void Processingdata(int _len, byte[] _buffer)
         {
             DebugMsg(-1, _buffer, 0, _len, "接收-bytes");
-            if (receiveOutput == null)
-            {
-                PushRecData(_buffer, _len);
-            }
-            else
-            {
-                OutputToDelgate(_buffer, _len);
-            }
+            PushRecData(_buffer, _len);
         }
         virtual protected void PushRecData(byte[] pBuffer,int pSize)
         {
 
-        }
-        virtual protected void OutputToDelgate(byte[] pBuffer, int pSize)
-        {
-            try
-            {
-                receiveOutput(pBuffer, pSize);
-            }
-            catch (Exception ex)
-            {
-                DLog.LogError(ex);
-            }  
         }
         #endregion
 
