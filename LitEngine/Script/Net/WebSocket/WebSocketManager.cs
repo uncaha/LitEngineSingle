@@ -140,8 +140,7 @@ namespace LitEngine.Net
             {
                 while (true)
                 {
-                    mRecbuffer.Initialize();
-                    int tindex = 0;
+                    mBufferData.Clear();
                     try
                     {
                         while (true)
@@ -157,13 +156,12 @@ namespace LitEngine.Net
 
                             if (tbuffer.Array != null)
                             {
-                                Buffer.BlockCopy(tbuffer.Array, tbuffer.Offset, mRecbuffer, tindex, result.Count);
-                                tindex += result.Count;
+                                mBufferData.Push(tbuffer.Array, tbuffer.Offset,result.Count);
                             }
                             
                             if (result.EndOfMessage)
                             {
-                                PushRecData(mRecbuffer, tindex);
+                                PushRecData(mBufferData.BufferData, mBufferData.Length);
                                 break;
                             }
                             
@@ -185,8 +183,9 @@ namespace LitEngine.Net
 
         override protected void PushRecData(byte[] pBuffer, int pSize)
         {
-            ReceiveData tssdata = new ReceiveData(mBufferData.headInfo);
-            tssdata.CopyBuffer(pBuffer, 0);
+            var tdata = new byte[pSize];
+            Buffer.BlockCopy(pBuffer, 0, tdata, 0, pSize);
+            var tssdata = new ReceiveData(0, tdata);
             mResultDataList.Enqueue(tssdata);
             DebugMsg(tssdata.Cmd, tssdata.Data, 0, tssdata.Len, $"{mNetTag}:接收-ReceiveData");
         }

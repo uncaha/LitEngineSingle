@@ -10,6 +10,9 @@ namespace LitEngine.Net
         public static bool IsHDate = false;
         public DataFormat headInfo = new SocketDataFormat(4,4,DataFormat.CmdPosType.lenFirst, DataFormat.ByteLenType.allbytes);
 
+        public byte[] BufferData => mBuffer;
+        public int Length => mIndex;
+        
         private byte[] mBuffer = null;
         private int mIndex = 0;
         private int mPos = 0;
@@ -48,14 +51,21 @@ namespace LitEngine.Net
                 mBuffer = tbuffer;
             }
         }
-        public void Push(byte[] pbuffer, int pLen)
+
+        public void Push(byte[] pSrc, int pSrcOffset, int pLen)
         {
             CalculationPop(pLen);
             ExpansionBuffer(pLen);
 
-            Buffer.BlockCopy(pbuffer, 0, mBuffer, mIndex, pLen);
+            Buffer.BlockCopy(pSrc, pSrcOffset, mBuffer, mIndex, pLen);
             mIndex += pLen;
         }
+
+        public void Push(byte[] pbuffer, int pLen)
+        {
+            Push(pbuffer, 0, pLen);
+        }
+
         public void Pop()
         {
             if (mPos == 0) return;
