@@ -110,14 +110,13 @@ namespace LitEngine.Net
                 }
                 else
                 {
+                    DLog.Log( $"{mNetTag} Connect fail.  state = {webSocket.State}");
                     CloseSRThread();
 
                     var tmsg = new ConnectMessage();
                     tmsg.OnDone = pOnDone;
                     tmsg.result = false;
                     AddMainThreadMsgReCall(tmsg);
-                    
-                    DLog.Log( $"{mNetTag} Connect fail.  state = {webSocket.State}");
                 }
                 
                 DLog.Log($"[{mNetTag}] webSocket ConnectAsync end.");
@@ -208,7 +207,7 @@ namespace LitEngine.Net
 
         bool StartSend(byte[] pBytes, int pSize, WebSocketMessageType pType)
         {
-            if (webSocket.State != WebSocketState.Open)
+            if (!isConnected)
             {
                 return false;
             }
