@@ -3,11 +3,11 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using System.Reflection;
-using LitEngine.SQL.Attribute;
+using Habby.SQL.Attribute;
 using UnityEngine;
 using Mono.Data.Sqlite;
 
-namespace LitEngine.SQL
+namespace Habby.SQL
 {
     public sealed class SQLDBObject
     {

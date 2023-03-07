@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace LitEngine.SQL
+namespace Habby.SQL
 {
     public class SQLTableData
     {

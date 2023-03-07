@@ -1,5 +1,5 @@
 using UnityEngine;
-namespace LitEngine.SQL
+namespace Habby.SQL
 {
     public class SQLLog
     {
@@ -8,38 +8,38 @@ namespace LitEngine.SQL
 
         public static void Log(object pobj)
         {
-            DLog.Log($"[{LogTag}] {pobj}");
+            Debug.Log($"[{LogTag}] {pobj}");
         }
 
         public static void LogWarning(object pobj)
         {
-            DLog.LogWarning($"[{LogTag}] {pobj}");
+            Debug.LogWarning($"[{LogTag}] {pobj}");
         }
 
         public static void LogError(object pobj)
         {
-            DLog.LogError($"[{LogTag}] {pobj}");
+            Debug.LogError($"[{LogTag}] {pobj}");
         }
 
         public static void LogAssertion(object pobj)
         {
-            DLog.LogAssertion($"[{LogTag}] {pobj}");
+            Debug.LogAssertion($"[{LogTag}] {pobj}");
         }
 
 
         public static void LogFormat(string format, params object[] args)
         {
-            DLog.LogFormat($"[{ LogTag}] " + format, args);
+            Debug.LogFormat($"[{ LogTag}] " + format, args);
 
         }
         public static void LogWarningFormat(string format, params object[] args)
         {
-            DLog.LogWarningFormat($"[{ LogTag}] " + format, args);
+            Debug.LogWarningFormat($"[{ LogTag}] " + format, args);
         }
 
         public static void LogErrorFormat(string format, params object[] args)
         {
-            DLog.LogErrorFormat($"[{ LogTag}] " + format, args);
+            Debug.LogErrorFormat($"[{ LogTag}] " + format, args);
         }
     }
 }

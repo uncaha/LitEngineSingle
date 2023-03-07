@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
-using LitEngine.SQL.Attribute;
+using Habby.SQL.Attribute;
 using UnityEngine;
-namespace LitEngine.SQL
+namespace Habby.SQL
 {
     public class DataDictionary<TValue>  : SQLTable where TValue : class, new()
     {
@@ -74,9 +74,7 @@ namespace LitEngine.SQL
         
         public List<TValue> GetRows()
         {
-            var ret = new List<TValue>();
-            ret.AddRange(dataMap.Values);
-            return ret;
+            return dataMap.Values;
         }
         
         public bool ExitsRow(object pRow)

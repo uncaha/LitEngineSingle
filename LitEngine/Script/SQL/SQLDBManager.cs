@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using UnityEngine;
 
-namespace LitEngine.SQL
+namespace Habby.SQL
 {
     public class SQLDBManager : MonoBehaviour
     {

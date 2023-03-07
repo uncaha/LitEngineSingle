@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Text;
 
-namespace LitEngine.SQL
+namespace Habby.SQL
 {
     public enum SQLDataType
     {

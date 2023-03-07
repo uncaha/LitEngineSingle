@@ -1,14 +1,14 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
-using LitEngine.SQL.Attribute;
+using Habby.SQL.Attribute;
 
-namespace LitEngine.SQL
+namespace Habby.SQL
 {
     public class TableData<TValue>
     {
         public int Count => mapList.Count;
-        private ConcurrentDictionary<object, TValue> mapList = new ConcurrentDictionary<object, TValue>();
+        private StableDictionary<object, TValue> mapList = new StableDictionary<object, TValue>();
 
         public TValue this[object pKey]
         {
@@ -30,7 +30,7 @@ namespace LitEngine.SQL
             }
         }
         
-        public ICollection<TValue> Values
+        public List<TValue> Values
         {
             get
             {
@@ -40,7 +40,7 @@ namespace LitEngine.SQL
 
         public void Add(object pKey,TValue pValue)
         {
-            mapList.TryAdd(pKey,pValue);
+            mapList.Add(pKey,pValue);
         }
 
         public void Clear()
@@ -51,9 +51,9 @@ namespace LitEngine.SQL
         public TValue Remove(object pKey)
         {
             if (!mapList.ContainsKey(pKey)) return default(TValue);
-            if (mapList.TryRemove(pKey, out TValue rm))
-                return rm;
-            return default(TValue);
+            var rm = mapList[pKey];
+
+            return rm;
         }
 
         public bool ContainsKey(object pKey)
@@ -65,11 +65,12 @@ namespace LitEngine.SQL
         {
             var ret = new SQLTableData();
             var ttypesList = SQLDBObject.GetTypeList(typeof(TValue));
-
-            foreach (var cur in mapList)
+            var tkeylist = new List<object>(mapList.Keys);
+            foreach (var curKey in tkeylist)
             {
-                var titem = ConverToRowData(cur.Value);
-                ret.Add(cur.Key,titem);
+                var tvalue = mapList[curKey];
+                var titem = ConverToRowData(tvalue);
+                ret.Add(curKey,titem);
             }
 
             return ret;

@@ -1,6 +1,6 @@
 
 using System;
-namespace LitEngine.SQL.Attribute
+namespace Habby.SQL.Attribute
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
     public class Automatic : System.Attribute

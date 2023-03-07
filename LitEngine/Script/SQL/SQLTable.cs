@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mono.Data.Sqlite;
 
-namespace LitEngine.SQL
+namespace Habby.SQL
 {
     public class SQLTable
     {

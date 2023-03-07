@@ -178,6 +178,7 @@
     <Compile Include="Script\SQL\Data\SQLRowData.cs" />
     <Compile Include="Script\SQL\Data\SQLTableData.cs" />
     <Compile Include="Script\SQL\Data\SQLTypeObject.cs" />
+    <Compile Include="Script\SQL\Data\StableDictionary.cs" />
     <Compile Include="Script\SQL\Data\TableData.cs" />
     <Compile Include="Script\SQL\SQLDBManager.cs" />
     <Compile Include="Script\SQL\SQLDBObject.cs" />
