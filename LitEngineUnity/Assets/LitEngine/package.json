@@ -15,8 +15,7 @@
   ],
 
   "repository": {
-    "url": "https://github.cds.internal.unity3d.com/unity/operate-services-sdk.git",
-    "type": "git",
-    "revision": "815a0c96703c69956fde4fc798e35dd8d0cc3af1"
+    "url": "https://github.com/uncaha/LitEngineSingle/tree/master/LitEngineUnity/Assets/LitEngine",
+    "type": "git"
   }
 }
