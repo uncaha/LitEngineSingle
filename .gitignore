@@ -23,3 +23,5 @@ LitEngineUnity/LitEngine.csproj
 LitEngineUnity/LitEngineEditor.Player.csproj
 LitEngineUnity/LitEngineEditor.csproj
 LitEngineUnity/LitEngineUnity.sln
+LitEngineUnity/.idea
+LitEngineUnity/obj
