@@ -11,3 +11,15 @@ LitEngine/bin/Release/LitEngine.dll
 LitEngine/bin/Release/LitEngine.pdb
 LitEngine/bin/Release/LitEngine.pdb
 
+LitEngineUnity/Library
+LitEngineUnity/Logs
+LitEngineUnity/Temp
+LitEngineUnity/UserSettings
+LitEngineUnity/Assembly-CSharp-Editor.csproj
+LitEngineUnity/Assembly-CSharp.Player.csproj
+LitEngineUnity/Assembly-CSharp.csproj
+LitEngineUnity/LitEngine.Player.csproj
+LitEngineUnity/LitEngine.csproj
+LitEngineUnity/LitEngineEditor.Player.csproj
+LitEngineUnity/LitEngineEditor.csproj
+LitEngineUnity/LitEngineUnity.sln
