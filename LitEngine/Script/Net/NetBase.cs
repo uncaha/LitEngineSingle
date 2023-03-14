@@ -238,6 +238,13 @@ namespace LitEngine.Net
             return Instance.isConnected;
         }
 
+        static public void SetHost(string pHost, int pPort)
+        {
+            Instance.mHostName = pHost;
+            Instance.mPort = pPort;
+            Instance.gameObject.name = Instance.mNetTag + "-Server:" + pHost;
+        }
+
         static public void SetSocketTime(int _rec, int _send, int _recsize, int _sendsize, bool pNoDelay)
         {
             Instance.SetTimerOutAndBuffSize(_rec, _send, _recsize, _sendsize, pNoDelay);
