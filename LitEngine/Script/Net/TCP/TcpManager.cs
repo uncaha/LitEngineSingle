@@ -19,7 +19,7 @@ namespace LitEngine.Net
 
         protected TcpManager() : base()
         {
-            mNetTag = GetType().Name;
+
         }
 
         #endregion

@@ -28,7 +28,7 @@ namespace LitEngine.Net
 
         protected WebSocketManager()
         {
-            mNetTag = GetType().Name;
+            
         }
 
         #endregion
@@ -75,7 +75,7 @@ namespace LitEngine.Net
             
             mState = TcpState.Connecting;
             
-            DLog.Log($"[{mNetTag}] start Connect.");
+            DLog.Log($"[{mNetTag}] start Connect. host = {mHostName}");
             
             if (webSocket == null)
             {

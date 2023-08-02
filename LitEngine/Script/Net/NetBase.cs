@@ -296,6 +296,7 @@ namespace LitEngine.Net
         protected NetBase()
         {
             StopUpdateRecMsg = false;
+            mNetTag = typeof(T).Name;
         }
 
         virtual protected void Oninit()

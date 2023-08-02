@@ -20,7 +20,7 @@ namespace LitEngine.Net
 
         protected UDPManager() : base()
         {
-            mNetTag = GetType().Name;
+
         }
         #endregion
 

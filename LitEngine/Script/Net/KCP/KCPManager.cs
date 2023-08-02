@@ -57,7 +57,6 @@ namespace LitEngine.Net
         #region 初始化
         protected KCPManager() : base()
         {
-            mNetTag = GetType().Name;
             kcpObject = new KCP(1, HandleKcpSend);
             kcpObject.NoDelay(1, 10, 2, 1);
             kcpObject.WndSize(128, 128);
