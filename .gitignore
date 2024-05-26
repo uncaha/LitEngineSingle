@@ -25,3 +25,7 @@ LitEngineUnity/LitEngineEditor.csproj
 LitEngineUnity/LitEngineUnity.sln
 LitEngineUnity/.idea
 LitEngineUnity/obj
+LoadingTimeTool/LoadingTime/.vs
+LoadingTimeTool/LoadingTime/LoadingTime/bin
+LoadingTimeTool/LoadingTime/LoadingTime/obj
+LoadingTimeTool/LoadingTime/.idea

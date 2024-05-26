@@ -2,9 +2,11 @@
     "name": "LitEngineEditor",
     "rootNamespace": "",
     "references": [
-        "LitEngine"
+        "GUID:18ad6bc25944c8645a48e806b07f9eea"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
     "overrideReferences": false,

@@ -167,23 +167,6 @@
     <Compile Include="Script\Net\UDP\UDPManager.cs" />
     <Compile Include="Script\Net\UDP\UDPNet.cs" />
     <Compile Include="Script\Net\WebSocket\WebSocketNet.cs" />
-    <Compile Include="Script\SQL\Attribute\AutomaticAttribute.cs" />
-    <Compile Include="Script\SQL\Attribute\DefaultValueAttribute.cs" />
-    <Compile Include="Script\SQL\Attribute\MapKeyAttribute.cs" />
-    <Compile Include="Script\SQL\Attribute\NotNullAttribute.cs" />
-    <Compile Include="Script\SQL\Attribute\PrimaryAttribute.cs" />
-    <Compile Include="Script\SQL\Attribute\UniqueAttribute.cs" />
-    <Compile Include="Script\SQL\Data\DataDictionary.cs" />
-    <Compile Include="Script\SQL\Data\SQLField.cs" />
-    <Compile Include="Script\SQL\Data\SQLRowData.cs" />
-    <Compile Include="Script\SQL\Data\SQLTableData.cs" />
-    <Compile Include="Script\SQL\Data\SQLTypeObject.cs" />
-    <Compile Include="Script\SQL\Data\StableDictionary.cs" />
-    <Compile Include="Script\SQL\Data\TableData.cs" />
-    <Compile Include="Script\SQL\SQLDBManager.cs" />
-    <Compile Include="Script\SQL\SQLDBObject.cs" />
-    <Compile Include="Script\SQL\SQLLog.cs" />
-    <Compile Include="Script\SQL\SQLTable.cs" />
     <Compile Include="Script\TemPlate\Event\EventDispatch.cs" />
     <Compile Include="Script\TemPlate\Event\EventGroup.cs" />
     <Compile Include="Script\TemPlate\Event\EventObject.cs" />
@@ -346,9 +329,6 @@
     <Compile Include="Script\Net\WebSocket\WebSocketManager.cs" />
     <Compile Include="Script\Net\SocketNetBase.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Script\CodeTool\CodeModule" />
-    <Folder Include="Script\Net\WebSocket\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
