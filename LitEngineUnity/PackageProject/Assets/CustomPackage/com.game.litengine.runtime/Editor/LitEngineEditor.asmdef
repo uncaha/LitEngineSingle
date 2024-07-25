@@ -1,0 +1,18 @@
+{
+    "name": "LitEngineEditor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:699a25930720619418f4b7d4178f0a64"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
