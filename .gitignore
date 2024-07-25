@@ -29,3 +29,9 @@ LoadingTimeTool/LoadingTime/.vs
 LoadingTimeTool/LoadingTime/LoadingTime/bin
 LoadingTimeTool/LoadingTime/LoadingTime/obj
 LoadingTimeTool/LoadingTime/.idea
+LitEngineUnity/PackageProject/UserSettings
+LitEngineUnity/PackageProject/.vscode
+LitEngineUnity/PackageProject/Library
+LitEngineUnity/PackageProject/Logs
+*.csproj
+*.sln
