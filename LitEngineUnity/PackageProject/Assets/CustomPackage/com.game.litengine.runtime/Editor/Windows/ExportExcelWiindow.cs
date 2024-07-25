@@ -2,7 +2,7 @@
 using UnityEditor;
 using System.Collections.Generic;
 using System.IO;
-using LitEngine.ScriptInterface;
+
 using LitEngine;
 using System.Text;
 using ExportTool;
