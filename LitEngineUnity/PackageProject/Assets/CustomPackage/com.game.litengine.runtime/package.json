@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  },
+
+  "displayName": "LitEngine",
+  "name": "com.game.litengine.runtime",
+  "version": "0.1.0",
+  "unity": "2022.3",
+  "description": "轻便小巧的工具链",
+  "keywords": [
+    "LitEngine"
+  ]
+}
