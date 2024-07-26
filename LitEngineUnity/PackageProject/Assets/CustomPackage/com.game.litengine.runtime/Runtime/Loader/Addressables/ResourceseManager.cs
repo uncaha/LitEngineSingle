@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
-
+using UnityEngine.ResourceManagement;
 namespace LitEngine.Addressable
 {
     public class ResourcesManager : MonoManagerGeneric<ResourcesManager>
