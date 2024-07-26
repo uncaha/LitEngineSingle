@@ -15,13 +15,11 @@ namespace LitEngine
             Init();
         }
 
-        virtual protected void Init()
-        {
-        }
+        abstract protected void Init();
     }
     
     
-    public class MonoManagerGeneric<T> : MonoManagerBase where T : MonoManagerBase
+    public abstract class MonoManagerGeneric<T> : MonoManagerBase where T : MonoManagerBase
     {
         protected static T sInstance = null;
         public static T Instance

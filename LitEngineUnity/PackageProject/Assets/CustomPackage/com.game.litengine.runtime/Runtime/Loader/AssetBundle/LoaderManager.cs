@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine.SceneManagement;
 using LitEngine.LoadAsset;
-namespace LitEngine
+namespace LitEngine.LoadAsset
 {
     public class LoaderManager
     {

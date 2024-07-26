@@ -36,6 +36,11 @@ namespace LitEngine.TemPlate.UI
                 return _Instance;
             }
         }
+        
+        protected override void Init()
+        {
+
+        }
 
         public void DestroyManager()
         {

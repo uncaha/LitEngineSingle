@@ -5,7 +5,7 @@ using LitEngine.LoadAsset;
 using UnityEngine;
 using LitEngine.UpdateSpace;
 using LitEngine.Method;
-namespace LitEngine
+namespace LitEngine.LoadAsset
 {
     public class ResourcesManager
     {

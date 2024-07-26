@@ -17,6 +17,11 @@ namespace LitEngine
                 return Instance.mUpdateList;
             }
         }
+        
+        protected override void Init()
+        {
+
+        }
 
         protected void OnDestroy()
         {

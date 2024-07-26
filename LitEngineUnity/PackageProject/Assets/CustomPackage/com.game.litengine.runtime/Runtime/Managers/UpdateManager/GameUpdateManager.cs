@@ -6,7 +6,10 @@ namespace LitEngine
 {
     public class GameUpdateManager : MonoManagerGeneric<GameUpdateManager>
     {
-         
+        protected override void Init()
+        {
+
+        }
         protected void OnDestroy()
         {
             Clear();
