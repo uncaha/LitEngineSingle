@@ -36,3 +36,4 @@ LitEngineUnity/PackageProject/Logs
 *.csproj
 *.sln
 LitEngineUnity/PackageProject/Temp
+LitEngineUnity/PackageProject/.idea
